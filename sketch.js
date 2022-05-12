@@ -1,4 +1,6 @@
 let shapeArray = []; // global array of all shapes currently made
+let pointClicked = false;
+let point_j;
 
 function sidesInput() {
   let nPoints = document.getElementById("name").value;
@@ -28,6 +30,8 @@ function setup() {
 function draw() {
   background(102); // make bg gray
   renderAllShapes();
+  checkIfClickAVertex();
+  dragPoint();
 }
 
 function renderAllShapes() {
@@ -45,6 +49,45 @@ function renderAllShapes() {
     }
     pop();
   }
+}
+
+function checkIfClickAVertex() {
+  if (shapeArray.length === 0 && pointClicked === false) {
+    return false;
+  }
+  let preparingShape = shapeArray[0];
+  for (let j = 0; j < preparingShape.vertexArray.length; j += 1) {
+    if (
+      between(
+        mouseX,
+        preparingShape.vertexArray[j][0] - 10,
+        preparingShape.vertexArray[j][0] + 10
+      ) &&
+      between(
+        mouseY,
+        preparingShape.vertexArray[j][1] - 10,
+        preparingShape.vertexArray[j][1] + 10
+      ) &&
+      mouseIsPressed === true
+    ) {
+      pointClicked = true;
+      point_j = j;
+    }
+  }
+}
+
+function dragPoint() {
+  let preparingShape = shapeArray[0];
+  if (pointClicked === true && mouseIsPressed === true) {
+    preparingShape.vertexArray[point_j][0] = mouseX;
+    preparingShape.vertexArray[point_j][1] = mouseY;
+  } else {
+    pointClicked = false;
+  }
+}
+
+function between(theThing, min, max) {
+  return theThing >= min && theThing <= max;
 }
 
 class Shape {
