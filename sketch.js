@@ -1,5 +1,6 @@
 let shapeArray = []; // global array of all shapes currently made
 let pointClicked = false;
+let shape_i;
 let point_j;
 
 function sidesInput() {
@@ -28,7 +29,7 @@ function setup() {
 }
 
 function draw() {
-  background(102); // make bg gray
+  background(102);
   renderAllShapes();
   checkIfClickAVertex();
   dragPoint();
@@ -55,32 +56,36 @@ function checkIfClickAVertex() {
   if (shapeArray.length === 0 && pointClicked === false) {
     return false;
   }
-  let preparingShape = shapeArray[0];
-  for (let j = 0; j < preparingShape.vertexArray.length; j += 1) {
-    if (
-      between(
-        mouseX,
-        preparingShape.vertexArray[j][0] - 10,
-        preparingShape.vertexArray[j][0] + 10
-      ) &&
-      between(
-        mouseY,
-        preparingShape.vertexArray[j][1] - 10,
-        preparingShape.vertexArray[j][1] + 10
-      ) &&
-      mouseIsPressed === true
-    ) {
-      pointClicked = true;
-      point_j = j;
+
+
+  for (let i = 0; i < shapeArray.length; i += 1) {
+    for (let j = 0; j < shapeArray[i].vertexArray.length; j += 1) {
+      if (
+        between(
+          mouseX,
+          shapeArray[i].vertexArray[j][0] - 10,
+          shapeArray[i].vertexArray[j][0] + 10
+        ) &&
+        between(
+          mouseY,
+          shapeArray[i].vertexArray[j][1] - 10,
+          shapeArray[i].vertexArray[j][1] + 10
+        ) &&
+        mouseIsPressed === true
+      ) {
+        pointClicked = true;
+        point_j = j;
+        shape_i = i;
+      }
     }
   }
 }
 
 function dragPoint() {
-  let preparingShape = shapeArray[0];
+
   if (pointClicked === true && mouseIsPressed === true) {
-    preparingShape.vertexArray[point_j][0] = mouseX;
-    preparingShape.vertexArray[point_j][1] = mouseY;
+    shapeArray[shape_i].vertexArray[point_j][0] = mouseX;
+    shapeArray[shape_i].vertexArray[point_j][1] = mouseY;
   } else {
     pointClicked = false;
   }
