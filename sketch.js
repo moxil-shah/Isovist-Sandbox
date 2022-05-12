@@ -1,49 +1,50 @@
-
-
-let sides;
-let shapeArray = [];
+let shapeArray = []; // global array of all shapes currently made
 
 function sidesInput() {
-    let name = document.getElementById('name').value;
-    sides = name;
-};
+  let nPoints = document.getElementById("name").value;
+  polygon(100, 100, 45, nPoints);
+}
 
+// gets parameters ready to make the new polygon
+function polygon(x, y, radius, npoints) {
+  let angle = TWO_PI / npoints;
+  let vertexes = []; // temp vertexes array to be passed into Shape constructor
+
+  // gets the vertexes ready and puts them into temp array
+  for (let i = 0; i < TWO_PI; i += angle) {
+    let sx = x + cos(i) * radius;
+    let sy = y + sin(i) * radius;
+    vertexes.push([sx, sy]);
+  }
+
+  newShape = new Shape(x, y, npoints, vertexes);
+  shapeArray.push(newShape);
+}
 
 function setup() {
   createCanvas(720, 400);
 }
 
 function draw() {
-  background(102);
-
-  push();
-  translate(width * 0.2, height * 0.5);
-
-  polygon(156, 0, 45, sides);
-  pop();
+  background(102); // make bg gray
+  renderAllShapes();
 }
 
-function polygon(x, y, radius, npoints) {
-  let angle = TWO_PI / npoints;
-  let vertexes = [];
-  beginShape();
-  for (let a = 0; a < TWO_PI; a += angle) {
-    let sx = x + cos(a) * radius;
-    let sy = y + sin(a) * radius;
-    vertexes.push((sx, sy));
-    vertex(sx, sy);
+function renderAllShapes() {
+  for (let i = 0; i < shapeArray.length; i += 1) {
+    beginShape();
+    for (let j = 0; j < shapeArray[i].vertexArray.length; j += 1) {
+      vertex(shapeArray[i].vertexArray[j][0], shapeArray[i].vertexArray[j][1]);
+    }
+    endShape(CLOSE);
   }
-  endShape(CLOSE);
 }
 
 class Shape {
-
-
-    constructor(sides, vertexArray) {
-        this.sides = sides;
-        this.vertexArray = vertexArray;
-        this.x = x;
-        this.y = y;
-    }
-
+  constructor(x, y, nPoints, vertexArray) {
+    this.x = x;
+    this.y = y;
+    this.nPoints = nPoints;
+    this.vertexArray = vertexArray;
+  }
 }
