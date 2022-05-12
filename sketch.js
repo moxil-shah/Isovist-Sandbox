@@ -37,6 +37,13 @@ function renderAllShapes() {
       vertex(shapeArray[i].vertexArray[j][0], shapeArray[i].vertexArray[j][1]);
     }
     endShape(CLOSE);
+
+    push();
+    strokeWeight(10);
+    for (let j = 0; j < shapeArray[i].vertexArray.length; j += 1) {
+      point(shapeArray[i].vertexArray[j][0], shapeArray[i].vertexArray[j][1]);
+    }
+    pop();
   }
 }
 
