@@ -1,5 +1,5 @@
-let shapeArray = []; // global array of all shapes currently made
-let guardArray = [];
+let shapeArray = []; // global array of all shapes made
+let guardArray = []; // global array of all security guards made
 let pointClicked = false;
 let shapeClicked = false;
 let shape_i_for_shape_clicked;
@@ -14,7 +14,7 @@ function setup() {
 function draw() {
   background(102);
   renderAllShapes();
- //  renderAllSecurityGuards();
+  renderAllSecurityGuards();
   checkIfClickAVertex();
   checkIfClickInsideShape();
   dragPoint();
@@ -27,28 +27,40 @@ function sidesInput() {
   polygon(100, 100, 45, nPoints);
 }
 
+// from the HTML form
 function SecurityGuardInput() {
   guardArray.push(new SecurityGuard(400, 200, "purple"));
 }
 
 function renderAllSecurityGuards() {
   for (let i = 0; i < guardArray.length; i += 1) {
-    guardArray[i].draw();
+    guardArray[i].drawSecurityGuard();
     push();
-    translate(guardArray[i].getX(), guardArray[i].getY());
-    rotate(angle);
-    stroke('red');
+
+    stroke("red");
     strokeWeight(10);
-    line(0, 0, 100, 0);
-    
-    
    
-   angle += .145;
+
+    guardArray[i].updateLinePostionAfterRotate(angle, i);
+    guardArray[i].drawLine();
+
+    if (angle <= PI / 2) {
+      angle += 0.005;
+    }
+
     pop();
-    arc(guardArray[i].getX(), guardArray[i].getY(), 200, 200, 0, angle);
+    if (angle > PI / 4) {
+      push();
+      noStroke();
+      fill(color(255, 204, 0));
+      arc(guardArray[i].getX(), guardArray[i].getY(), 100, 100, 0, PI/4);
+      arc(guardArray[i].getX(), guardArray[i].getY(), 200, 200, PI/4, angle);
+      pop();
+    }
+    else{
+      arc(guardArray[i].getX(), guardArray[i].getY(), 100, 100, 0, angle);
+    }
   }
-
-
 }
 
 // gets parameters ready to make the new polygon
@@ -131,27 +143,18 @@ function checkIfClickInsideShape() {
   for (let i = 0; i < shapeArray.length; i += 1) {
     let lineSegmentCrossesCounter = 0; // for ray trace algorithm
     for (let j = 0; j < shapeArray[i].lineArray.length; j += 1) {
-      let xCoordOfInterceptWithHorizontal =
-        (-mouseY - shapeArray[i].lineArray[j].getYIntercept()) /
-        shapeArray[i].lineArray[j].getSlope();
       if (
-        between(
-          mouseY,
-          Math.min(
-            shapeArray[i].lineArray[j].y_1,
-            shapeArray[i].lineArray[j].y_2
-          ),
-          Math.max(
-            shapeArray[i].lineArray[j].y_1,
-            shapeArray[i].lineArray[j].y_2
-          )
-        ) &&
-        xCoordOfInterceptWithHorizontal >= mouseX
+        checkIfIntersect(
+          new Point(mouseX, mouseY),
+          new Point(width, mouseY),
+          shapeArray[i].lineArray[j].getPoint1(),
+          shapeArray[i].lineArray[j].getPoint2()
+        )
       ) {
         lineSegmentCrossesCounter += 1;
       }
     }
-    // console.log(lineSegmentCrossesCounter);
+
     // ray tracing algorithm says if line segment crosses === odd num, then click is inside the shape
     if (lineSegmentCrossesCounter % 2 === 1) {
       shape_i_for_shape_clicked = i;
@@ -215,6 +218,45 @@ function between(theThing, min, max) {
   return theThing >= min && theThing <= max;
 }
 
+function onSegment(p, q, r) {
+  if (
+    q.x <= Math.max(p.x, r.x) &&
+    q.x >= Math.min(p.x, r.x) &&
+    q.y <= Math.max(p.y, r.y) &&
+    q.y >= Math.min(p.y, r.y)
+  )
+    return true;
+
+  return false;
+}
+
+function orientOrder(p, q, r) {
+  let val = (q.y - p.y) * (r.x - q.x) - (q.x - p.x) * (r.y - q.y);
+
+  if (val == 0) return 0;
+
+  return val > 0 ? 1 : 2;
+}
+
+function checkIfIntersect(p1, q1, p2, q2) {
+  let o1 = orientOrder(p1, q1, p2);
+  let o2 = orientOrder(p1, q1, q2);
+  let o3 = orientOrder(p2, q2, p1);
+  let o4 = orientOrder(p2, q2, q1);
+
+  if (o1 != o2 && o3 != o4) return true;
+
+  if (o1 == 0 && onSegment(p1, p2, q1)) return true;
+
+  if (o2 == 0 && onSegment(p1, q2, q1)) return true;
+
+  if (o3 == 0 && onSegment(p2, p1, q2)) return true;
+
+  if (o4 == 0 && onSegment(p2, q1, q2)) return true;
+
+  return false;
+}
+
 class Shape {
   constructor(x, y, nPoints, vertexArray) {
     this.x = x;
@@ -253,16 +295,39 @@ class Line {
     this.y_1 = y_1;
     this.x_2 = x_2;
     this.y_2 = y_2;
-    this.m = -(this.y_2 - this.y_1) / (this.x_2 - this.x_1);
-    this.b = -this.y_1 - this.m * this.x_1;
+    this.test = 0;
+    this.Point1 = new Point(this.x_1, this.y_1);
+    this.Point2 = new Point(this.x_2, this.y_2);
+    this.length = Math.sqrt(
+      (this.x_2 - this.x_1) * (this.x_2 - this.x_1) +
+        (this.y_2 - this.y_1) * (this.y_2 - this.y_1)
+    );
   }
 
-  getSlope() {
-    return this.m;
+  getPoint1() {
+    return this.Point1;
   }
 
-  getYIntercept() {
-    return this.b;
+  getPoint2() {
+    return this.Point2;
+  }
+
+  drawLine() {
+    line(this.x_1, this.y_1, this.x_2, this.y_2);
+  }
+
+  updateLinePostionAfterRotate(angle, i) {
+    this.x_1 = guardArray[i].getX();
+    this.y_1 = guardArray[i].getY();
+    this.x_2 = cos(angle) * this.length + guardArray[i].getX();
+    this.y_2 = sin(angle) * this.length + guardArray[i].getY();
+  }
+}
+
+class Point {
+  constructor(x, y) {
+    this.x = x;
+    this.y = y;
   }
 }
 
@@ -272,14 +337,23 @@ class SecurityGuard {
     this.y = y;
     this.color = color;
     this.size = 13;
+    this.line = new Line(0, 0, 100, 0);
   }
 
-  draw() {
+  drawSecurityGuard() {
     push();
     strokeWeight(this.size);
     stroke(this.color);
     point(this.x, this.y);
     pop();
+  }
+
+  drawLine() {
+    this.line.drawLine();
+  }
+
+  updateLinePostionAfterRotate(angle, i) {
+    this.line.updateLinePostionAfterRotate(angle, i);
   }
 
   getX() {
@@ -296,5 +370,9 @@ class SecurityGuard {
 
   getColor() {
     return this.color;
+  }
+
+  getLine() {
+    return this.line;
   }
 }
