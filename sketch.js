@@ -1,9 +1,11 @@
 let shapeArray = []; // global array of all shapes currently made
+let guardArray = [];
 let pointClicked = false;
 let shapeClicked = false;
 let shape_i_for_shape_clicked;
 let shape_i;
 let point_j;
+let angle = 0;
 
 function setup() {
   createCanvas(720, 400);
@@ -12,6 +14,7 @@ function setup() {
 function draw() {
   background(102);
   renderAllShapes();
+ //  renderAllSecurityGuards();
   checkIfClickAVertex();
   checkIfClickInsideShape();
   dragPoint();
@@ -22,6 +25,30 @@ function draw() {
 function sidesInput() {
   let nPoints = document.getElementById("name").value;
   polygon(100, 100, 45, nPoints);
+}
+
+function SecurityGuardInput() {
+  guardArray.push(new SecurityGuard(400, 200, "purple"));
+}
+
+function renderAllSecurityGuards() {
+  for (let i = 0; i < guardArray.length; i += 1) {
+    guardArray[i].draw();
+    push();
+    translate(guardArray[i].getX(), guardArray[i].getY());
+    rotate(angle);
+    stroke('red');
+    strokeWeight(10);
+    line(0, 0, 100, 0);
+    
+    
+   
+   angle += .145;
+    pop();
+    arc(guardArray[i].getX(), guardArray[i].getY(), 200, 200, 0, angle);
+  }
+
+
 }
 
 // gets parameters ready to make the new polygon
@@ -236,5 +263,38 @@ class Line {
 
   getYIntercept() {
     return this.b;
+  }
+}
+
+class SecurityGuard {
+  constructor(x, y, color) {
+    this.x = x;
+    this.y = y;
+    this.color = color;
+    this.size = 13;
+  }
+
+  draw() {
+    push();
+    strokeWeight(this.size);
+    stroke(this.color);
+    point(this.x, this.y);
+    pop();
+  }
+
+  getX() {
+    return this.x;
+  }
+
+  getY() {
+    return this.y;
+  }
+
+  getSize() {
+    return this.size;
+  }
+
+  getColor() {
+    return this.color;
   }
 }
