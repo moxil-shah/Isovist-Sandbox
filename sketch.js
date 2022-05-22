@@ -63,6 +63,7 @@ function renderAllSecurityGuards() {
     guardArray[i].drawSecurityGuard();
     push();
 
+    guardArray[i].setLineAngle(guardArray[i].getLineAngle() + 0.01);
     guardArray[i].updateLinePositionAfterRotate(
       guardArray[i].getLineAngle(),
       i
@@ -435,7 +436,7 @@ class Line {
     this.x_1 = guardArray[i].getX();
     this.y_1 = guardArray[i].getY();
     this.x_2 = cos(angle) * this.length + guardArray[i].getX();
-    this.y_2 = sin(angle) * this.length + guardArray[i].getY();
+    this.y_2 = sin(angle) * -this.length + guardArray[i].getY();
   }
 }
 
