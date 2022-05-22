@@ -1,7 +1,14 @@
 let shapeArray = []; // global array of all shapes made
 let guardArray = []; // global array of all security guards made
-let allVertices = [];
-const SecurityGuardNames = ["red", "blue", "green", "yellow"];
+let allVertices = []; // global array of all the vertices on the map
+const SecurityGuardNames = [
+  "red",
+  "blue",
+  "green",
+  "purple",
+  "orange",
+  "yellow",
+];
 let pointClicked = false;
 let shapeClicked = false;
 let securityGuardClicked = false;
@@ -9,6 +16,8 @@ let shape_i_for_shape_clicked;
 let shape_i;
 let point_j;
 let guard_i;
+
+// SORT THE allVertices ARRAY FOR EACH SECURITY GUARD TODAY //
 
 function setup() {
   createCanvas(720, 400);
@@ -36,7 +45,14 @@ function sidesInput() {
 // from the HTML form
 function SecurityGuardInput() {
   if (SecurityGuardNames.length !== 0) {
-    guardArray.push(new SecurityGuard(400, 200, SecurityGuardNames.pop()));
+    guard = new SecurityGuard(400, 200, SecurityGuardNames.pop());
+    for (let i = 0; i < allVertices.length; i += 1) {
+      allVertices[i].setSecurityGuardAngle(guard);
+    }
+
+    guard.addAllVertices(allVertices);
+    guard.sortVertices();
+    guardArray.push(guard);
   } else {
     console.log("No more security guards available!");
   }
@@ -61,16 +77,18 @@ function renderAllSecurityGuards() {
 function polygon(x, y, radius, npoints) {
   let angle = TWO_PI / npoints;
   let vertexes = []; // temp vertexes array to be passed into Shape constructor
+  newShape = new Shape(x, y, npoints);
 
   // gets the vertexes ready and puts them into temp array
   for (let i = 0; i < TWO_PI; i += angle) {
     let sx = x + cos(i) * radius;
     let sy = y + sin(i) * radius;
-    vertexes.push(new Point(sx, sy));
-    allVertices.push(new Point(sx, sy));
+    aPoint = new Point(sx, sy, newShape.getName());
+    allVertices.push(aPoint);
+    vertexes.push(aPoint);
   }
 
-  newShape = new Shape(x, y, npoints, vertexes);
+  newShape.setVertexArray(vertexes);
   newShape.setLineArray();
   shapeArray.push(newShape);
 }
@@ -148,8 +166,8 @@ function checkIfClickInsideShape() {
     for (let j = 0; j < shapeArray[i].lineArray.length; j += 1) {
       if (
         checkIfIntersect(
-          new Point(mouseX, mouseY),
-          new Point(width, mouseY),
+          new Point(mouseX, mouseY, null),
+          new Point(width, mouseY, null),
           shapeArray[i].lineArray[j].getPoint1(),
           shapeArray[i].lineArray[j].getPoint2()
         )
@@ -206,6 +224,18 @@ function dragPoint() {
     shapeArray[shape_i].setLineArray();
     updateVertexArrayDistancetoMousePress(shape_i);
     pointClicked = false;
+
+    for (let i = 0; i < allVertices.length; i += 1) {
+      if (allVertices[i] === shapeArray[shape_i].vertexArray[point_j]) {
+        for (let j = 0; j < guardArray.length; j += 1) {
+          allVertices[i].setSecurityGuardAngle(guardArray[j]);
+        }
+        break;
+      }
+    }
+    for (let j = 0; j < guardArray.length; j += 1) {
+      guardArray[j].sortVertices();
+    }
   }
 }
 
@@ -215,6 +245,11 @@ function dragSecurityGuard() {
     guardArray[guard_i].setY(mouseY);
   } else if (securityGuardClicked === true) {
     securityGuardClicked = false;
+
+    for (let i = 0; i < allVertices.length; i += 1) {
+      allVertices[i].setSecurityGuardAngle(guardArray[guard_i]);
+    }
+    guardArray[guard_i].sortVertices();
   }
 }
 
@@ -252,11 +287,25 @@ function dragShape() {
   } else if (shapeClicked === true) {
     shapeArray[shape_i_for_shape_clicked].setLineArray();
     shapeClicked = false;
+
+    for (let i = 0; i < allVertices.length; i += 1) {
+      for (let j = 0; j < guardArray.length; j += 1) {
+        allVertices[i].setSecurityGuardAngle(guardArray[j]);
+      }
+    }
+
+    for (let j = 0; j < guardArray.length; j += 1) {
+      guardArray[j].sortVertices();
+    }
   }
 }
 
 function between(theThing, min, max) {
   return theThing >= min && theThing <= max;
+}
+
+function delay(time) {
+  return new Promise((resolve) => setTimeout(resolve, time));
 }
 
 function onSegment(p, q, r) {
@@ -299,14 +348,35 @@ function checkIfIntersect(p1, q1, p2, q2) {
 }
 
 class Shape {
-  constructor(x, y, nPoints, vertexArray) {
+  constructor(x, y, nPoints) {
     this.id = Date.now();
     this.x = x;
     this.y = y;
     this.nPoints = nPoints;
-    this.vertexArray = vertexArray;
+    this.vertexArray = null;
     this.vertexArrayDistancetoMousePress = [];
     this.lineArray = [];
+  }
+
+  setVertexArray(array) {
+    this.vertexArray = array;
+
+    this.vertexArray[0].setPointPrev(
+      this.vertexArray[this.vertexArray.length - 1]
+    );
+    this.vertexArray[0].setPointNext(this.vertexArray[1]);
+
+    this.vertexArray[this.vertexArray.length - 1].setPointPrev(
+      this.vertexArray[this.vertexArray.length - 2]
+    );
+    this.vertexArray[this.vertexArray.length - 1].setPointNext(
+      this.vertexArray[0]
+    );
+
+    for (let i = 1; i < this.vertexArray.length - 1; i += 1) {
+      this.vertexArray[i].setPointPrev(this.vertexArray[i - 1]);
+      this.vertexArray[i].setPointNext(this.vertexArray[i + 1]);
+    }
   }
 
   setLineArray() {
@@ -329,6 +399,10 @@ class Shape {
     );
     this.lineArray.push(aLine);
   }
+
+  getName() {
+    return this.id;
+  }
 }
 
 class Line {
@@ -337,8 +411,8 @@ class Line {
     this.y_1 = y_1;
     this.x_2 = x_2;
     this.y_2 = y_2;
-    this.Point1 = new Point(this.x_1, this.y_1);
-    this.Point2 = new Point(this.x_2, this.y_2);
+    this.Point1 = new Point(this.x_1, this.y_1, null);
+    this.Point2 = new Point(this.x_2, this.y_2, null);
     this.length = Math.sqrt(
       (this.x_2 - this.x_1) * (this.x_2 - this.x_1) +
         (this.y_2 - this.y_1) * (this.y_2 - this.y_1)
@@ -366,9 +440,25 @@ class Line {
 }
 
 class Point {
-  constructor(x, y) {
+  constructor(x, y, parentShape) {
     this.x = x;
     this.y = y;
+    this.pointPrev = null;
+    this.pointNext = null;
+    this.parentShapeName = parentShape;
+    this.secuirtyGuardMap = new Map();
+  }
+
+  setSecurityGuardAngle(guard) {
+    let a = this.x - guard.getX();
+    let o = -this.y + guard.getY();
+    let angle = Math.atan2(o, a);
+
+    if (angle < 0) {
+      angle += TWO_PI;
+    }
+
+    this.secuirtyGuardMap.set(guard.getName(), angle);
   }
 
   setX(x) {
@@ -386,6 +476,34 @@ class Point {
   getY() {
     return this.y;
   }
+
+  getParentShapeName() {
+    return this.parentShapeName;
+  }
+
+  setPointPrev(point) {
+    this.pointPrev = point;
+  }
+
+  setPointNext(point) {
+    this.pointNext = point;
+  }
+
+  getPointPrev() {
+    return this.pointPrev;
+  }
+
+  getPointNext() {
+    return this.pointNext;
+  }
+
+  getSecurityGuardMap() {
+    return this.secuirtyGuardMap;
+  }
+
+  getAngleForSecurityGuard(guard) {
+    return this.secuirtyGuardMap.get(guard);
+  }
 }
 
 class SecurityGuard {
@@ -396,7 +514,27 @@ class SecurityGuard {
     this.size = 13;
     this.line = new Line(0, 0, 100, 0);
     this.lineAngle = 0;
-    this.sortedVertices = [];
+    this.sortedVertices = null;
+    this.sorted = false;
+  }
+
+  addAllVertices(array) {
+    this.sortedVertices = array;
+    this.sorted = false;
+  }
+
+  sortVertices() {
+    let name = this.name;
+    this.sortedVertices.sort(function (a, b) {
+      let da = a.getAngleForSecurityGuard(name);
+      let db = b.getAngleForSecurityGuard(name);
+      return da - db;
+    });
+    this.sorted = true;
+    // console.log("$$$$$$$$$$$$$$$$$$$$");
+    // for (let i = 0; i < this.sortedVertices.length; i += 1) {
+    //   console.log(this.sortedVertices[i].getAngleForSecurityGuard(this.name));
+    // }
   }
 
   drawSecurityGuard() {
@@ -449,5 +587,9 @@ class SecurityGuard {
 
   getLineAngle() {
     return this.lineAngle;
+  }
+
+  getName() {
+    return this.name;
   }
 }
