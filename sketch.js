@@ -17,7 +17,10 @@ let shape_i;
 let point_j;
 let guard_i;
 
-// SORT THE allVertices ARRAY FOR EACH SECURITY GUARD TODAY //
+//  Only 3 ways a security guard's isovist changes:
+// if drag a point
+// if drag a shape
+// if move the security guard
 
 function setup() {
   createCanvas(720, 400);
@@ -28,11 +31,11 @@ function draw() {
   background(102);
   renderAllSecurityGuards();
   renderAllShapes();
-  checkIfClickAVertex();
-  checkIfClickInsideShape();
+  // checkIfClickAVertex();
+  // checkIfClickInsideShape();
   checkIfClickSecurityGuard();
-  dragPoint();
-  dragShape();
+  // dragPoint();
+  // dragShape();
   dragSecurityGuard();
 }
 
@@ -45,14 +48,33 @@ function sidesInput() {
 // from the HTML form
 function SecurityGuardInput() {
   if (SecurityGuardNames.length !== 0) {
-    guard = new SecurityGuard(400, 200, SecurityGuardNames.pop());
+    if (guardArray.length === 0) {
+      guard = new SecurityGuard(400, 200, "yellow");
+    } else {
+      guard = new SecurityGuard(400, 200, "orange");
+    }
+    // guard = new SecurityGuard(400, 200, SecurityGuardNames.pop());
+    guardArray.push(guard);
     for (let i = 0; i < allVertices.length; i += 1) {
       allVertices[i].setSecurityGuardAngle(guard);
     }
-
-    guard.addAllVertices(allVertices);
+    guard.addAllVertices();
+    if (guardArray.length > 2) {
+      console.log(
+        "yellow 3",
+        guardArray[0].sortedVertices[0].getSecurityGuardMap()["orange"],
+        guardArray[0].sortedVertices[0].getSecurityGuardMap()["yellow"]
+      );
+    }
     guard.sortVertices();
-    guardArray.push(guard);
+    if (guardArray.length > 2) {
+      console.log(
+        "yellow 4",
+        guardArray[0].sortedVertices[0].getSecurityGuardMap()["yellow"]
+      );
+    }
+    guard.initalIntersect();
+    
   } else {
     console.log("No more security guards available!");
   }
@@ -61,15 +83,11 @@ function SecurityGuardInput() {
 function renderAllSecurityGuards() {
   for (let i = 0; i < guardArray.length; i += 1) {
     guardArray[i].drawSecurityGuard();
+
     push();
 
-    guardArray[i].setLineAngle(guardArray[i].getLineAngle() + 0.01);
-    guardArray[i].updateLinePositionAfterRotate(
-      guardArray[i].getLineAngle(),
-      i
-    );
+    guardArray[i].updateLinePositionAfterRotate(i);
     guardArray[i].drawLine();
-
     pop();
   }
 }
@@ -236,6 +254,7 @@ function dragPoint() {
     }
     for (let j = 0; j < guardArray.length; j += 1) {
       guardArray[j].sortVertices();
+      guardArray[j].initalIntersect();
     }
   }
 }
@@ -251,6 +270,8 @@ function dragSecurityGuard() {
       allVertices[i].setSecurityGuardAngle(guardArray[guard_i]);
     }
     guardArray[guard_i].sortVertices();
+    guardArray[guard_i].initalIntersect();
+    guard_i = null;
   }
 }
 
@@ -297,6 +318,7 @@ function dragShape() {
 
     for (let j = 0; j < guardArray.length; j += 1) {
       guardArray[j].sortVertices();
+      guardArray[j].initalIntersect();
     }
   }
 }
@@ -305,8 +327,14 @@ function between(theThing, min, max) {
   return theThing >= min && theThing <= max;
 }
 
-function delay(time) {
-  return new Promise((resolve) => setTimeout(resolve, time));
+function findIntersection(x1, y1, x2, y2, x3, y3, x4, y4) {
+  let px =
+    ((x1 * y2 - y1 * x2) * (x3 - x4) - (x1 - x2) * (x3 * y4 - y3 * x4)) /
+    ((x1 - x2) * (y3 - y4) - (y1 - y2) * (x3 - x4));
+  let py =
+    ((x1 * y2 - y1 * x2) * (y3 - y4) - (y1 - y2) * (x3 * y4 - y3 * x4)) /
+    ((x1 - x2) * (y3 - y4) - (y1 - y2) * (x3 - x4));
+  return [px, py];
 }
 
 function onSegment(p, q, r) {
@@ -404,6 +432,10 @@ class Shape {
   getName() {
     return this.id;
   }
+
+  getLineArray() {
+    return this.lineArray;
+  }
 }
 
 class Line {
@@ -432,11 +464,15 @@ class Line {
     line(this.x_1, this.y_1, this.x_2, this.y_2);
   }
 
-  updateLinePositionAfterRotate(angle, i) {
+  updateLinePositionAfterRotate(sortedVertices, i) {
+    // this.x_1 = guardArray[i].getX();
+    // this.y_1 = guardArray[i].getY();
+    // this.x_2 = cos(angle) * this.length + guardArray[i].getX();
+    // this.y_2 = sin(angle) * -this.length + guardArray[i].getY();
     this.x_1 = guardArray[i].getX();
     this.y_1 = guardArray[i].getY();
-    this.x_2 = cos(angle) * this.length + guardArray[i].getX();
-    this.y_2 = sin(angle) * -this.length + guardArray[i].getY();
+    this.x_2 = sortedVertices[0].getX();
+    this.y_2 = sortedVertices[0].getY();
   }
 }
 
@@ -447,7 +483,7 @@ class Point {
     this.pointPrev = null;
     this.pointNext = null;
     this.parentShapeName = parentShape;
-    this.secuirtyGuardMap = new Map();
+    this.secuirtyGuardMap = {};
   }
 
   setSecurityGuardAngle(guard) {
@@ -458,8 +494,7 @@ class Point {
     if (angle < 0) {
       angle += TWO_PI;
     }
-
-    this.secuirtyGuardMap.set(guard.getName(), angle);
+    this.secuirtyGuardMap[guard.getName()] = angle;
   }
 
   setX(x) {
@@ -503,39 +538,47 @@ class Point {
   }
 
   getAngleForSecurityGuard(guard) {
-    return this.secuirtyGuardMap.get(guard);
+    if (this.secuirtyGuardMap[guard] === undefined) {
+      console.log("key error");
+    }
+    return this.secuirtyGuardMap[guard];
   }
 }
 
 class SecurityGuard {
-  constructor(x, y, name) {
+  constructor(x, y, color) {
     this.x = x;
     this.y = y;
-    this.name = name;
+    this.name = color;
     this.size = 13;
-    this.line = new Line(0, 0, 100, 0);
+    this.line = new Line(this.x, this.y, width, this.y);
     this.lineAngle = 0;
-    this.sortedVertices = null;
-    this.sorted = false;
+    this.sortedVertices = [];
+    this.treeOfEdges = [];
   }
 
-  addAllVertices(array) {
-    this.sortedVertices = array;
-    this.sorted = false;
+  addAllVertices() {
+    this.sortedVertices = [];
+    this.sortedVertices = allVertices;
   }
 
   sortVertices() {
-    let name = this.name;
-    this.sortedVertices.sort(function (a, b) {
-      let da = a.getAngleForSecurityGuard(name);
-      let db = b.getAngleForSecurityGuard(name);
-      return da - db;
-    });
-    this.sorted = true;
-    // console.log("$$$$$$$$$$$$$$$$$$$$");
-    // for (let i = 0; i < this.sortedVertices.length; i += 1) {
-    //   console.log(this.sortedVertices[i].getAngleForSecurityGuard(this.name));
-    // }
+    console.log("heree", this.name);
+
+    if (this.name === "orange") {
+      this.sortedVertices[0] = "bruh";
+    }
+
+    if (guardArray.length === 2) {
+
+      for (let i = 0; i < this.sortedVertices.length; i++) {
+        console.log(guardArray[0].getName(), guardArray[0].sortedVertices[i]);
+      }
+      for (let i = 0; i < this.sortedVertices.length; i++) {
+        console.log(guardArray[1].getName(), guardArray[1].sortedVertices[i]);
+      }
+
+    }
   }
 
   drawSecurityGuard() {
@@ -550,8 +593,53 @@ class SecurityGuard {
     this.line.drawLine();
   }
 
-  updateLinePositionAfterRotate(angle, i) {
-    this.line.updateLinePositionAfterRotate(angle, i);
+  updateLinePositionAfterRotate(i) {
+    this.line.updateLinePositionAfterRotate(this.sortedVertices, i);
+  }
+
+  initalIntersect() {
+    this.treeOfEdges = [];
+    for (let i = 0; i < shapeArray.length; i += 1) {
+      for (let j = 0; j < shapeArray[i].getLineArray().length; j += 1) {
+        if (
+          checkIfIntersect(
+            new Point(this.x, this.y, null),
+            new Point(width, this.y, null),
+            shapeArray[i].getLineArray()[j].getPoint1(),
+            shapeArray[i].getLineArray()[j].getPoint2()
+          )
+        ) {
+          let IntersectionPoint = findIntersection(
+            this.x,
+            this.y,
+            width,
+            this.y,
+            shapeArray[i].getLineArray()[j].getPoint1().getX(),
+            shapeArray[i].getLineArray()[j].getPoint1().getY(),
+            shapeArray[i].getLineArray()[j].getPoint2().getX(),
+            shapeArray[i].getLineArray()[j].getPoint2().getY()
+          );
+
+          let distanceFromIntersectiontoGuard = Math.sqrt(
+            (this.x - IntersectionPoint[0]) ** 2 +
+              (this.y - IntersectionPoint[1]) ** 2
+          );
+
+          this.treeOfEdges.push([
+            shapeArray[i].getLineArray()[j],
+            distanceFromIntersectiontoGuard,
+          ]);
+        }
+      }
+    }
+
+    this.treeOfEdges.sort(function (a, b) {
+      let da = a[1];
+      let db = b[1];
+      return da - db;
+    });
+
+    // console.log(this.treeOfEdges);
   }
 
   setX(x) {
