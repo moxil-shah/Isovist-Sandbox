@@ -6,6 +6,8 @@ const SecurityGuardNames = [
   "blue",
   "green",
   "purple",
+  "pink",
+  "brown",
   "orange",
   "yellow",
 ];
@@ -75,6 +77,9 @@ function polygon(x, y, radius, npoints) {
   shapeArray.push(newShape);
 
   for (let i = 0; i < guardArray.length; i += 1) {
+    for (let j = 0; j < allVertices.length; j += 1) {
+      allVertices[j].setSecurityGuardAngle(guardArray[i]);
+    }
     guardArray[i].addAllVertices();
     guardArray[i].sortVertices();
   }
@@ -84,7 +89,7 @@ function renderAllSecurityGuards() {
   for (let i = 0; i < guardArray.length; i += 1) {
     guardArray[i].drawSecurityGuard();
     push();
-    guardArray[i].updateLinePositionAfterRotate(i);
+    guardArray[i].closestAngleVertex(i);
     guardArray[i].drawLine();
     pop();
   }
@@ -420,7 +425,7 @@ class Line {
     line(this.x_1, this.y_1, this.x_2, this.y_2);
   }
 
-  updateLinePositionAfterRotate(sortedVertices, i) {
+  closestAngleVertex(sortedVertices, i) {
     if (sortedVertices.length > 0) {
       this.x_1 = guardArray[i].getX();
       this.y_1 = guardArray[i].getY();
@@ -503,11 +508,14 @@ class SecurityGuard {
     this.y = y;
     this.name = name;
     this.size = 13;
-    this.line = new Line(0, 0, 100, 0);
+    this.line = new Line(0, 0, 0, 0);
     this.lineAngle = 0;
-    this.sortedVertices = null;
+    this.sortedVertices = [];
+    this.treeOfEdges = [];
     this.sorted = false;
   }
+
+  visible(pw_i) {}
 
   addAllVertices() {
     this.sortedVertices = [];
@@ -539,8 +547,45 @@ class SecurityGuard {
     this.line.drawLine();
   }
 
-  updateLinePositionAfterRotate(i) {
-    this.line.updateLinePositionAfterRotate(this.sortedVertices, i);
+  closestAngleVertex(i) {
+    this.line.closestAngleVertex(this.sortedVertices, i);
+  }
+
+  initalIntersect() {
+    this.treeOfEdges = [];
+    for (let i = 0; i < shapeArray.length; i += 1) {
+      for (let j = 0; j < shapeArray[i].getLineArray().length; j += 1) {
+        if (
+          checkIfIntersect(
+            new Point(this.x, this.y, null),
+            new Point(width, this.y, null),
+            shapeArray[i].getLineArray()[j].getPoint1(),
+            shapeArray[i].getLineArray()[j].getPoint2()
+          )
+        ) {
+          let IntersectionPoint = findIntersection(
+            this.x,
+            this.y,
+            width,
+            this.y,
+            shapeArray[i].getLineArray()[j].getPoint1().getX(),
+            shapeArray[i].getLineArray()[j].getPoint1().getY(),
+            shapeArray[i].getLineArray()[j].getPoint2().getX(),
+            shapeArray[i].getLineArray()[j].getPoint2().getY()
+          );
+
+          let distanceFromIntersectiontoGuard = Math.sqrt(
+            (this.x - IntersectionPoint[0]) ** 2 +
+              (this.y - IntersectionPoint[1]) ** 2
+          );
+
+          this.treeOfEdges.push([
+            shapeArray[i].getLineArray()[j],
+            distanceFromIntersectiontoGuard,
+          ]);
+        }
+      }
+    }
   }
 
   setX(x) {
