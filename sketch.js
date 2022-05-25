@@ -52,6 +52,7 @@ function SecurityGuardInput() {
     guard.addAllVertices();
     guard.sortVertices();
     guardArray.push(guard);
+    guard.initalIntersect();
   } else {
     console.log("No more security guards available!");
   }
@@ -82,6 +83,7 @@ function polygon(x, y, radius, npoints) {
     }
     guardArray[i].addAllVertices();
     guardArray[i].sortVertices();
+    guardArray[i].initalIntersect();
   }
 }
 
@@ -237,6 +239,7 @@ function dragPoint() {
     }
     for (let j = 0; j < guardArray.length; j += 1) {
       guardArray[j].sortVertices();
+      guardArray[j].initalIntersect();
     }
   }
 }
@@ -252,6 +255,7 @@ function dragSecurityGuard() {
       allVertices[i].setSecurityGuardAngle(guardArray[guard_i]);
     }
     guardArray[guard_i].sortVertices();
+    guardArray[guard_i].initalIntersect();
   }
 }
 
@@ -298,8 +302,19 @@ function dragShape() {
 
     for (let j = 0; j < guardArray.length; j += 1) {
       guardArray[j].sortVertices();
+      guardArray[j].initalIntersect();
     }
   }
+}
+
+function findIntersection(x1, y1, x2, y2, x3, y3, x4, y4) {
+  let px =
+    ((x1 * y2 - y1 * x2) * (x3 - x4) - (x1 - x2) * (x3 * y4 - y3 * x4)) /
+    ((x1 - x2) * (y3 - y4) - (y1 - y2) * (x3 - x4));
+  let py =
+    ((x1 * y2 - y1 * x2) * (y3 - y4) - (y1 - y2) * (x3 * y4 - y3 * x4)) /
+    ((x1 - x2) * (y3 - y4) - (y1 - y2) * (x3 - x4));
+  return [px, py];
 }
 
 function between(theThing, min, max) {
@@ -400,6 +415,10 @@ class Shape {
 
   getName() {
     return this.id;
+  }
+
+  getLineArray() {
+    return this.lineArray;
   }
 }
 
@@ -541,6 +560,15 @@ class SecurityGuard {
     stroke(this.name);
     point(this.x, this.y);
     pop();
+
+    for (let i = 0; i < this.treeOfEdges.length; i += 1) {
+      push();
+      stroke(this.name);
+      strokeWeight(10);
+      line(this.treeOfEdges[i][0].getPoint1().getX(), this.treeOfEdges[i][0].getPoint1().getY(), this.treeOfEdges[i][0].getPoint2().getX(), this.treeOfEdges[i][0].getPoint2().getY());
+      
+      pop();
+    }
   }
 
   drawLine() {
