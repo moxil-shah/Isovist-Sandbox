@@ -1,3 +1,5 @@
+// slight problem when inputting shape with 6 sides
+
 let shapeArray = []; // global array of all shapes made
 let guardArray = []; // global array of all security guards made
 let allVertices = []; // global array of all the vertices on the map
@@ -22,6 +24,7 @@ let guard_i;
 function setup() {
   createCanvas(720, 400);
   frameRate(30);
+  polygon(null, null, null, 4);
 }
 
 function draw() {
@@ -33,8 +36,8 @@ function draw() {
   dragPoint();
   dragShape();
   dragSecurityGuard();
-  renderAllSecurityGuards();
   renderAllShapes();
+  renderAllSecurityGuards();
 }
 
 // from the HTML form
@@ -63,16 +66,31 @@ function SecurityGuardInput() {
 function polygon(x, y, radius, npoints) {
   let angle = TWO_PI / npoints;
   let vertexes = []; // temp vertexes array to be passed into Shape constructor
-  newShape = new Shape(x, y, npoints);
+  
 
   // gets the vertexes ready and puts them into temp array
-  for (let i = 0; i < TWO_PI; i += angle) {
-    let sx = x + cos(i) * radius;
-    let sy = y + sin(i) * radius;
-    aPoint = new Point(sx, sy, newShape);
-    console.log("orignal point", sx, sy, i);
-    allVertices.push(aPoint);
-    vertexes.push(aPoint);
+
+  if (shapeArray.length === 0) {
+    newShape = new Shape(npoints, "gray");
+    let stage = [
+      new Point(0, 0, newShape),
+      new Point(width, 0, newShape),
+      new Point(width, height, newShape),
+      new Point(0, height, newShape),
+    ];
+    for (let i = 0; i < stage.length; i += 1) {
+      allVertices.push(stage[i]);
+      vertexes.push(stage[i]);
+    }
+  } else {
+    newShape = new Shape(npoints, "white");
+    for (let i = 0; i < TWO_PI; i += angle) {
+      let sx = x + cos(i) * radius;
+      let sy = y + sin(i) * radius;
+      aPoint = new Point(sx, sy, newShape);
+      allVertices.push(aPoint);
+      vertexes.push(aPoint);
+    }
   }
 
   newShape.setVertexArray(vertexes);
@@ -102,6 +120,8 @@ function renderAllSecurityGuards() {
 
 function renderAllShapes() {
   for (let i = 0; i < shapeArray.length; i += 1) {
+    push();
+    fill(shapeArray[i].getColor());
     beginShape();
     for (let j = 0; j < shapeArray[i].vertexArray.length; j += 1) {
       vertex(
@@ -110,17 +130,7 @@ function renderAllShapes() {
       );
     }
     endShape(CLOSE);
-
-    // make the vertices bold
-    // push();
-    // strokeWeight(10);
-    // for (let j = 0; j < shapeArray[i].vertexArray.length; j += 1) {
-    //   point(
-    //     shapeArray[i].vertexArray[j].getX(),
-    //     shapeArray[i].vertexArray[j].getY()
-    //   );
-    // }
-    // pop();
+    pop();
   }
 }
 
@@ -135,7 +145,7 @@ function checkIfClickAVertex() {
     return null;
   }
 
-  for (let i = 0; i < shapeArray.length; i += 1) {
+  for (let i = 1; i < shapeArray.length; i += 1) {
     for (let j = 0; j < shapeArray[i].vertexArray.length; j += 1) {
       if (
         between(
@@ -168,7 +178,7 @@ function checkIfClickInsideShape() {
     return null;
   }
 
-  for (let i = 0; i < shapeArray.length; i += 1) {
+  for (let i = 1; i < shapeArray.length; i += 1) {
     let lineSegmentCrossesCounter = 0; // for ray trace algorithm
     for (let j = 0; j < shapeArray[i].lineArray.length; j += 1) {
       if (
@@ -364,14 +374,13 @@ function checkIfIntersect(p1, q1, p2, q2) {
 }
 
 class Shape {
-  constructor(x, y, nPoints) {
+  constructor(nPoints, color) {
     this.id = Date.now();
-    this.x = x;
-    this.y = y;
     this.nPoints = nPoints;
     this.vertexArray = null;
     this.vertexArrayDistancetoMousePress = [];
     this.lineArray = [];
+    this.color = color;
   }
 
   setVertexArray(array) {
@@ -426,6 +435,10 @@ class Shape {
 
   getVertexArray() {
     return this.vertexArray;
+  }
+
+  getColor() {
+    return this.color;
   }
 }
 
