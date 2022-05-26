@@ -26,14 +26,15 @@ function setup() {
 
 function draw() {
   background(102);
-  renderAllSecurityGuards();
-  renderAllShapes();
+
   checkIfClickAVertex();
   checkIfClickInsideShape();
   checkIfClickSecurityGuard();
   dragPoint();
   dragShape();
   dragSecurityGuard();
+  renderAllSecurityGuards();
+  renderAllShapes();
 }
 
 // from the HTML form
@@ -68,7 +69,8 @@ function polygon(x, y, radius, npoints) {
   for (let i = 0; i < TWO_PI; i += angle) {
     let sx = x + cos(i) * radius;
     let sy = y + sin(i) * radius;
-    aPoint = new Point(sx, sy, newShape.getName());
+    aPoint = new Point(sx, sy, newShape);
+    console.log("orignal point", sx, sy, i);
     allVertices.push(aPoint);
     vertexes.push(aPoint);
   }
@@ -92,6 +94,7 @@ function renderAllSecurityGuards() {
     guardArray[i].drawSecurityGuard();
     push();
     guardArray[i].closestAngleVertex(i);
+    guardArray[i].visibleVertices(i);
     guardArray[i].drawLine();
     pop();
   }
@@ -109,15 +112,15 @@ function renderAllShapes() {
     endShape(CLOSE);
 
     // make the vertices bold
-    push();
-    strokeWeight(10);
-    for (let j = 0; j < shapeArray[i].vertexArray.length; j += 1) {
-      point(
-        shapeArray[i].vertexArray[j].getX(),
-        shapeArray[i].vertexArray[j].getY()
-      );
-    }
-    pop();
+    // push();
+    // strokeWeight(10);
+    // for (let j = 0; j < shapeArray[i].vertexArray.length; j += 1) {
+    //   point(
+    //     shapeArray[i].vertexArray[j].getX(),
+    //     shapeArray[i].vertexArray[j].getY()
+    //   );
+    // }
+    // pop();
   }
 }
 
@@ -420,6 +423,10 @@ class Shape {
   getLineArray() {
     return this.lineArray;
   }
+
+  getVertexArray() {
+    return this.vertexArray;
+  }
 }
 
 class Line {
@@ -460,7 +467,7 @@ class Point {
     this.y = y;
     this.pointPrev = null;
     this.pointNext = null;
-    this.parentShapeName = parentShape;
+    this.parentShape = parentShape;
     this.secuirtyGuardMap = new Map();
   }
 
@@ -492,8 +499,8 @@ class Point {
     return this.y;
   }
 
-  getParentShapeName() {
-    return this.parentShapeName;
+  getParentShape() {
+    return this.parentShape;
   }
 
   setPointPrev(point) {
@@ -532,9 +539,72 @@ class SecurityGuard {
     this.sortedVertices = [];
     this.treeOfEdges = [];
     this.sorted = false;
+    this.isovistVertices = new Set();
   }
 
-  visible(pw_i) {}
+  visibleVertices() {
+    this.isovistVertices = new Set();
+    for (let i = 0; i < allVertices.length; i += 1) {
+      this.visible(allVertices[i]);
+    }
+  }
+
+  visible(w_i) {
+    let visibleToSecurityGuard = true;
+    for (let j = 0; j < w_i.getParentShape().getLineArray().length; j += 1) {
+      if (
+        checkIfIntersect(
+          new Point(this.x, this.y, null),
+          new Point(w_i.getX(), w_i.getY(), null),
+          w_i.getParentShape().getLineArray()[j].getPoint1(),
+          w_i.getParentShape().getLineArray()[j].getPoint2()
+        )
+      ) {
+        visibleToSecurityGuard = false;
+        let IntersectionPoint = findIntersection(
+          this.x,
+          this.y,
+          w_i.getX(),
+          w_i.getY(),
+          w_i.getParentShape().getLineArray()[j].getPoint1().getX(),
+          w_i.getParentShape().getLineArray()[j].getPoint1().getY(),
+          w_i.getParentShape().getLineArray()[j].getPoint2().getX(),
+          w_i.getParentShape().getLineArray()[j].getPoint2().getY()
+        );
+        for (
+          let k = 0;
+          k < w_i.getParentShape().getVertexArray().length;
+          k += 1
+        ) {
+          if (
+            Math.round(w_i.getParentShape().getVertexArray()[k].getX() * 100) /
+              100 ===
+              Math.round(IntersectionPoint[0] * 100) / 100 &&
+            Math.round(w_i.getParentShape().getVertexArray()[k].getY() * 100) /
+              100 ===
+              Math.round(IntersectionPoint[1] * 100) / 100
+          ) {
+            visibleToSecurityGuard = true;
+            break;
+          }
+        }
+      }
+
+      if (visibleToSecurityGuard === false) {
+        break;
+      }
+    }
+
+    if (visibleToSecurityGuard === true) {
+      this.isovistVertices.add(w_i);
+
+      push();
+      stroke("black");
+      strokeWeight(15);
+      point(w_i.getX(), w_i.getY());
+      pop();
+    }
+  }
 
   addAllVertices() {
     this.sortedVertices = [];
@@ -554,21 +624,33 @@ class SecurityGuard {
     this.sorted = true;
   }
 
+  sortTreeOfEdgesByDistance() {
+    this.treeOfEdges.sort(function (a, b) {
+      return a[1] - b[1];
+    });
+  }
+
   drawSecurityGuard() {
     push();
     strokeWeight(this.size);
     stroke(this.name);
     point(this.x, this.y);
     pop();
+    let temp = ["red", "blue", "green", "purple", "yellow", "pink"];
 
-    for (let i = 0; i < this.treeOfEdges.length; i += 1) {
-      push();
-      stroke(this.name);
-      strokeWeight(10);
-      line(this.treeOfEdges[i][0].getPoint1().getX(), this.treeOfEdges[i][0].getPoint1().getY(), this.treeOfEdges[i][0].getPoint2().getX(), this.treeOfEdges[i][0].getPoint2().getY());
-      
-      pop();
-    }
+    // for (let i = 0; i < this.treeOfEdges.length; i += 1) {
+    //   push();
+    //   stroke(temp[i]);
+    //   strokeWeight(10);
+    //   line(
+    //     this.treeOfEdges[i][0].getPoint1().getX(),
+    //     this.treeOfEdges[i][0].getPoint1().getY(),
+    //     this.treeOfEdges[i][0].getPoint2().getX(),
+    //     this.treeOfEdges[i][0].getPoint2().getY()
+    //   );
+
+    //   pop();
+    // }
   }
 
   drawLine() {
@@ -614,6 +696,7 @@ class SecurityGuard {
         }
       }
     }
+    this.sortTreeOfEdgesByDistance();
   }
 
   setX(x) {
