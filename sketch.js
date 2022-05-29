@@ -49,7 +49,7 @@ function sidesInput() {
 // from the HTML form
 function SecurityGuardInput() {
   if (SecurityGuardNames.length !== 0) {
-    guard = new SecurityGuard(400, 200, SecurityGuardNames.pop());
+    guard = new SecurityGuard(77.5, 200, SecurityGuardNames.pop());
     for (let i = 0; i < allVertices.length; i += 1) {
       allVertices[i].setSecurityGuardAngle(guard);
     }
@@ -66,7 +66,6 @@ function SecurityGuardInput() {
 function polygon(x, y, radius, npoints) {
   let angle = TWO_PI / npoints;
   let vertexes = []; // temp vertexes array to be passed into Shape constructor
-  
 
   // gets the vertexes ready and puts them into temp array
 
@@ -87,6 +86,7 @@ function polygon(x, y, radius, npoints) {
     for (let i = 0; i < TWO_PI; i += angle) {
       let sx = x + cos(i) * radius;
       let sy = y + sin(i) * radius;
+      console.log("original point", sx, sy);
       aPoint = new Point(sx, sy, newShape);
       allVertices.push(aPoint);
       vertexes.push(aPoint);
@@ -112,7 +112,16 @@ function renderAllSecurityGuards() {
     guardArray[i].drawSecurityGuard();
     push();
     guardArray[i].closestAngleVertex(i);
-    guardArray[i].visibleVertices(i);
+    guardArray[i].visibleVertices();
+    //console.log(guardArray[i].getSortedVertices());
+    for (let key of guardArray[i].isovistVertices) {
+      push();
+      strokeWeight(15);
+      stroke("red");
+      point(key.getX(), key.getY());
+      pop();
+    }
+
     guardArray[i].drawLine();
     pop();
   }
@@ -373,6 +382,25 @@ function checkIfIntersect(p1, q1, p2, q2) {
   return false;
 }
 
+function checkIfTwoPointsOverlap(p1, p2) {
+  return p1.getX() === p2.getX() && p1.getY() === p2.getY();
+}
+
+function checkIfVertexIsEndPointOfALine(aVertex, aLine) {
+  return (
+    checkIfTwoPointsOverlap(aVertex, aLine.getPoint1()) ||
+    checkIfTwoPointsOverlap(aVertex, aLine.getPoint2())
+  );
+}
+
+function checkIfTwoLinesIntersectOnEndPoints(line1, line2) {
+  return (
+    checkIfTwoPointsOverlap(line1.getPoint1(), line2.getPoint1()) ||
+    checkIfTwoPointsOverlap(line1.getPoint2(), line2.getPoint2()) ||
+    checkIfTwoPointsOverlap(line1.getPoint1(), line2.getPoint2())
+  );
+}
+
 class Shape {
   constructor(nPoints, color) {
     this.id = Date.now();
@@ -557,12 +585,119 @@ class SecurityGuard {
 
   visibleVertices() {
     this.isovistVertices = new Set();
-    for (let i = 0; i < allVertices.length; i += 1) {
-      this.visible(allVertices[i]);
+    for (let i = 0; i < this.sortedVertices.length; i += 1) {
+      let toRemove = [];
+      console.log(this.treeOfEdges.length);
+      if (this.visible(this.sortedVertices[i], i) === true) {
+        this.isovistVertices.add(this.sortedVertices[i]);
+
+        for (let k = 0; k < this.treeOfEdges.length; k += 1) {
+          if (
+            this.treeOfEdges[k][0].getPoint1().getX() ===
+              this.sortedVertices[i].getX() &&
+            this.treeOfEdges[k][0].getPoint1().getY() ===
+              this.sortedVertices[i].getY()
+          ) {
+            let a1 = createVector(
+              this.sortedVertices[i].getX() - this.getX(),
+              this.sortedVertices[i].getY() - this.getY()
+            );
+
+            let a2 = createVector(
+              this.treeOfEdges[k][0].getPoint2().getX() -
+                this.sortedVertices[i].getX(),
+              this.treeOfEdges[k][0].getPoint2().getY() -
+                this.sortedVertices[i].getY()
+            );
+
+            let crossProduct = p5.Vector.cross(a1, a2);
+            if (crossProduct <= 0) {
+              toRemove.add(this.treeOfEdges[k]);
+            }
+          } else if (
+            this.treeOfEdges[k][0].getPoint2().getX() ===
+              this.sortedVertices[i].getX() &&
+            this.treeOfEdges[k][0].getPoint2().getY() ===
+              this.sortedVertices[i].getY()
+          ) {
+            let b1 = createVector(
+              this.sortedVertices[i].getX() - this.getX(),
+              this.sortedVertices[i].getY() - this.getY()
+            );
+
+            let b2 = createVector(
+              this.treeOfEdges[k][0].getPoint1().getX() -
+                this.sortedVertices[i].getX(),
+              this.treeOfEdges[k][0].getPoint1().getY() -
+                this.sortedVertices[i].getY()
+            );
+
+            let crossProduct = p5.Vector.cross(b1, b2);
+            if (crossProduct <= 0) {
+              toRemove.add(this.treeOfEdges[k]);
+            }
+          }
+        }
+
+        for (let l = 0; l < toRemove.length; l += 1) {
+          for (let m = 0; m < this.treeOfEdges.length; m += 1) {
+            if (this.treeOfEdges[m] === toRemove[l]) {
+              this.treeOfEdges.splice(m, 1);
+              break;
+            }
+          }
+        }
+
+        let v1 = createVector(
+          this.sortedVertices[i].getX() - this.getX(),
+          this.sortedVertices[i].getY() - this.getY()
+        );
+        let v2 = createVector(
+          this.sortedVertices[i].getPointPrev().getX() -
+            this.sortedVertices[i].getX(),
+          this.sortedVertices[i].getPointPrev().getY() -
+            this.sortedVertices[i].getY()
+        );
+        let crossProduct = p5.Vector.cross(v1, v2);
+        if (crossProduct > 0) {
+          this.treeOfEdges.add(
+            new Line(
+              this.sortedVertices[i].getX(),
+              this.sortedVertices[i].getY(),
+              this.sortedVertices[i].getPointPrev().getX(),
+              this.sortedVertices[i].getPointPrev().getY()
+            )
+          );
+        }
+
+        v1 = createVector(
+          this.sortedVertices[i].getX() - this.getX(),
+          this.sortedVertices[i].getY() - this.getY()
+        );
+        v2 = createVector(
+          this.sortedVertices[i].getPointNext().getX() -
+            this.sortedVertices[i].getX(),
+          this.sortedVertices[i].getPointNext().getY() -
+            this.sortedVertices[i].getY()
+        );
+        crossProduct = p5.Vector.cross(v1, v2);
+        if (crossProduct > 0) {
+          this.treeOfEdges.add(
+            new Line(
+              this.sortedVertices[i].getX(),
+              this.sortedVertices[i].getY(),
+              this.sortedVertices[i].getPointNext().getX(),
+              this.sortedVertices[i].getPointNext().getY()
+            )
+          );
+        }
+
+        this.sortTreeOfEdgesByDistance();
+      }
     }
   }
 
-  visible(w_i) {
+  visible(w_i, index) {
     let visibleToSecurityGuard = true;
     for (let j = 0; j < w_i.getParentShape().getLineArray().length; j += 1) {
       if (
@@ -609,14 +744,72 @@ class SecurityGuard {
     }
 
     if (visibleToSecurityGuard === true) {
-      this.isovistVertices.add(w_i);
-
-      push();
-      stroke("black");
-      strokeWeight(15);
-      point(w_i.getX(), w_i.getY());
-      pop();
+      // push();
+      // stroke("black");
+      // strokeWeight(15);
+      // point(w_i.getX(), w_i.getY());
+      // pop();
+      return this.line3(w_i, index);
+    } else {
+      return false;
     }
+  }
+
+  line3(w_i, index) {
+    if (index === 0 || this.line3Helper(w_i, index) !== 0) {
+      // if cross product is 0, then its not on the segment
+      if (
+        this.treeOfEdges.length !== 0 &&
+        checkIfIntersect(
+          this.treeOfEdges[0][0].getPoint1(),
+          this.treeOfEdges[0][0].getPoint2(),
+          new Point(this.getX(), this.getY(), null),
+          new Point(w_i.getX(), w_i.getY(), null)
+        ) === true &&
+        checkIfTwoLinesIntersectOnEndPoints(this.treeOfEdges[0][0], new Line(this.getX(), this.getY(), w_i.getX(), w_i.getY())) === false
+      ) {
+        return false;
+      } else {
+        return true;
+      }
+    } else {
+      if (this.visible(this.sortVertices[index - 1]) === false) {
+        return false;
+      } else {
+        console.log("gdr");
+        theLine = new Line(
+          w_i.getX(),
+          w_i.getY(),
+          this.sortVertices[index - 1].getX(),
+          this.sortVertices[index - 1].getY()
+        );
+
+        for (let j = 0; j < this.treeOfEdges.length; j += 1) {
+          if (
+            checkIfIntersect(
+              theLine.getPoint1(),
+              theLine.getPoint2(),
+              this.treeOfEdges[j][0].getPoint1(),
+              this.treeOfEdges[j][0].getPoint2()
+            )
+          ) {
+            return false;
+          }
+        }
+        return true;
+      }
+    }
+  }
+
+  line3Helper(w_i, index) {
+    let previous_w_i = this.sortedVertices[index - 1];
+    let v1 = createVector(w_i.getX() - this.getX(), w_i.getY() - this.getY());
+    let v2 = createVector(
+      previous_w_i.getX() - this.getX(),
+      previous_w_i.getY() - this.getY()
+    );
+    let crossProduct = p5.Vector.cross(v1, v2);
+    return crossProduct;
   }
 
   addAllVertices() {
@@ -750,5 +943,9 @@ class SecurityGuard {
 
   getName() {
     return this.name;
+  }
+
+  getSortedVertices() {
+    return this.sortedVertices;
   }
 }
