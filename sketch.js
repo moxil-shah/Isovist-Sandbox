@@ -52,7 +52,7 @@ function SecurityGuardInput() {
   if (SecurityGuardNames.length !== 0) {
     guard = new SecurityGuard(77.5, 200, SecurityGuardNames.pop());
     for (let i = 0; i < allVertices.length; i += 1) {
-      allVertices[i].setSecurityGuardAngle(guard);
+      allVertices[i].setSecurityGuardAngle(guard, 0);
       allVertices[i].setExtendo(guard);
     }
     guard.addAllVertices();
@@ -100,7 +100,7 @@ function polygon(x, y, radius, npoints) {
 
   for (let i = 0; i < guardArray.length; i += 1) {
     for (let j = 0; j < allVertices.length; j += 1) {
-      allVertices[j].setSecurityGuardAngle(guardArray[i]);
+      allVertices[j].setSecurityGuardAngle(guardArray[i], 0);
       allVertices[j].setExtendo(guardArray[i]);
     }
     guardArray[i].addAllVertices();
@@ -137,15 +137,15 @@ function renderAllSecurityGuards() {
       pop();
     }
     guardArray[i].sortIsovistVertices();
-    fill(255, 0, 0, 95);
-    beginShape();
-    for (let k = 0; k < guardArray[i].orderedIsovistVertices.length; k += 1) {
-      vertex(
-        guardArray[i].orderedIsovistVertices[k].getX(),
-        guardArray[i].orderedIsovistVertices[k].getY()
-      );
-    }
-    endShape(CLOSE);
+    // fill(255, 0, 0, 95);
+    // beginShape();
+    // for (let k = 0; k < guardArray[i].orderedIsovistVertices.length; k += 1) {
+    //   vertex(
+    //     guardArray[i].orderedIsovistVertices[k].getX(),
+    //     guardArray[i].orderedIsovistVertices[k].getY()
+    //   );
+    // }
+    // endShape(CLOSE);
     guardArray[i].drawLine();
     pop();
   }
@@ -281,7 +281,7 @@ function dragPoint() {
           for (let k = 0; k < allVertices.length; k += 1) {
             allVertices[k].setExtendo(guardArray[j]);
           }
-          allVertices[i].setSecurityGuardAngle(guardArray[j]);
+          allVertices[i].setSecurityGuardAngle(guardArray[j], 0);
         }
         break;
       }
@@ -300,7 +300,7 @@ function dragSecurityGuard() {
     securityGuardClicked = false;
 
     for (let i = 0; i < allVertices.length; i += 1) {
-      allVertices[i].setSecurityGuardAngle(guardArray[guard_i]);
+      allVertices[i].setSecurityGuardAngle(guardArray[guard_i], 0);
       allVertices[i].setExtendo(guardArray[guard_i]);
     }
     guardArray[guard_i].sortVertices();
@@ -344,7 +344,7 @@ function dragShape() {
 
     for (let i = 0; i < allVertices.length; i += 1) {
       for (let j = 0; j < guardArray.length; j += 1) {
-        allVertices[i].setSecurityGuardAngle(guardArray[j]);
+        allVertices[i].setSecurityGuardAngle(guardArray[j], 0);
         allVertices[i].setExtendo(guardArray[j]);
       }
     }
@@ -533,7 +533,15 @@ class Point {
     this.extendo = new Map();
   }
 
-  setSecurityGuardAngle(guard) {
+  setSecurityGuardAngle(guard, adjustment) {
+    let adj = 0;
+    if (adjustment === "left") {
+      adj = 0;
+    } else if (adjustment === "right") {
+      adj = 0;
+    } else {
+      adj = 0;
+    }
     let a = this.x - guard.getX();
     let o = -this.y + guard.getY();
     let angle = Math.atan2(o, a);
@@ -542,7 +550,7 @@ class Point {
       angle += TWO_PI;
     }
 
-    this.secuirtyGuardMap.set(guard.getName(), angle);
+    this.secuirtyGuardMap.set(guard.getName(), angle + adj);
   }
 
   setExtendo(guard) {
@@ -569,13 +577,12 @@ class Point {
     let crossProduct1 = p5.Vector.cross(guardToPointV, v1).dot(helperVector);
     let crossProduct2 = p5.Vector.cross(guardToPointV, v2).dot(helperVector);
 
-    if (
-      (crossProduct1 > 0 && crossProduct2 > 0) ||
-      (crossProduct1 < 0 && crossProduct2 < 0)
-    ) {
-      this.extendo.set(guard.getName(), true);
+    if (crossProduct1 > 0 && crossProduct2 > 0) {
+      this.extendo.set(guard.getName(), "left");
+    } else if (crossProduct1 < 0 && crossProduct2 < 0) {
+      this.extendo.set(guard.getName(), "right");
     } else {
-      this.extendo.set(guard.getName(), false);
+      this.extendo.set(guard.getName(), "nope");
     }
   }
 
@@ -646,7 +653,6 @@ class SecurityGuard {
     this.orderedIsovistVertices = [];
     this.isovistVertices = new Set();
   }
-
 
   visibleVertices() {
     let helperVector = createVector(1, 1, 1);
@@ -821,32 +827,36 @@ class SecurityGuard {
         if (
           shapeArray[0].getVertexArray().includes(this.sortedVertices[i]) ===
             false &&
-          this.sortedVertices[i].getExtendoForSecurityGuard(this.name) === true
+          this.sortedVertices[i].getExtendoForSecurityGuard(this.name) !==
+            "nope"
         ) {
           anotherhelper += 1;
 
-          this.considerExtendoVertices(this.sortedVertices[i]);
-          if (anotherhelper === 3) {
-            for (let k = 0; k < this.treeOfEdges.length; k += 1) {
-              push();
-              stroke("red");
-              strokeWeight(15);
+          this.considerExtendoVertices(
+            this.sortedVertices[i],
+            this.sortedVertices[i].getExtendoForSecurityGuard(this.name)
+          );
+          // if (anotherhelper === -1) {
+          //   for (let k = 0; k < this.treeOfEdges.length; k += 1) {
+          //     push();
+          //     stroke("red");
+          //     strokeWeight(15);
 
-              line(
-                this.treeOfEdges[k][0].getPoint1().getX(),
-                this.treeOfEdges[k][0].getPoint1().getY(),
-                this.treeOfEdges[k][0].getPoint2().getX(),
-                this.treeOfEdges[k][0].getPoint2().getY()
-              );
-              pop();
-            }
-          }
+          //     line(
+          //       this.treeOfEdges[k][0].getPoint1().getX(),
+          //       this.treeOfEdges[k][0].getPoint1().getY(),
+          //       this.treeOfEdges[k][0].getPoint2().getX(),
+          //       this.treeOfEdges[k][0].getPoint2().getY()
+          //     );
+          //     pop();
+          //   }
+          // }
         }
       }
     }
   }
 
-  considerExtendoVertices(w_i) {
+  considerExtendoVertices(w_i, adjustment) {
     let sclar = 999;
     let temparr = [];
     let p2 = new Point(w_i.getX(), w_i.getY(), null);
@@ -865,7 +875,11 @@ class SecurityGuard {
       p2.setY(w_i.getY() - Math.abs(slope) * sclar);
     }
 
+    push();
+    // strokeWeight(12);
+
     line(this.x, this.y, p2.getX(), p2.getY());
+    pop();
 
     for (let i = 0; i < sortedTreeOfEdges.length; i += 1) {
       if (
@@ -887,7 +901,12 @@ class SecurityGuard {
           sortedTreeOfEdges[i][0].getPoint2().getY()
         );
 
-        if (intersection[0] !== w_i.getX() && intersection[0] !== w_i.getY()) {
+        if (
+          Math.round(intersection[0] * 100) / 100 !==
+            Math.round(w_i.getX() * 100) / 100 &&
+          Math.round(intersection[1] * 100) / 100 !==
+            Math.round(w_i.getY() * 100) / 100
+        ) {
           let ap = new Point(intersection[0], intersection[1], null);
           temparr.push([
             sortedTreeOfEdges[i][0],
@@ -900,16 +919,19 @@ class SecurityGuard {
       }
     }
 
-    sortedTreeOfEdges.sort(function (a, b) {
+    temparr.sort(function (a, b) {
       return a[1] - b[1];
     });
 
-    if (sortedTreeOfEdges.length === 0) {
-      console.log("big error! 1");
+    if (temparr.length !== 0) {
+      // push();
+      // stroke("green");
+      // strokeWeight(45);
+      // point(temparr[0][2].getX(), temparr[0][2].getY());
+      // pop();
+      temparr[0][2].setSecurityGuardAngle(this, adjustment);
+      this.isovistVertices.add(temparr[0][2]);
     }
-
-    temparr[0][2].setSecurityGuardAngle(this);
-    this.isovistVertices.add(temparr[0][2]);
   }
 
   visible(w_i, index) {
