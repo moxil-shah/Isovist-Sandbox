@@ -53,6 +53,7 @@ function SecurityGuardInput() {
     guard = new SecurityGuard(77.5, 200, SecurityGuardNames.pop());
     for (let i = 0; i < allVertices.length; i += 1) {
       allVertices[i].setSecurityGuardAngle(guard, 0);
+      allVertices[i].setExtendedFrom(guard, null);
       allVertices[i].setExtendo(guard);
     }
     guard.addAllVertices();
@@ -101,6 +102,7 @@ function polygon(x, y, radius, npoints) {
   for (let i = 0; i < guardArray.length; i += 1) {
     for (let j = 0; j < allVertices.length; j += 1) {
       allVertices[j].setSecurityGuardAngle(guardArray[i], 0);
+      allVertices[i].setExtendedFrom(guardArray[i], null);
       allVertices[j].setExtendo(guardArray[i]);
     }
     guardArray[i].addAllVertices();
@@ -133,19 +135,69 @@ function renderAllSecurityGuards() {
       push();
       strokeWeight(15);
       stroke("blue");
-      point(key.getX(), key.getY());
+      // point(key.getX(), key.getY());
       pop();
     }
     guardArray[i].sortIsovistVertices();
-    // fill(255, 0, 0, 95);
-    // beginShape();
-    // for (let k = 0; k < guardArray[i].orderedIsovistVertices.length; k += 1) {
-    //   vertex(
-    //     guardArray[i].orderedIsovistVertices[k].getX(),
-    //     guardArray[i].orderedIsovistVertices[k].getY()
-    //   );
-    // }
-    // endShape(CLOSE);
+    fill(255, 0, 0, 95);
+    beginShape();
+    for (let k = 0; k < guardArray[i].orderedIsovistVertices.length; k += 1) {
+      if (
+        guardArray[i].orderedIsovistVertices[k].getExtendFromForSecurityGuard(
+          guardArray[i].getName()
+        ) === null
+      ) {
+        vertex(
+          guardArray[i].orderedIsovistVertices[k].getX(),
+          guardArray[i].orderedIsovistVertices[k].getY()
+        );
+      } else if (
+        guardArray[i].orderedIsovistVertices[k].getExtendFromForSecurityGuard(
+          guardArray[i].getName()
+        ) === undefined
+      ) {
+        console.log("Big error 3");
+      } else if (
+        guardArray[i].orderedIsovistVertices[k]
+          .getExtendFromForSecurityGuard(guardArray[i].getName())
+          .getExtendoForSecurityGuard(guardArray[i].getName()) === "left"
+      ) {
+        vertex(
+          guardArray[i].orderedIsovistVertices[k].getX(),
+          guardArray[i].orderedIsovistVertices[k].getY()
+        );
+
+        vertex(
+          guardArray[i].orderedIsovistVertices[k]
+            .getExtendFromForSecurityGuard(guardArray[i].getName())
+            .getX(),
+          guardArray[i].orderedIsovistVertices[k]
+            .getExtendFromForSecurityGuard(guardArray[i].getName())
+            .getY()
+        );
+      } else if (
+        guardArray[i].orderedIsovistVertices[k]
+          .getExtendFromForSecurityGuard(guardArray[i].getName())
+          .getExtendoForSecurityGuard(guardArray[i].getName()) === "right"
+      ) {
+        vertex(
+          guardArray[i].orderedIsovistVertices[k]
+            .getExtendFromForSecurityGuard(guardArray[i].getName())
+            .getX(),
+          guardArray[i].orderedIsovistVertices[k]
+            .getExtendFromForSecurityGuard(guardArray[i].getName())
+            .getY()
+        );
+
+        vertex(
+          guardArray[i].orderedIsovistVertices[k].getX(),
+          guardArray[i].orderedIsovistVertices[k].getY()
+        );
+      } else {
+        console.log("big error");
+      }
+    }
+    endShape(CLOSE);
     guardArray[i].drawLine();
     pop();
   }
@@ -282,6 +334,8 @@ function dragPoint() {
             allVertices[k].setExtendo(guardArray[j]);
           }
           allVertices[i].setSecurityGuardAngle(guardArray[j], 0);
+          allVertices[i].setExtendedFrom(guardArray[j], null);
+          allVertices[j].setExtendo(guardArray[j]);
         }
         break;
       }
@@ -301,6 +355,7 @@ function dragSecurityGuard() {
 
     for (let i = 0; i < allVertices.length; i += 1) {
       allVertices[i].setSecurityGuardAngle(guardArray[guard_i], 0);
+      allVertices[i].setExtendedFrom(guardArray[guard_i], null);
       allVertices[i].setExtendo(guardArray[guard_i]);
     }
     guardArray[guard_i].sortVertices();
@@ -345,6 +400,7 @@ function dragShape() {
     for (let i = 0; i < allVertices.length; i += 1) {
       for (let j = 0; j < guardArray.length; j += 1) {
         allVertices[i].setSecurityGuardAngle(guardArray[j], 0);
+        allVertices[i].setExtendedFrom(guardArray[j], null);
         allVertices[i].setExtendo(guardArray[j]);
       }
     }
@@ -504,12 +560,12 @@ class Line {
   }
 
   drawLine() {
-    line(
-      this.Point1.getX(),
-      this.Point1.getY(),
-      this.Point2.getX(),
-      this.Point2.getY()
-    );
+    // line(
+    //   this.Point1.getX(),
+    //   this.Point1.getY(),
+    //   this.Point2.getX(),
+    //   this.Point2.getY()
+    // );
   }
 
   closestAngleVertex(sortedVertices, i) {
@@ -531,6 +587,11 @@ class Point {
     this.parentShape = parentShape;
     this.secuirtyGuardMap = new Map();
     this.extendo = new Map();
+    this.extendedFrom = new Map();
+  }
+
+  setExtendedFrom(guard, aPoint) {
+    this.extendedFrom.set(guard.getName(), aPoint);
   }
 
   setSecurityGuardAngle(guard, adjustment) {
@@ -624,6 +685,10 @@ class Point {
 
   getSecurityGuardMap() {
     return this.secuirtyGuardMap;
+  }
+
+  getExtendFromForSecurityGuard(guard) {
+    return this.extendedFrom.get(guard);
   }
 
   getAngleForSecurityGuard(guard) {
@@ -878,7 +943,7 @@ class SecurityGuard {
     push();
     // strokeWeight(12);
 
-    line(this.x, this.y, p2.getX(), p2.getY());
+    // line(this.x, this.y, p2.getX(), p2.getY());
     pop();
 
     for (let i = 0; i < sortedTreeOfEdges.length; i += 1) {
@@ -930,11 +995,16 @@ class SecurityGuard {
       // point(temparr[0][2].getX(), temparr[0][2].getY());
       // pop();
       temparr[0][2].setSecurityGuardAngle(this, adjustment);
+      temparr[0][2].setExtendedFrom(this, w_i);
       this.isovistVertices.add(temparr[0][2]);
+      this.isovistVertices.delete(w_i);
     }
   }
 
   visible(w_i, index) {
+    if (w_i === undefined) {
+      return false;
+    }
     let visibleToSecurityGuard = true;
     for (let j = 0; j < w_i.getParentShape().getLineArray().length; j += 1) {
       if (
