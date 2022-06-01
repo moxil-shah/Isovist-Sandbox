@@ -135,13 +135,21 @@ function renderAllSecurityGuards() {
       push();
       strokeWeight(15);
       stroke("blue");
-      // point(key.getX(), key.getY());
+      point(key.getX(), key.getY());
       pop();
     }
     guardArray[i].sortIsovistVertices();
     fill(255, 0, 0, 95);
     beginShape();
     for (let k = 0; k < guardArray[i].orderedIsovistVertices.length; k += 1) {
+      if (k === 2) {
+        push();
+        //strokeWeight(23);
+        //point(guardArray[i].orderedIsovistVertices[k].getX(), guardArray[i].orderedIsovistVertices[k].getY())
+
+        pop();
+      }
+
       if (
         guardArray[i].orderedIsovistVertices[k].getExtendFromForSecurityGuard(
           guardArray[i].getName()
@@ -198,7 +206,6 @@ function renderAllSecurityGuards() {
       }
     }
     endShape(CLOSE);
-    guardArray[i].drawLine();
     pop();
   }
 }
@@ -560,12 +567,12 @@ class Line {
   }
 
   drawLine() {
-    // line(
-    //   this.Point1.getX(),
-    //   this.Point1.getY(),
-    //   this.Point2.getX(),
-    //   this.Point2.getY()
-    // );
+    line(
+      this.Point1.getX(),
+      this.Point1.getY(),
+      this.Point2.getX(),
+      this.Point2.getY()
+    );
   }
 
   closestAngleVertex(sortedVertices, i) {
@@ -726,28 +733,16 @@ class SecurityGuard {
     this.initalIntersect();
     anotherhelper = 0;
     for (let i = 0; i < this.sortedVertices.length; i += 1) {
-      let toRemove = [];
-      // anotherhelper += 1;
-      // if (i === 1564564564) {
-      //   for (let k = 0; k < this.treeOfEdges.length; k += 1) {
-      //     push();
-      //     stroke("red");
-      //     strokeWeight(15);
+      if (i === 2) {
+        push();
+        strokeWeight(23);
+        point(this.sortedVertices[i].getX(), this.sortedVertices[i].getY());
 
-      //     line(
-      //       this.treeOfEdges[k][0].getPoint1().getX(),
-      //       this.treeOfEdges[k][0].getPoint1().getY(),
-      //       this.treeOfEdges[k][0].getPoint2().getX(),
-      //       this.treeOfEdges[k][0].getPoint2().getY()
-      //     );
-      //     stroke("green");
-      //     point(
-      //       this.sortedVertices[i].getX() - 23,
-      //       this.sortedVertices[i].getY()
-      //     );
-      //     pop();
-      //   }
-      // }
+        pop();
+      }
+
+      let toRemove = [];
+      anotherhelper += 1;
 
       for (let k = 0; k < this.treeOfEdges.length; k += 1) {
         // console.log(this.treeOfEdges[k][0]);
@@ -886,7 +881,35 @@ class SecurityGuard {
       }
 
       this.sortTreeOfEdgesByDistance();
+
+      if (i === 2) {
+        for (let k = 0; k < this.treeOfEdges.length; k += 1) {
+          push();
+          stroke("red");
+          strokeWeight(15);
+
+          line(
+            this.treeOfEdges[k][0].getPoint1().getX(),
+            this.treeOfEdges[k][0].getPoint1().getY(),
+            this.treeOfEdges[k][0].getPoint2().getX(),
+            this.treeOfEdges[k][0].getPoint2().getY()
+          );
+          stroke("green");
+          point(
+            this.sortedVertices[i].getX() - 23,
+            this.sortedVertices[i].getY()
+          );
+          pop();
+        }
+
+        console.log(i, this.visible(this.sortedVertices[i], i));
+      }
+
       if (this.visible(this.sortedVertices[i], i) === true) {
+        if (i === 2) {
+          console.log("in here");
+        }
+
         this.isovistVertices.add(this.sortedVertices[i]);
 
         if (
@@ -1005,7 +1028,7 @@ class SecurityGuard {
     if (w_i === undefined) {
       return false;
     }
-    let visibleToSecurityGuard = true;
+    let visibleToSecurityGuard;
     for (let j = 0; j < w_i.getParentShape().getLineArray().length; j += 1) {
       if (
         checkIfIntersect(
@@ -1051,6 +1074,10 @@ class SecurityGuard {
     }
 
     if (visibleToSecurityGuard === true) {
+      if (index === 2) {
+        console.log(index, "true");
+      }
+
       return this.line3(w_i, index);
     } else {
       return false;
@@ -1076,6 +1103,22 @@ class SecurityGuard {
       ) {
         return false;
       } else {
+
+        if (index === 2)
+        {
+          push();
+          stroke("green");
+          strokeWeight(15);
+
+          line(
+            this.treeOfEdges[0][0].getPoint1().getX(),
+            this.treeOfEdges[0][0].getPoint1().getY(),
+            this.treeOfEdges[0][0].getPoint2().getX(),
+            this.treeOfEdges[0][0].getPoint2().getY()
+          );
+
+          pop();
+        }
         return true;
       }
     } else {
@@ -1249,10 +1292,6 @@ class SecurityGuard {
 
   getLine() {
     return this.line;
-  }
-
-  getLineAngle() {
-    return this.lineAngle;
   }
 
   getName() {
