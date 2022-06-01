@@ -132,11 +132,11 @@ function renderAllSecurityGuards() {
     guardArray[i].orderedIsovistVertices = [];
     for (let key of guardArray[i].isovistVertices) {
       guardArray[i].orderedIsovistVertices.push(key);
-      push();
-      strokeWeight(15);
-      stroke("blue");
-      point(key.getX(), key.getY());
-      pop();
+      // push();
+      // strokeWeight(15);
+      // stroke("blue");
+      // point(key.getX(), key.getY());
+      // pop();
     }
     guardArray[i].sortIsovistVertices();
     fill(255, 0, 0, 95);
@@ -490,6 +490,23 @@ function checkIfTwoLinesIntersectOnEndPoints(line1, line2) {
   );
 }
 
+function sqr(x) {
+  return x * x;
+}
+function dist2(v, w) {
+  return sqr(v.x - w.x) + sqr(v.y - w.y);
+}
+function distToSegmentSquared(p, v, w) {
+  var l2 = dist2(v, w);
+  if (l2 == 0) return dist2(p, v);
+  var t = ((p.x - v.x) * (w.x - v.x) + (p.y - v.y) * (w.y - v.y)) / l2;
+  t = Math.max(0, Math.min(1, t));
+  return dist2(p, { x: v.x + t * (w.x - v.x), y: v.y + t * (w.y - v.y) });
+}
+function distToSegment(p, v, w) {
+  return Math.sqrt(distToSegmentSquared(p, v, w));
+}
+
 class Shape {
   constructor(nPoints, color) {
     this.id = Date.now();
@@ -726,6 +743,21 @@ class SecurityGuard {
     this.isovistVertices = new Set();
   }
 
+  dstCalc(aline, apoint) {
+    let p = new Point(apoint.getX(), -apoint.getY(), null);
+    let v = new Point(
+      aline.getPoint1().getX(),
+      -aline.getPoint1().getY(),
+      null
+    );
+    let w = new Point(
+      aline.getPoint2().getX(),
+      -aline.getPoint2().getY(),
+      null
+    );
+    return distToSegment(p, v, w);
+  }
+
   visibleVertices() {
     let helperVector = createVector(1, 1, 1);
     this.isovistVertices = new Set();
@@ -733,7 +765,7 @@ class SecurityGuard {
     this.initalIntersect();
     anotherhelper = 0;
     for (let i = 0; i < this.sortedVertices.length; i += 1) {
-      if (i === 2) {
+      if (i === -1) {
         push();
         strokeWeight(23);
         point(this.sortedVertices[i].getX(), this.sortedVertices[i].getY());
@@ -839,15 +871,19 @@ class SecurityGuard {
       let crossProduct = p5.Vector.cross(v1, v2).dot(helperVector);
 
       if (crossProduct > 0) {
+        let dist = this.dstCalc(
+          new Line(
+            this.sortedVertices[i],
+            this.sortedVertices[i].getPointPrev()
+          ),
+          this
+        );
         this.treeOfEdges.push([
           new Line(
             this.sortedVertices[i],
             this.sortedVertices[i].getPointPrev()
           ),
-          Math.sqrt(
-            (this.x - this.sortedVertices[i].getX()) ** 2 +
-              (this.y - this.sortedVertices[i].getY()) ** 2
-          ),
+          dist,
         ]);
       }
 
@@ -868,42 +904,46 @@ class SecurityGuard {
       crossProduct = p5.Vector.cross(v1, v2).dot(helperVector);
 
       if (crossProduct > 0) {
+        let dist = this.dstCalc(
+          new Line(
+            this.sortedVertices[i],
+            this.sortedVertices[i].getPointNext()
+          ),
+          this
+        );
         this.treeOfEdges.push([
           new Line(
             this.sortedVertices[i],
             this.sortedVertices[i].getPointNext()
           ),
-          Math.sqrt(
-            (this.x - this.sortedVertices[i].getX()) ** 2 +
-              (this.y - this.sortedVertices[i].getY()) ** 2
-          ),
+          dist,
         ]);
       }
 
       this.sortTreeOfEdgesByDistance();
 
-      if (i === 2) {
-        for (let k = 0; k < this.treeOfEdges.length; k += 1) {
-          push();
-          stroke("red");
-          strokeWeight(15);
+      // if (i === 0) {
+      //   for (let k = 0; k < this.treeOfEdges.length; k += 1) {
+      //     push();
+      //     stroke("red");
+      //     strokeWeight(15);
 
-          line(
-            this.treeOfEdges[k][0].getPoint1().getX(),
-            this.treeOfEdges[k][0].getPoint1().getY(),
-            this.treeOfEdges[k][0].getPoint2().getX(),
-            this.treeOfEdges[k][0].getPoint2().getY()
-          );
-          stroke("green");
-          point(
-            this.sortedVertices[i].getX() - 23,
-            this.sortedVertices[i].getY()
-          );
-          pop();
-        }
+      //     line(
+      //       this.treeOfEdges[k][0].getPoint1().getX(),
+      //       this.treeOfEdges[k][0].getPoint1().getY(),
+      //       this.treeOfEdges[k][0].getPoint2().getX(),
+      //       this.treeOfEdges[k][0].getPoint2().getY()
+      //     );
+      //     stroke("green");
+      //     point(
+      //       this.sortedVertices[i].getX() - 23,
+      //       this.sortedVertices[i].getY()
+      //     );
+      //     pop();
+      //   }
 
-        console.log(i, this.visible(this.sortedVertices[i], i));
-      }
+      //   console.log(i, this.visible(this.sortedVertices[i], i));
+      // }
 
       if (this.visible(this.sortedVertices[i], i) === true) {
         if (i === 2) {
@@ -1084,10 +1124,28 @@ class SecurityGuard {
     }
   }
 
-  line3(w_i, index) {
-    if (index === 0 || this.line3Helper(w_i, index) !== 0) {
-      // if cross product is 0, then its not on the segment
+  addBack(containerEdge) {
+    if (containerEdge !== null) {
+      this.treeOfEdges.unshift(containerEdge);
+    }
+  }
 
+  line3(w_i, index) {
+    let excluded = [0, width, height];
+    let containerEdge = null;
+    // if cross product is 0, then its not on the segment
+    if (this.treeOfEdges.length !== 0) {
+      if (
+        excluded.includes(this.treeOfEdges[0][0].getPoint1().getX()) &&
+        excluded.includes(this.treeOfEdges[0][0].getPoint1().getY()) &&
+        excluded.includes(this.treeOfEdges[0][0].getPoint2().getX()) &&
+        excluded.includes(this.treeOfEdges[0][0].getPoint2().getY())
+      ) {
+        containerEdge = this.treeOfEdges.shift();
+      }
+    }
+
+    if (index === 0 || this.line3Helper(w_i, index) !== 0) {
       if (
         this.treeOfEdges.length !== 0 &&
         checkIfIntersect(
@@ -1098,14 +1156,16 @@ class SecurityGuard {
         ) === true &&
         checkIfTwoLinesIntersectOnEndPoints(
           this.treeOfEdges[0][0],
-          new Line(new Point(this.getX(), this.getY(), null), w_i)
+          new Line(new Point(this.getX(), this.getY(), null), w_i),
+          index
         ) === false
       ) {
+        this.addBack(containerEdge);
         return false;
       } else {
+        if (index === -1 && this.treeOfEdges.length !== 0) {
+         
 
-        if (index === 2)
-        {
           push();
           stroke("green");
           strokeWeight(15);
@@ -1119,10 +1179,12 @@ class SecurityGuard {
 
           pop();
         }
+        this.addBack(containerEdge);
         return true;
       }
     } else {
       if (this.visible(this.sortVertices[index - 1]) === false) {
+        this.addBack(containerEdge);
         return false;
       } else {
         theLine = new Line(w_i, this.sortVertices[index - 1]);
@@ -1136,9 +1198,11 @@ class SecurityGuard {
               this.treeOfEdges[j][0].getPoint2()
             )
           ) {
+            this.addBack(containerEdge);
             return false;
           }
         }
+        this.addBack(containerEdge);
         return true;
       }
     }
@@ -1260,6 +1324,24 @@ class SecurityGuard {
       }
     }
     this.sortTreeOfEdgesByDistance();
+
+    // if (true) {
+    //   for (let k = 0; k < this.treeOfEdges.length; k += 1) {
+    //     push();
+    //     stroke("red");
+    //     strokeWeight(15);
+
+    //     line(
+    //       this.treeOfEdges[k][0].getPoint1().getX(),
+    //       this.treeOfEdges[k][0].getPoint1().getY(),
+    //       this.treeOfEdges[k][0].getPoint2().getX(),
+    //       this.treeOfEdges[k][0].getPoint2().getY()
+    //     );
+
+    //     pop();
+    //   }
+
+    // }
   }
 
   setX(x) {
