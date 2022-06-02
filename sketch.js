@@ -102,9 +102,12 @@ function polygon(x, y, radius, npoints) {
   for (let i = 0; i < guardArray.length; i += 1) {
     for (let j = 0; j < allVertices.length; j += 1) {
       allVertices[j].setSecurityGuardAngle(guardArray[i], 0);
-      allVertices[i].setExtendedFrom(guardArray[i], null);
+      allVertices[j].setExtendedFrom(guardArray[i], null);
       allVertices[j].setExtendo(guardArray[i]);
     }
+  }
+
+  for (let i = 0; i < guardArray.length; i += 1) {
     guardArray[i].addAllVertices();
     guardArray[i].sortVertices();
   }
@@ -160,12 +163,6 @@ function renderAllSecurityGuards() {
           guardArray[i].orderedIsovistVertices[k].getY()
         );
       } else if (
-        guardArray[i].orderedIsovistVertices[k].getExtendFromForSecurityGuard(
-          guardArray[i].getName()
-        ) === undefined
-      ) {
-        console.log("Big error 3");
-      } else if (
         guardArray[i].orderedIsovistVertices[k]
           .getExtendFromForSecurityGuard(guardArray[i].getName())
           .getExtendoForSecurityGuard(guardArray[i].getName()) === "left"
@@ -201,8 +198,6 @@ function renderAllSecurityGuards() {
           guardArray[i].orderedIsovistVertices[k].getX(),
           guardArray[i].orderedIsovistVertices[k].getY()
         );
-      } else {
-        console.log("big error");
       }
     }
     endShape(CLOSE);
@@ -777,7 +772,7 @@ class SecurityGuard {
       anotherhelper += 1;
 
       for (let k = 0; k < this.treeOfEdges.length; k += 1) {
-        // console.log(this.treeOfEdges[k][0]);
+        
         if (
           this.treeOfEdges[k][0].getPoint1().getX() ===
             this.sortedVertices[i].getX() &&
@@ -802,7 +797,7 @@ class SecurityGuard {
           );
 
           let crossProduct = p5.Vector.cross(a1, a2).dot(helperVector);
-          if (crossProduct <= 0) {
+          if (crossProduct < 0) {
             toRemove.push(this.treeOfEdges[k]);
           }
         } else if (
@@ -829,30 +824,28 @@ class SecurityGuard {
           );
 
           let crossProduct = p5.Vector.cross(b1, b2).dot(helperVector);
-          if (crossProduct <= 0) {
+          if (crossProduct < 0) {
             toRemove.push(this.treeOfEdges[k]);
           }
         }
       }
 
-      //console.log(this.treeOfEdges.length);
+    
 
       for (let y = 0; y < toRemove.length; y += 1) {
         for (let z = 0; z < this.treeOfEdges.length; z += 1) {
           if (this.treeOfEdges[z][0] === toRemove[y]) {
-            this.toRemove[y] = this.treeOfEdges[z];
+            toRemove[y] = this.treeOfEdges[z];
             break;
           }
         }
       }
-      //  console.log(this.treeOfEdges.length, "before");
+      
       this.treeOfEdges = this.treeOfEdges.filter(
         (el) => !toRemove.includes(el)
       );
 
-      // console.log(this.treeOfEdges.length, "after", toRemove.length);
 
-      //console.log(this.treeOfEdges.length, "after");
 
       let v1 = createVector(
         this.sortedVertices[i].getX() - this.getX(),
@@ -870,7 +863,7 @@ class SecurityGuard {
       );
       let crossProduct = p5.Vector.cross(v1, v2).dot(helperVector);
 
-      if (crossProduct > 0) {
+      if (crossProduct >= 0) {
         let dist = this.dstCalc(
           new Line(
             this.sortedVertices[i],
@@ -903,7 +896,7 @@ class SecurityGuard {
       );
       crossProduct = p5.Vector.cross(v1, v2).dot(helperVector);
 
-      if (crossProduct > 0) {
+      if (crossProduct >= 0) {
         let dist = this.dstCalc(
           new Line(
             this.sortedVertices[i],
@@ -946,9 +939,7 @@ class SecurityGuard {
       // }
 
       if (this.visible(this.sortedVertices[i], i) === true) {
-        if (i === 2) {
-          console.log("in here");
-        }
+   
 
         this.isovistVertices.add(this.sortedVertices[i]);
 
@@ -1114,9 +1105,6 @@ class SecurityGuard {
     }
 
     if (visibleToSecurityGuard === true) {
-      if (index === 2) {
-        console.log(index, "true");
-      }
 
       return this.line3(w_i, index);
     } else {
@@ -1164,8 +1152,6 @@ class SecurityGuard {
         return false;
       } else {
         if (index === -1 && this.treeOfEdges.length !== 0) {
-         
-
           push();
           stroke("green");
           strokeWeight(15);
