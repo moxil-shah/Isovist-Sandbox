@@ -1,4 +1,6 @@
 // slight problem when inputting shape with 6 sides
+// I shorted the visible algo (got rid of checking if intecepts with parent shape)
+// fix the sclar to be more exact
 
 let shapeArray = []; // global array of all shapes made
 let guardArray = []; // global array of all security guards made
@@ -19,7 +21,10 @@ let point_j;
 let guard_i;
 
 function setup() {
-  createCanvas(720, 400);
+  createCanvas(
+    document.documentElement.clientWidth,
+    document.documentElement.clientHeight
+  );
   frameRate(30);
   polygon(null, null, null, 4);
 }
@@ -47,7 +52,7 @@ function SecurityGuardInput() {
   if (SecurityGuardNames.length !== 0) {
     guard = new SecurityGuard(77.5, 200, SecurityGuardNames.pop());
     for (let i = 0; i < allVertices.length; i += 1) {
-      allVertices[i].setSecurityGuardAngle(guard, 0);
+      allVertices[i].setSecurityGuardAngle(guard);
       allVertices[i].setExtendedFrom(guard, null);
       allVertices[i].setExtendo(guard);
     }
@@ -98,7 +103,7 @@ function polygon(x, y, radius, npoints) {
 
   for (let i = 0; i < allVertices.length; i += 1) {
     for (let j = 0; j < guardArray.length; j += 1) {
-      allVertices[i].setSecurityGuardAngle(guardArray[j], 0);
+      allVertices[i].setSecurityGuardAngle(guardArray[j]);
       allVertices[i].setExtendedFrom(guardArray[j], null);
       allVertices[i].setExtendo(guardArray[j]);
     }
@@ -311,7 +316,7 @@ function dragPoint() {
           for (let k = 0; k < allVertices.length; k += 1) {
             allVertices[k].setExtendo(guardArray[j]);
           }
-          allVertices[i].setSecurityGuardAngle(guardArray[j], 0);
+          allVertices[i].setSecurityGuardAngle(guardArray[j]);
           allVertices[i].setExtendedFrom(guardArray[j], null);
           allVertices[j].setExtendo(guardArray[j]);
         }
@@ -332,7 +337,7 @@ function dragSecurityGuard() {
     guardArray[guard_i].setY(mouseY);
 
     for (let i = 0; i < allVertices.length; i += 1) {
-      allVertices[i].setSecurityGuardAngle(guardArray[guard_i], 0);
+      allVertices[i].setSecurityGuardAngle(guardArray[guard_i]);
       allVertices[i].setExtendedFrom(guardArray[guard_i], null);
       allVertices[i].setExtendo(guardArray[guard_i]);
     }
@@ -378,7 +383,7 @@ function dragShape() {
 
     for (let i = 0; i < allVertices.length; i += 1) {
       for (let j = 0; j < guardArray.length; j += 1) {
-        allVertices[i].setSecurityGuardAngle(guardArray[j], 0);
+        allVertices[i].setSecurityGuardAngle(guardArray[j]);
         allVertices[i].setExtendedFrom(guardArray[j], null);
         allVertices[i].setExtendo(guardArray[j]);
       }
@@ -399,7 +404,7 @@ function findIntersection(x1, y1, x2, y2, x3, y3, x4, y4) {
   let py =
     ((x1 * y2 - y1 * x2) * (y3 - y4) - (y1 - y2) * (x3 * y4 - y3 * x4)) /
     ((x1 - x2) * (y3 - y4) - (y1 - y2) * (x3 - x4));
-  return [px, py];
+  return new Point(px, py, null);
 }
 
 function between(theThing, min, max) {
@@ -452,6 +457,13 @@ function checkIfIntersect(line1, line2) {
 
 function checkIfTwoPointsOverlap(p1, p2) {
   return p1.getX() === p2.getX() && p1.getY() === p2.getY();
+}
+
+function checkIfTwoPointsOverlapRounded(p1, p2) {
+  return (
+    Math.round(p1.getX() * 100) / 100 === Math.round(p2.getX() * 100) / 100 &&
+    Math.round(p1.getY() * 100) / 100 === Math.round(p2.getY() * 100) / 100
+  );
 }
 
 function checkIfVertexIsEndPointOfALine(aVertex, aLine) {
@@ -580,15 +592,8 @@ class Point {
     this.extendedFrom.set(guard.getName(), aPoint);
   }
 
-  setSecurityGuardAngle(guard, adjustment) {
+  setSecurityGuardAngle(guard) {
     let adj = 0;
-    if (adjustment === "left") {
-      adj = 0;
-    } else if (adjustment === "right") {
-      adj = 0;
-    } else {
-      adj = 0;
-    }
     let a = this.x - guard.getX();
     let o = -this.y + guard.getY();
     let angle = Math.atan2(o, a);
@@ -838,21 +843,22 @@ class SecurityGuard {
             false &&
           this.sortedVertices[i].getExtendoForSecurityGuard(this) !== "nope"
         ) {
-          this.considerExtendoVertices(
-            this.sortedVertices[i],
-            this.sortedVertices[i].getExtendoForSecurityGuard(this)
-          );
+          this.considerExtendoVertices(this.sortedVertices[i]);
         }
       }
     }
   }
 
-  considerExtendoVertices(w_i, adjustment) {
-    let sclar = 999;
-    let temparr = [];
+  considerExtendoVertices(w_i) {
+    let sclar = 9999;
+    let possibleExtensions = [];
     let p2 = new Point(w_i.getX(), w_i.getY(), null);
     let sortedTreeOfEdges = this.treeOfEdges.slice();
     let slope = (p2.getY() - this.y) / (p2.getX() - this.x);
+
+    // if (true) {
+    //   console.log(slope);
+    // }
 
     if (this.x < w_i.getX()) {
       p2.setX(w_i.getX() + sclar);
@@ -866,11 +872,11 @@ class SecurityGuard {
       p2.setY(w_i.getY() - Math.abs(slope) * sclar);
     }
 
-    push();
+    // push();
+    // stroke("white");
     // strokeWeight(12);
-
     // line(this.x, this.y, p2.getX(), p2.getY());
-    pop();
+    // pop();
 
     for (let i = 0; i < sortedTreeOfEdges.length; i += 1) {
       if (
@@ -879,7 +885,7 @@ class SecurityGuard {
           sortedTreeOfEdges[i]
         )
       ) {
-        let intersection = findIntersection(
+        let intersectionPoint = findIntersection(
           this.x,
           this.y,
           p2.getX(),
@@ -890,95 +896,41 @@ class SecurityGuard {
           sortedTreeOfEdges[i].getPoint2().getY()
         );
 
-        if (
-          Math.round(intersection[0] * 100) / 100 !==
-            Math.round(w_i.getX() * 100) / 100 &&
-          Math.round(intersection[1] * 100) / 100 !==
-            Math.round(w_i.getY() * 100) / 100
-        ) {
-          let ap = new Point(intersection[0], intersection[1], null);
-          temparr.push([
-            sortedTreeOfEdges[i][0],
+        if (checkIfTwoPointsOverlapRounded(w_i, intersectionPoint) === false) {
+          possibleExtensions.push([
+            sortedTreeOfEdges[i],
             Math.sqrt(
-              (this.x - intersection[0]) ** 2 + (this.y - intersection[1]) ** 2
+              (this.x - intersectionPoint.getX()) ** 2 +
+                (this.y - intersectionPoint.getY()) ** 2
             ),
-            ap,
+            new Point(intersectionPoint.getX(), intersectionPoint.getY(), null),
           ]);
         }
       }
     }
 
-    temparr.sort(function (a, b) {
+    possibleExtensions.sort(function (a, b) {
       return a[1] - b[1];
     });
 
-    if (temparr.length !== 0) {
+    if (possibleExtensions.length !== 0) {
       // push();
       // stroke("green");
       // strokeWeight(45);
-      // point(temparr[0][2].getX(), temparr[0][2].getY());
+      // point(possibleExtensions[0][2].getX(), possibleExtensions[0][2].getY());
       // pop();
-      temparr[0][2].setSecurityGuardAngle(this, adjustment);
-      temparr[0][2].setExtendedFrom(this, w_i);
-      this.isovistVertices.add(temparr[0][2]);
+      possibleExtensions[0][2].setSecurityGuardAngle(this);
+      possibleExtensions[0][2].setExtendedFrom(this, w_i);
+      this.isovistVertices.add(possibleExtensions[0][2]);
       this.isovistVertices.delete(w_i);
     }
   }
 
   visible(w_i) {
+    return this.cheapline3(w_i);
     // Check if the line to the vertex intersects the vertex's parent shape.
     // If so, return false. Otherwise, continue the algorithm.
-    let visibleToSecurityGuard;
-    for (let i = 0; i < w_i.getParentShape().getLineArray().length; i += 1) {
-      if (
-        checkIfIntersect(
-          new Line(
-            new Point(this.x, this.y, null),
-            new Point(w_i.getX(), w_i.getY(), null)
-          ),
-          w_i.getParentShape().getLineArray()[i]
-        )
-      ) {
-        visibleToSecurityGuard = false;
-        let IntersectionPoint = findIntersection(
-          this.x,
-          this.y,
-          w_i.getX(),
-          w_i.getY(),
-          w_i.getParentShape().getLineArray()[i].getPoint1().getX(),
-          w_i.getParentShape().getLineArray()[i].getPoint1().getY(),
-          w_i.getParentShape().getLineArray()[i].getPoint2().getX(),
-          w_i.getParentShape().getLineArray()[i].getPoint2().getY()
-        );
-        for (
-          let j = 0;
-          j < w_i.getParentShape().getVertexArray().length;
-          j += 1
-        ) {
-          if (
-            Math.round(w_i.getParentShape().getVertexArray()[j].getX() * 100) /
-              100 ===
-              Math.round(IntersectionPoint[0] * 100) / 100 &&
-            Math.round(w_i.getParentShape().getVertexArray()[j].getY() * 100) /
-              100 ===
-              Math.round(IntersectionPoint[1] * 100) / 100
-          ) {
-            visibleToSecurityGuard = true;
-            break;
-          }
-        }
-      }
-
-      if (visibleToSecurityGuard === false) {
-        break;
-      }
-    }
-
-    if (visibleToSecurityGuard === true) {
-      return this.cheapline3(w_i);
-    } else {
-      return false;
-    }
+    // My reference said implement what I said above but I think there is no need
   }
 
   cheapline3(w_i) {
