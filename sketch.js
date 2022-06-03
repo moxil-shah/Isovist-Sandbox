@@ -1,5 +1,5 @@
-// slight problem when inputting shape with 6 sides
-// I shorted the visible algo (got rid of checking if intecepts with parent shape)
+
+// I shortened the visible algo (got rid of checking if intecepts with parent shape)
 // fix the sclar to be more exact
 
 let shapeArray = []; // global array of all shapes made
@@ -15,6 +15,7 @@ const SecurityGuardNames = [
 let pointClicked = false;
 let shapeClicked = false;
 let securityGuardClicked = false;
+let HEXAGON_ROUNDING_ERROR = 1e-15;
 let shape_i_for_shape_clicked;
 let shape_i;
 let point_j;
@@ -85,7 +86,7 @@ function polygon(x, y, radius, npoints) {
     }
   } else {
     newShape = new Shape(npoints, "white");
-    for (let i = 0; i < TWO_PI; i += angle) {
+    for (let i = 0; i < TWO_PI - HEXAGON_ROUNDING_ERROR; i += angle) {
       let sx = x + cos(i) * radius;
       let sy = y + sin(i) * radius;
       // console.log("original point", sx, sy);
@@ -856,9 +857,9 @@ class SecurityGuard {
     let sortedTreeOfEdges = this.treeOfEdges.slice();
     let slope = (p2.getY() - this.y) / (p2.getX() - this.x);
 
-    // if (true) {
-    //   console.log(slope);
-    // }
+    if (Math.abs(p2.getX() - this.x) === 0) {
+      console.log(Math.abs(p2.getX() - this.x));
+    }
 
     if (this.x < w_i.getX()) {
       p2.setX(w_i.getX() + sclar);
@@ -872,11 +873,11 @@ class SecurityGuard {
       p2.setY(w_i.getY() - Math.abs(slope) * sclar);
     }
 
-    // push();
-    // stroke("white");
-    // strokeWeight(12);
-    // line(this.x, this.y, p2.getX(), p2.getY());
-    // pop();
+    push();
+    stroke("white");
+    strokeWeight(12);
+    line(this.x, this.y, p2.getX(), p2.getY());
+    pop();
 
     for (let i = 0; i < sortedTreeOfEdges.length; i += 1) {
       if (
