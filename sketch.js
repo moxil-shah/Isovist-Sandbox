@@ -1,4 +1,3 @@
-
 // I shortened the visible algo (got rid of checking if intecepts with parent shape)
 // fix the sclar to be more exact
 
@@ -60,8 +59,6 @@ function SecurityGuardInput() {
     guard.addAllVertices();
     guard.sortVertices();
     guardArray.push(guard);
-  } else {
-    console.log("No more security guards available!");
   }
 }
 
@@ -122,9 +119,9 @@ function renderAllSecurityGuards() {
     guardArray[i].closestAngleVertex(i);
     guardArray[i].visibleVertices();
 
-    guardArray[i].orderedIsovistVertices = [];
+    guardArray[i].clearOrderedIsovistVertices();
     for (let key of guardArray[i].isovistVertices) {
-      guardArray[i].orderedIsovistVertices.push(key);
+      guardArray[i].getOrderedIsovistVertices().push(key);
     }
     guardArray[i].sortIsovistVertices();
     fill(
@@ -134,51 +131,61 @@ function renderAllSecurityGuards() {
       100
     );
     beginShape();
-    for (let k = 0; k < guardArray[i].orderedIsovistVertices.length; k += 1) {
+    for (
+      let k = 0;
+      k < guardArray[i].getOrderedIsovistVertices().length;
+      k += 1
+    ) {
       if (
-        guardArray[i].orderedIsovistVertices[k].getExtendFromForSecurityGuard(
-          guardArray[i]
-        ) === null
+        guardArray[i]
+          .getOrderedIsovistVertices()
+          [k].getExtendFromForSecurityGuard(guardArray[i]) === null
       ) {
         vertex(
-          guardArray[i].orderedIsovistVertices[k].getX(),
-          guardArray[i].orderedIsovistVertices[k].getY()
+          guardArray[i].getOrderedIsovistVertices()[k].getX(),
+          guardArray[i].getOrderedIsovistVertices()[k].getY()
         );
       } else if (
-        guardArray[i].orderedIsovistVertices[k]
-          .getExtendFromForSecurityGuard(guardArray[i])
+        guardArray[i]
+          .getOrderedIsovistVertices()
+          [k].getExtendFromForSecurityGuard(guardArray[i])
           .getExtendoForSecurityGuard(guardArray[i]) === "left"
       ) {
         vertex(
-          guardArray[i].orderedIsovistVertices[k].getX(),
-          guardArray[i].orderedIsovistVertices[k].getY()
+          guardArray[i].getOrderedIsovistVertices()[k].getX(),
+          guardArray[i].getOrderedIsovistVertices()[k].getY()
         );
 
         vertex(
-          guardArray[i].orderedIsovistVertices[k]
-            .getExtendFromForSecurityGuard(guardArray[i])
+          guardArray[i]
+            .getOrderedIsovistVertices()
+            [k].getExtendFromForSecurityGuard(guardArray[i])
             .getX(),
-          guardArray[i].orderedIsovistVertices[k]
-            .getExtendFromForSecurityGuard(guardArray[i])
+          guardArray[i]
+            .getOrderedIsovistVertices()
+            [k].getExtendFromForSecurityGuard(guardArray[i])
             .getY()
         );
       } else if (
-        guardArray[i].orderedIsovistVertices[k]
-          .getExtendFromForSecurityGuard(guardArray[i])
+        guardArray[i]
+          .getOrderedIsovistVertices()
+          [k].getExtendFromForSecurityGuard(guardArray[i])
           .getExtendoForSecurityGuard(guardArray[i]) === "right"
       ) {
         vertex(
-          guardArray[i].orderedIsovistVertices[k]
-            .getExtendFromForSecurityGuard(guardArray[i])
+          guardArray[i]
+            .getOrderedIsovistVertices()
+            [k].getExtendFromForSecurityGuard(guardArray[i])
             .getX(),
-          guardArray[i].orderedIsovistVertices[k]
-            .getExtendFromForSecurityGuard(guardArray[i])
+          guardArray[i]
+            .getOrderedIsovistVertices()
+            [k].getExtendFromForSecurityGuard(guardArray[i])
             .getY()
         );
 
         vertex(
-          guardArray[i].orderedIsovistVertices[k].getX(),
-          guardArray[i].orderedIsovistVertices[k].getY()
+          guardArray[i].getOrderedIsovistVertices()[k].getX(),
+          guardArray[i].getOrderedIsovistVertices()[k].getY()
         );
       }
     }
@@ -855,29 +862,27 @@ class SecurityGuard {
     let possibleExtensions = [];
     let p2 = new Point(w_i.getX(), w_i.getY(), null);
     let sortedTreeOfEdges = this.treeOfEdges.slice();
-    let slope = (p2.getY() - this.y) / (p2.getX() - this.x);
 
-    if (Math.abs(p2.getX() - this.x) === 0) {
-      console.log(Math.abs(p2.getX() - this.x));
-    }
-
-    if (this.x < w_i.getX()) {
-      p2.setX(w_i.getX() + sclar);
+    if (Math.abs(p2.getX() - this.x) !== 0) {
+      let slope = (p2.getY() - this.y) / (p2.getX() - this.x);
+      if (this.y < w_i.getY()) {
+        p2.setY(w_i.getY() + Math.abs(slope) * sclar);
+      } else {
+        p2.setY(w_i.getY() - Math.abs(slope) * sclar);
+      }
+      if (this.x < w_i.getX()) {
+        p2.setX(w_i.getX() + sclar);
+      } else {
+        p2.setX(w_i.getX() - sclar);
+      }
     } else {
-      p2.setX(w_i.getX() - sclar);
+      p2.setX(this.getX());
+      if (this.y < w_i.getY()) {
+        p2.setY(height);
+      } else {
+        p2.setY(0);
+      }
     }
-
-    if (this.y < w_i.getY()) {
-      p2.setY(w_i.getY() + Math.abs(slope) * sclar);
-    } else {
-      p2.setY(w_i.getY() - Math.abs(slope) * sclar);
-    }
-
-    push();
-    stroke("white");
-    strokeWeight(12);
-    line(this.x, this.y, p2.getX(), p2.getY());
-    pop();
 
     for (let i = 0; i < sortedTreeOfEdges.length; i += 1) {
       if (
@@ -915,11 +920,6 @@ class SecurityGuard {
     });
 
     if (possibleExtensions.length !== 0) {
-      // push();
-      // stroke("green");
-      // strokeWeight(45);
-      // point(possibleExtensions[0][2].getX(), possibleExtensions[0][2].getY());
-      // pop();
       possibleExtensions[0][2].setSecurityGuardAngle(this);
       possibleExtensions[0][2].setExtendedFrom(this, w_i);
       this.isovistVertices.add(possibleExtensions[0][2]);
@@ -1014,6 +1014,10 @@ class SecurityGuard {
     }
   }
 
+  clearOrderedIsovistVertices() {
+    this.orderedIsovistVertices = [];
+  }
+
   setX(x) {
     this.x = x;
   }
@@ -1034,7 +1038,7 @@ class SecurityGuard {
     return this.name;
   }
 
-  getSortedVertices() {
-    return this.sortedVertices;
+  getOrderedIsovistVertices() {
+    return this.orderedIsovistVertices;
   }
 }
