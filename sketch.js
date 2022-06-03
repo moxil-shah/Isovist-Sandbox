@@ -5,8 +5,6 @@ let shapeArray = []; // global array of all shapes made
 let guardArray = []; // global array of all security guards made
 let allVertices = []; // global array of all the vertices on the map
 const SecurityGuardNames = [
-  [255, 255, 0],
-  [255, 165, 0],
   [0, 0, 255],
   [0, 255, 0],
   [255, 0, 0],
@@ -18,22 +16,19 @@ let HEXAGON_ROUNDING_ERROR = 1e-15;
 let shape_i_for_shape_clicked;
 let shape_i;
 let point_j;
-let guard_i;
+let guard_i = -1;
 
 function setup() {
   createCanvas(
     document.documentElement.clientWidth,
     document.documentElement.clientHeight
   );
-  frameRate(30);
+  frameRate(120);
   polygon(null, null, null, 4);
 }
 
 function draw() {
   background(102);
-  checkIfClickSecurityGuard();
-  checkIfClickAVertex();
-  checkIfClickInsideShape();
   dragSecurityGuard();
   dragPoint();
   dragShape();
@@ -44,6 +39,7 @@ function draw() {
 // from the HTML form
 function sidesInput() {
   let nPoints = document.getElementById("name").value;
+  if (nPoints > 30) nPoints = 30;
   polygon(100, 100, 45, nPoints);
 }
 
@@ -97,8 +93,6 @@ function polygon(x, y, radius, npoints) {
   newShape.setLineArray();
   shapeArray.push(newShape);
 
-  if (newShape === null) console.log("Big Error 1.");
-
   for (let i = 0; i < allVertices.length; i += 1) {
     for (let j = 0; j < guardArray.length; j += 1) {
       allVertices[i].setSecurityGuardAngle(guardArray[j]);
@@ -115,21 +109,29 @@ function polygon(x, y, radius, npoints) {
 function renderAllSecurityGuards() {
   for (let i = 0; i < guardArray.length; i += 1) {
     guardArray[i].drawSecurityGuard();
-    push();
+  }
+
+  for (let i = 0; i < guardArray.length; i += 1) {
+    if (guard_i !== -1) i = guard_i;
+
     guardArray[i].closestAngleVertex(i);
     guardArray[i].visibleVertices();
-
     guardArray[i].clearOrderedIsovistVertices();
-    for (let key of guardArray[i].isovistVertices) {
+    for (let key of guardArray[i].getIsovistVertices()) {
       guardArray[i].getOrderedIsovistVertices().push(key);
     }
     guardArray[i].sortIsovistVertices();
-    fill(
-      guardArray[i].getName()[0],
-      guardArray[i].getName()[1],
-      guardArray[i].getName()[2],
-      100
-    );
+    push();
+    if (guard_i === i) {
+      fill(255, 233, 0, 200);
+    } else {
+      fill(
+        guardArray[i].getName()[0],
+        guardArray[i].getName()[1],
+        guardArray[i].getName()[2],
+        100
+      );
+    }
     beginShape();
     for (
       let k = 0;
@@ -191,13 +193,16 @@ function renderAllSecurityGuards() {
     }
     endShape(CLOSE);
     pop();
+    if (guard_i !== -1) break;
   }
 }
 
 function renderAllShapes() {
   for (let i = 0; i < shapeArray.length; i += 1) {
     push();
-    fill(shapeArray[i].getColor());
+    if (shape_i_for_shape_clicked === i) {
+      fill([255, 233, 0]);
+    } else fill(shapeArray[i].getColor());
     beginShape();
     for (let j = 0; j < shapeArray[i].vertexArray.length; j += 1) {
       vertex(
@@ -211,15 +216,7 @@ function renderAllShapes() {
 }
 
 function checkIfClickAVertex() {
-  if (
-    shapeArray.length === 0 ||
-    mouseIsPressed === false ||
-    pointClicked === true ||
-    shapeClicked === true ||
-    securityGuardClicked === true
-  ) {
-    return null;
-  }
+  if (pointClicked === true) return false;
 
   for (let i = 1; i < shapeArray.length; i += 1) {
     for (let j = 0; j < shapeArray[i].vertexArray.length; j += 1) {
@@ -235,24 +232,29 @@ function checkIfClickAVertex() {
           shapeArray[i].vertexArray[j].getY() + 10
         )
       ) {
-        pointClicked = true;
         point_j = j;
         shape_i = i;
+        return true;
       }
     }
   }
 }
 
+function mouseClicked() {
+  if (securityGuardClicked) {
+    securityGuardClicked = false;
+    guard_i = -1;
+  } else if (checkIfClickSecurityGuard()) securityGuardClicked = true;
+  else if (pointClicked) pointClicked = false;
+  else if (checkIfClickAVertex()) pointClicked = true;
+  else if (shapeClicked) {
+    shapeClicked = false;
+    shape_i_for_shape_clicked = -1;
+  } else if (checkIfClickInsideShape()) shapeClicked = true;
+}
+
 function checkIfClickInsideShape() {
-  if (
-    shapeArray.length === 0 ||
-    mouseIsPressed === false ||
-    shapeClicked === true ||
-    pointClicked === true ||
-    securityGuardClicked === true
-  ) {
-    return null;
-  }
+  if (shapeClicked === true) return false;
 
   for (let i = 1; i < shapeArray.length; i += 1) {
     let lineSegmentCrossesCounter = 0; // for ray trace algorithm
@@ -273,30 +275,22 @@ function checkIfClickInsideShape() {
     // ray tracing algorithm says if line segment crosses === odd num, then click is inside the shape
     if (lineSegmentCrossesCounter % 2 === 1) {
       shape_i_for_shape_clicked = i;
-      shapeClicked = true;
       updateVertexArrayDistancetoMousePress(i);
+      return true;
     }
   }
 }
 
 function checkIfClickSecurityGuard() {
-  if (
-    guardArray.length === 0 ||
-    mouseIsPressed === false ||
-    pointClicked === true ||
-    shapeClicked === true ||
-    securityGuardClicked === true
-  ) {
-    return null;
-  }
+  if (securityGuardClicked === true) return false;
 
   for (let i = 0; i < guardArray.length; i += 1) {
     if (
       between(mouseX, guardArray[i].getX() - 10, guardArray[i].getX() + 10) &&
       between(mouseY, guardArray[i].getY() - 10, guardArray[i].getY() + 10)
     ) {
-      securityGuardClicked = true;
       guard_i = i;
+      return true;
     }
   }
 }
@@ -311,7 +305,7 @@ function updateVertexArrayDistancetoMousePress(i) {
 }
 
 function dragPoint() {
-  if (pointClicked === true && mouseIsPressed === true) {
+  if (pointClicked === true) {
     shapeArray[shape_i].vertexArray[point_j].setX(mouseX);
     shapeArray[shape_i].vertexArray[point_j].setY(mouseY);
 
@@ -334,13 +328,11 @@ function dragPoint() {
     for (let j = 0; j < guardArray.length; j += 1) {
       guardArray[j].sortVertices();
     }
-  } else if (pointClicked === true) {
-    pointClicked = false;
   }
 }
 
 function dragSecurityGuard() {
-  if (securityGuardClicked === true && mouseIsPressed === true) {
+  if (securityGuardClicked === true) {
     guardArray[guard_i].setX(mouseX);
     guardArray[guard_i].setY(mouseY);
 
@@ -350,13 +342,11 @@ function dragSecurityGuard() {
       allVertices[i].setExtendo(guardArray[guard_i]);
     }
     guardArray[guard_i].sortVertices();
-  } else if (securityGuardClicked === true) {
-    securityGuardClicked = false;
   }
 }
 
 function dragShape() {
-  if (shapeClicked === true && mouseIsPressed === true) {
+  if (shapeClicked === true) {
     for (
       let j = 0;
       j < shapeArray[shape_i_for_shape_clicked].vertexArray.length;
@@ -400,8 +390,6 @@ function dragShape() {
     for (let j = 0; j < guardArray.length; j += 1) {
       guardArray[j].sortVertices();
     }
-  } else if (shapeClicked === true) {
-    shapeClicked = false;
   }
 }
 
@@ -981,11 +969,14 @@ class SecurityGuard {
 
   drawSecurityGuard() {
     push();
+    stroke("white");
+    strokeWeight(this.size + 5);
+    point(this.x, this.y);
+
     strokeWeight(this.size);
     stroke(this.name);
     point(this.x, this.y);
     pop();
-    let temp = ["red", "blue", "green", "purple", "yellow", "pink"];
   }
 
   drawLine() {
@@ -1040,5 +1031,9 @@ class SecurityGuard {
 
   getOrderedIsovistVertices() {
     return this.orderedIsovistVertices;
+  }
+
+  getIsovistVertices() {
+    return this.isovistVertices;
   }
 }
