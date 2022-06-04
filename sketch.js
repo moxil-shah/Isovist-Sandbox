@@ -18,9 +18,21 @@ let shape_i;
 let point_j;
 let guard_i = -1;
 
+function getScrollBarWidth() {
+  var $outer = $("<div>")
+      .css({ visibility: "hidden", width: 100, overflow: "scroll" })
+      .appendTo("body"),
+    widthWithScroll = $("<div>")
+      .css({ width: "100%" })
+      .appendTo($outer)
+      .outerWidth();
+  $outer.remove();
+  return 100 - widthWithScroll;
+}
+
 function setup() {
   createCanvas(
-    document.documentElement.clientWidth,
+    document.documentElement.clientWidth - getScrollBarWidth(),
     document.documentElement.clientHeight
   );
   frameRate(120);
