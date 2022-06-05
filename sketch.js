@@ -2,7 +2,7 @@
 // fix the sclar to be more exact
 
 let allShapes = new Set(); // global array of all shapes made
-let guardArray = []; // global array of all security guards made
+let allguards = new Set(); // global array of all security guards made
 let allVertices = new Set(); // global array of all the vertices on the map
 const SecurityGuardNames = [
   [0, 0, 255],
@@ -67,7 +67,7 @@ function SecurityGuardInput() {
     }
     guard.addAllVertices();
     guard.sortVertices();
-    guardArray.push(guard);
+    allguards.add(guard);
   }
 }
 
@@ -108,105 +108,97 @@ function polygon(x, y, radius, npoints) {
   allShapes.add(newShape);
 
   for (let vertex of allVertices) {
-    for (let j = 0; j < guardArray.length; j += 1) {
-      vertex.setSecurityGuardAngle(guardArray[j]);
-      vertex.setExtendedFrom(guardArray[j], null);
-      vertex.setExtendo(guardArray[j]);
+    for (let guard of allguards) {
+      vertex.setSecurityGuardAngle(guard);
+      vertex.setExtendedFrom(guard, null);
+      vertex.setExtendo(guard);
     }
   }
-  for (let j = 0; j < guardArray.length; j += 1) {
-    guardArray[j].addAllVertices();
-    guardArray[j].sortVertices();
+  for (let guard of allguards) {
+    guard.addAllVertices();
+    guard.sortVertices();
   }
 }
 
 function renderAllSecurityGuards() {
-  for (let i = 0; i < guardArray.length; i += 1) {
-    guardArray[i].drawSecurityGuard();
+  for (let guard of allguards) {
+    guard.drawSecurityGuard();
   }
 
-  for (let i = 0; i < guardArray.length; i += 1) {
-    if (guardDragged !== -1) i = guardDragged;
+  for (let guard of allguards) {
+    if (guardDragged !== -1) guard = guardDragged;
 
-    guardArray[i].closestAngleVertex(i);
-    guardArray[i].visibleVertices();
-    guardArray[i].clearOrderedIsovistVertices();
-    for (let key of guardArray[i].getIsovistVertices()) {
-      guardArray[i].getOrderedIsovistVertices().push(key);
+    guard.closestAngleVertex(guard);
+    guard.visibleVertices();
+    guard.clearOrderedIsovistVertices();
+    for (let key of guard.getIsovistVertices()) {
+      guard.getOrderedIsovistVertices().push(key);
     }
-    guardArray[i].sortIsovistVertices();
+    guard.sortIsovistVertices();
+
     push();
-    if (guardDragged === i) {
+    if (guard === guardDragged) {
       fill(255, 233, 0, 200);
     } else {
-      fill(
-        guardArray[i].getName()[0],
-        guardArray[i].getName()[1],
-        guardArray[i].getName()[2],
-        100
-      );
+      fill(guard.getName()[0], guard.getName()[1], guard.getName()[2], 100);
     }
     beginShape();
-    for (
-      let k = 0;
-      k < guardArray[i].getOrderedIsovistVertices().length;
-      k += 1
-    ) {
+    for (let k = 0; k < guard.getOrderedIsovistVertices().length; k += 1) {
       if (
-        guardArray[i]
+        guard
           .getOrderedIsovistVertices()
-          [k].getExtendFromForSecurityGuard(guardArray[i]) === null
+          [k].getExtendFromForSecurityGuard(guard) === null
       ) {
         vertex(
-          guardArray[i].getOrderedIsovistVertices()[k].getX(),
-          guardArray[i].getOrderedIsovistVertices()[k].getY()
+          guard.getOrderedIsovistVertices()[k].getX(),
+          guard.getOrderedIsovistVertices()[k].getY()
         );
       } else if (
-        guardArray[i]
+        guard
           .getOrderedIsovistVertices()
-          [k].getExtendFromForSecurityGuard(guardArray[i])
-          .getExtendoForSecurityGuard(guardArray[i]) === "left"
+          [k].getExtendFromForSecurityGuard(guard)
+          .getExtendoForSecurityGuard(guard) === "left"
       ) {
         vertex(
-          guardArray[i].getOrderedIsovistVertices()[k].getX(),
-          guardArray[i].getOrderedIsovistVertices()[k].getY()
+          guard.getOrderedIsovistVertices()[k].getX(),
+          guard.getOrderedIsovistVertices()[k].getY()
         );
-
         vertex(
-          guardArray[i]
+          guard
             .getOrderedIsovistVertices()
-            [k].getExtendFromForSecurityGuard(guardArray[i])
+            [k].getExtendFromForSecurityGuard(guard)
             .getX(),
-          guardArray[i]
+          guard
             .getOrderedIsovistVertices()
-            [k].getExtendFromForSecurityGuard(guardArray[i])
+            [k].getExtendFromForSecurityGuard(guard)
             .getY()
         );
       } else if (
-        guardArray[i]
+        guard
           .getOrderedIsovistVertices()
-          [k].getExtendFromForSecurityGuard(guardArray[i])
-          .getExtendoForSecurityGuard(guardArray[i]) === "right"
+          [k].getExtendFromForSecurityGuard(guard)
+          .getExtendoForSecurityGuard(guard) === "right"
       ) {
         vertex(
-          guardArray[i]
+          guard
             .getOrderedIsovistVertices()
-            [k].getExtendFromForSecurityGuard(guardArray[i])
+            [k].getExtendFromForSecurityGuard(guard)
             .getX(),
-          guardArray[i]
+          guard
             .getOrderedIsovistVertices()
-            [k].getExtendFromForSecurityGuard(guardArray[i])
+            [k].getExtendFromForSecurityGuard(guard)
             .getY()
         );
 
         vertex(
-          guardArray[i].getOrderedIsovistVertices()[k].getX(),
-          guardArray[i].getOrderedIsovistVertices()[k].getY()
+          guard.getOrderedIsovistVertices()[k].getX(),
+          guard.getOrderedIsovistVertices()[k].getY()
         );
       }
     }
     endShape(CLOSE);
     pop();
+
     if (guardDragged !== -1) break;
   }
 }
@@ -298,12 +290,12 @@ function checkIfClickInsideShape() {
 function checkIfClickSecurityGuard() {
   if (securityGuardClicked === true) return false;
 
-  for (let i = 0; i < guardArray.length; i += 1) {
+  for (let guard of allguards) {
     if (
-      between(mouseX, guardArray[i].getX() - 10, guardArray[i].getX() + 10) &&
-      between(mouseY, guardArray[i].getY() - 10, guardArray[i].getY() + 10)
+      between(mouseX, guard.getX() - 10, guard.getX() + 10) &&
+      between(mouseY, guard.getY() - 10, guard.getY() + 10)
     ) {
-      guardDragged = i;
+      guardDragged = guard;
       return true;
     }
   }
@@ -327,30 +319,30 @@ function dragPoint() {
     updateVertexArrayDistancetoMousePress(shapesPointDragged);
 
     for (let vertex of allVertices) {
-      for (let j = 0; j < guardArray.length; j += 1) {
-        vertex.setSecurityGuardAngle(guardArray[j]);
-        vertex.setExtendedFrom(guardArray[j], null);
-        vertex.setExtendo(guardArray[j]);
+      for (let guard of allguards) {
+        vertex.setSecurityGuardAngle(guard);
+        vertex.setExtendedFrom(guard, null);
+        vertex.setExtendo(guard);
       }
     }
 
-    for (let j = 0; j < guardArray.length; j += 1) {
-      guardArray[j].sortVertices();
+    for (let guard of allguards) {
+      guard.sortVertices();
     }
   }
 }
 
 function dragSecurityGuard() {
   if (securityGuardClicked === true) {
-    guardArray[guardDragged].setX(mouseX);
-    guardArray[guardDragged].setY(mouseY);
+    guardDragged.setX(mouseX);
+    guardDragged.setY(mouseY);
 
     for (let vertex of allVertices) {
-      vertex.setSecurityGuardAngle(guardArray[guardDragged]);
-      vertex.setExtendedFrom(guardArray[guardDragged], null);
-      vertex.setExtendo(guardArray[guardDragged]);
+      vertex.setSecurityGuardAngle(guardDragged);
+      vertex.setExtendedFrom(guardDragged, null);
+      vertex.setExtendo(guardDragged);
     }
-    guardArray[guardDragged].sortVertices();
+    guardDragged.sortVertices();
   }
 }
 
@@ -373,15 +365,15 @@ function dragShape() {
     shapeDragged.setLineArray();
 
     for (let vertex of allVertices) {
-      for (let j = 0; j < guardArray.length; j += 1) {
-        vertex.setSecurityGuardAngle(guardArray[j]);
-        vertex.setExtendedFrom(guardArray[j], null);
-        vertex.setExtendo(guardArray[j]);
+      for (let guard of allguards) {
+        vertex.setSecurityGuardAngle(guard);
+        vertex.setExtendedFrom(guard, null);
+        vertex.setExtendo(guard);
       }
     }
 
-    for (let j = 0; j < guardArray.length; j += 1) {
-      guardArray[j].sortVertices();
+    for (let guard of allguards) {
+      guard.sortVertices();
     }
   }
 }
@@ -557,8 +549,8 @@ class Line {
 
   closestAngleVertex(sortedVertices, i) {
     if (sortedVertices.length > 0) {
-      this.Point1.setX(guardArray[i].getX());
-      this.Point1.setY(guardArray[i].getY());
+      this.Point1.setX(i.getX());
+      this.Point1.setY(i.getY());
       this.Point2.setX(sortedVertices[0].getX());
       this.Point2.setY(sortedVertices[0].getY());
     }
