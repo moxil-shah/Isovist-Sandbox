@@ -12,10 +12,12 @@ const SecurityGuardNames = [
 let pointClicked = false;
 let shapeClicked = false;
 let securityGuardClicked = false;
+let doubleClick = false;
+
 let HEXAGON_ROUNDING_ERROR = 1e-15;
-let shapeDragged;
+let shapeDragged = -1;
 let shapesPointDragged;
-let pointDragged;
+let pointDragged = -1;
 let guardDragged = -1;
 let gameShape;
 
@@ -47,6 +49,7 @@ function draw() {
   dragShape();
   renderAllShapes();
   renderAllSecurityGuards();
+  renderVertexClicked();
 }
 
 // from the HTML form
@@ -137,11 +140,9 @@ function renderAllSecurityGuards() {
     guard.sortIsovistVertices();
 
     push();
-    if (guard === guardDragged) {
-      fill(255, 233, 0, 200);
-    } else {
-      fill(guard.getName()[0], guard.getName()[1], guard.getName()[2], 100);
-    }
+
+    fill(guard.getName()[0], guard.getName()[1], guard.getName()[2], 100);
+
     beginShape();
     for (let k = 0; k < guard.getOrderedIsovistVertices().length; k += 1) {
       if (
@@ -203,9 +204,20 @@ function renderAllSecurityGuards() {
   }
 }
 
+function renderVertexClicked() {
+  if (pointDragged != -1) {
+    push();
+    strokeWeight(15);
+    stroke([255, 233, 0]);
+    point(pointDragged.getX(), pointDragged.getY());
+    pop();
+  }
+}
+
 function renderAllShapes() {
   for (let shape of allShapes) {
     push();
+    strokeWeight(5);
     if (shapeDragged === shape) {
       fill([255, 233, 0]);
     } else fill(shape.getColor());
@@ -236,7 +248,7 @@ function checkIfClickAVertex() {
           shape.vertexArray[j].getY() + 10
         )
       ) {
-        pointDragged = j;
+        pointDragged = shape.vertexArray[j];
         shapesPointDragged = shape;
         return true;
       }
@@ -244,13 +256,26 @@ function checkIfClickAVertex() {
   }
 }
 
+function doubleClicked() {
+  doubleClick = true;
+  console.log("double clicked!");
+}
+
 function mouseClicked() {
+  if (doubleClick) {
+    doubleClick = shapeClicked = securityGuardClicked = false;
+    console.log("double clicked exit!");
+    return;
+  }
+
   if (securityGuardClicked) {
     securityGuardClicked = false;
     guardDragged = -1;
   } else if (checkIfClickSecurityGuard()) securityGuardClicked = true;
-  else if (pointClicked) pointClicked = false;
-  else if (checkIfClickAVertex()) pointClicked = true;
+  else if (pointClicked) {
+    pointClicked = false;
+    pointDragged = -1;
+  } else if (checkIfClickAVertex()) pointClicked = true;
   else if (shapeClicked) {
     shapeClicked = false;
     shapeDragged = -1;
@@ -311,10 +336,13 @@ function updateVertexArrayDistancetoMousePress(shape) {
 }
 
 function dragPoint() {
+  if (doubleClick === true || pointDragged === -1) {
+    pointDragged = -1;
+    return;
+  }
   if (pointClicked === true) {
-    shapesPointDragged.vertexArray[pointDragged].setX(mouseX);
-    shapesPointDragged.vertexArray[pointDragged].setY(mouseY);
-
+    pointDragged.setX(mouseX);
+    pointDragged.setY(mouseY);
     shapesPointDragged.setLineArray();
     updateVertexArrayDistancetoMousePress(shapesPointDragged);
 
@@ -333,6 +361,10 @@ function dragPoint() {
 }
 
 function dragSecurityGuard() {
+  if (doubleClick === true || guardDragged === -1) {
+    guardDragged = -1;
+    return;
+  }
   if (securityGuardClicked === true) {
     guardDragged.setX(mouseX);
     guardDragged.setY(mouseY);
@@ -347,6 +379,10 @@ function dragSecurityGuard() {
 }
 
 function dragShape() {
+  if (doubleClick === true || shapeDragged === -1) {
+    shapeDragged = -1;
+    return;
+  }
   if (shapeClicked === true) {
     for (let j = 0; j < shapeDragged.vertexArray.length; j += 1) {
       deltaXCurrent = mouseX - shapeDragged.vertexArray[j].getX();
@@ -677,7 +713,7 @@ class SecurityGuard {
     this.x = x;
     this.y = y;
     this.name = name;
-    this.size = 13;
+    this.size = 15;
     this.line = new Line(new Point(0, 0, null), new Point(0, 0, null));
     this.sortedVertices = [];
     this.treeOfEdges = [];
