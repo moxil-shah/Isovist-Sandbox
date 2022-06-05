@@ -1,7 +1,7 @@
 // I shortened the visible algo (got rid of checking if intecepts with parent shape)
 // fix the sclar to be more exact
 
-let allShapes = []; // global array of all shapes made
+let allShapes = new Set(); // global array of all shapes made
 let guardArray = []; // global array of all security guards made
 let allVertices = new Set(); // global array of all the vertices on the map
 const SecurityGuardNames = [
@@ -13,10 +13,11 @@ let pointClicked = false;
 let shapeClicked = false;
 let securityGuardClicked = false;
 let HEXAGON_ROUNDING_ERROR = 1e-15;
-let shape_i_for_shape_clicked;
-let shape_i;
-let point_j;
-let guard_i = -1;
+let shapeDragged;
+let shapesPointDragged;
+let pointDragged;
+let guardDragged = -1;
+let gameShape;
 
 function getScrollBarWidth() {
   var $outer = $("<div>")
@@ -77,8 +78,9 @@ function polygon(x, y, radius, npoints) {
   let newShape = null;
   // gets the vertexes ready and puts them into temp array
 
-  if (allShapes.length === 0) {
+  if (allShapes.size === 0) {
     newShape = new Shape(npoints, "black");
+    gameShape = newShape;
     let stage = [
       new Point(0, 0, newShape),
       new Point(width, 0, newShape),
@@ -103,7 +105,7 @@ function polygon(x, y, radius, npoints) {
 
   newShape.setVertexArray(vertexes);
   newShape.setLineArray();
-  allShapes.push(newShape);
+  allShapes.add(newShape);
 
   for (let vertex of allVertices) {
     for (let j = 0; j < guardArray.length; j += 1) {
@@ -124,7 +126,7 @@ function renderAllSecurityGuards() {
   }
 
   for (let i = 0; i < guardArray.length; i += 1) {
-    if (guard_i !== -1) i = guard_i;
+    if (guardDragged !== -1) i = guardDragged;
 
     guardArray[i].closestAngleVertex(i);
     guardArray[i].visibleVertices();
@@ -134,7 +136,7 @@ function renderAllSecurityGuards() {
     }
     guardArray[i].sortIsovistVertices();
     push();
-    if (guard_i === i) {
+    if (guardDragged === i) {
       fill(255, 233, 0, 200);
     } else {
       fill(
@@ -205,22 +207,19 @@ function renderAllSecurityGuards() {
     }
     endShape(CLOSE);
     pop();
-    if (guard_i !== -1) break;
+    if (guardDragged !== -1) break;
   }
 }
 
 function renderAllShapes() {
-  for (let i = 0; i < allShapes.length; i += 1) {
+  for (let shape of allShapes) {
     push();
-    if (shape_i_for_shape_clicked === i) {
+    if (shapeDragged === shape) {
       fill([255, 233, 0]);
-    } else fill(allShapes[i].getColor());
+    } else fill(shape.getColor());
     beginShape();
-    for (let j = 0; j < allShapes[i].vertexArray.length; j += 1) {
-      vertex(
-        allShapes[i].vertexArray[j].getX(),
-        allShapes[i].vertexArray[j].getY()
-      );
+    for (let j = 0; j < shape.vertexArray.length; j += 1) {
+      vertex(shape.vertexArray[j].getX(), shape.vertexArray[j].getY());
     }
     endShape(CLOSE);
     pop();
@@ -230,22 +229,23 @@ function renderAllShapes() {
 function checkIfClickAVertex() {
   if (pointClicked === true) return false;
 
-  for (let i = 1; i < allShapes.length; i += 1) {
-    for (let j = 0; j < allShapes[i].vertexArray.length; j += 1) {
+  for (let shape of allShapes) {
+    if (shape === gameShape) continue;
+    for (let j = 0; j < shape.vertexArray.length; j += 1) {
       if (
         between(
           mouseX,
-          allShapes[i].vertexArray[j].getX() - 10,
-          allShapes[i].vertexArray[j].getX() + 10
+          shape.vertexArray[j].getX() - 10,
+          shape.vertexArray[j].getX() + 10
         ) &&
         between(
           mouseY,
-          allShapes[i].vertexArray[j].getY() - 10,
-          allShapes[i].vertexArray[j].getY() + 10
+          shape.vertexArray[j].getY() - 10,
+          shape.vertexArray[j].getY() + 10
         )
       ) {
-        point_j = j;
-        shape_i = i;
+        pointDragged = j;
+        shapesPointDragged = shape;
         return true;
       }
     }
@@ -255,29 +255,30 @@ function checkIfClickAVertex() {
 function mouseClicked() {
   if (securityGuardClicked) {
     securityGuardClicked = false;
-    guard_i = -1;
+    guardDragged = -1;
   } else if (checkIfClickSecurityGuard()) securityGuardClicked = true;
   else if (pointClicked) pointClicked = false;
   else if (checkIfClickAVertex()) pointClicked = true;
   else if (shapeClicked) {
     shapeClicked = false;
-    shape_i_for_shape_clicked = -1;
+    shapeDragged = -1;
   } else if (checkIfClickInsideShape()) shapeClicked = true;
 }
 
 function checkIfClickInsideShape() {
   if (shapeClicked === true) return false;
 
-  for (let i = 1; i < allShapes.length; i += 1) {
+  for (let shape of allShapes) {
+    if (shape === gameShape) continue;
     let lineSegmentCrossesCounter = 0; // for ray trace algorithm
-    for (let j = 0; j < allShapes[i].lineArray.length; j += 1) {
+    for (let j = 0; j < shape.lineArray.length; j += 1) {
       if (
         checkIfIntersect(
           new Line(
             new Point(mouseX, mouseY, null),
             new Point(width, mouseY, null)
           ),
-          allShapes[i].getLineArray()[j]
+          shape.getLineArray()[j]
         )
       ) {
         lineSegmentCrossesCounter += 1;
@@ -286,8 +287,9 @@ function checkIfClickInsideShape() {
 
     // ray tracing algorithm says if line segment crosses === odd num, then click is inside the shape
     if (lineSegmentCrossesCounter % 2 === 1) {
-      shape_i_for_shape_clicked = i;
-      updateVertexArrayDistancetoMousePress(i);
+      shapeDragged = shape;
+
+      updateVertexArrayDistancetoMousePress(shape);
       return true;
     }
   }
@@ -301,28 +303,28 @@ function checkIfClickSecurityGuard() {
       between(mouseX, guardArray[i].getX() - 10, guardArray[i].getX() + 10) &&
       between(mouseY, guardArray[i].getY() - 10, guardArray[i].getY() + 10)
     ) {
-      guard_i = i;
+      guardDragged = i;
       return true;
     }
   }
 }
 
-function updateVertexArrayDistancetoMousePress(i) {
-  allShapes[i].vertexArrayDistancetoMousePress = [];
-  for (let j = 0; j < allShapes[i].vertexArray.length; j += 1) {
-    deltaX = mouseX - allShapes[i].vertexArray[j].getX();
-    deltaY = mouseY - allShapes[i].vertexArray[j].getY();
-    allShapes[i].vertexArrayDistancetoMousePress.push([deltaX, deltaY]);
+function updateVertexArrayDistancetoMousePress(shape) {
+  shape.vertexArrayDistancetoMousePress = [];
+  for (let j = 0; j < shape.vertexArray.length; j += 1) {
+    deltaX = mouseX - shape.vertexArray[j].getX();
+    deltaY = mouseY - shape.vertexArray[j].getY();
+    shape.vertexArrayDistancetoMousePress.push([deltaX, deltaY]);
   }
 }
 
 function dragPoint() {
   if (pointClicked === true) {
-    allShapes[shape_i].vertexArray[point_j].setX(mouseX);
-    allShapes[shape_i].vertexArray[point_j].setY(mouseY);
+    shapesPointDragged.vertexArray[pointDragged].setX(mouseX);
+    shapesPointDragged.vertexArray[pointDragged].setY(mouseY);
 
-    allShapes[shape_i].setLineArray();
-    updateVertexArrayDistancetoMousePress(shape_i);
+    shapesPointDragged.setLineArray();
+    updateVertexArrayDistancetoMousePress(shapesPointDragged);
 
     for (let vertex of allVertices) {
       for (let j = 0; j < guardArray.length; j += 1) {
@@ -340,51 +342,35 @@ function dragPoint() {
 
 function dragSecurityGuard() {
   if (securityGuardClicked === true) {
-    guardArray[guard_i].setX(mouseX);
-    guardArray[guard_i].setY(mouseY);
+    guardArray[guardDragged].setX(mouseX);
+    guardArray[guardDragged].setY(mouseY);
 
     for (let vertex of allVertices) {
-      vertex.setSecurityGuardAngle(guardArray[guard_i]);
-      vertex.setExtendedFrom(guardArray[guard_i], null);
-      vertex.setExtendo(guardArray[guard_i]);
+      vertex.setSecurityGuardAngle(guardArray[guardDragged]);
+      vertex.setExtendedFrom(guardArray[guardDragged], null);
+      vertex.setExtendo(guardArray[guardDragged]);
     }
-    guardArray[guard_i].sortVertices();
+    guardArray[guardDragged].sortVertices();
   }
 }
 
 function dragShape() {
   if (shapeClicked === true) {
-    for (
-      let j = 0;
-      j < allShapes[shape_i_for_shape_clicked].vertexArray.length;
-      j += 1
-    ) {
-      deltaXCurrent =
-        mouseX - allShapes[shape_i_for_shape_clicked].vertexArray[j].getX();
-      deltaYCurrent =
-        mouseY - allShapes[shape_i_for_shape_clicked].vertexArray[j].getY();
-      deltaX =
-        allShapes[shape_i_for_shape_clicked].vertexArrayDistancetoMousePress[
-          j
-        ][0];
-      deltaY =
-        allShapes[shape_i_for_shape_clicked].vertexArrayDistancetoMousePress[
-          j
-        ][1];
-      allShapes[shape_i_for_shape_clicked].vertexArray[j].setX(
-        allShapes[shape_i_for_shape_clicked].vertexArray[j].getX() +
-          deltaXCurrent -
-          deltaX
+    for (let j = 0; j < shapeDragged.vertexArray.length; j += 1) {
+      deltaXCurrent = mouseX - shapeDragged.vertexArray[j].getX();
+      deltaYCurrent = mouseY - shapeDragged.vertexArray[j].getY();
+      deltaX = shapeDragged.vertexArrayDistancetoMousePress[j][0];
+      deltaY = shapeDragged.vertexArrayDistancetoMousePress[j][1];
+      shapeDragged.vertexArray[j].setX(
+        shapeDragged.vertexArray[j].getX() + deltaXCurrent - deltaX
       );
 
-      allShapes[shape_i_for_shape_clicked].vertexArray[j].setY(
-        allShapes[shape_i_for_shape_clicked].vertexArray[j].getY() +
-          deltaYCurrent -
-          deltaY
+      shapeDragged.vertexArray[j].setY(
+        shapeDragged.vertexArray[j].getY() + deltaYCurrent - deltaY
       );
     }
 
-    allShapes[shape_i_for_shape_clicked].setLineArray();
+    shapeDragged.setLineArray();
 
     for (let vertex of allVertices) {
       for (let j = 0; j < guardArray.length; j += 1) {
@@ -842,7 +828,7 @@ class SecurityGuard {
         this.isovistVertices.add(this.sortedVertices[i]);
 
         if (
-          allShapes[0].getVertexArray().includes(this.sortedVertices[i]) ===
+          gameShape.getVertexArray().includes(this.sortedVertices[i]) ===
             false &&
           this.sortedVertices[i].getExtendoForSecurityGuard(this) !== "nope"
         ) {
@@ -995,18 +981,18 @@ class SecurityGuard {
   }
 
   initalIntersect() {
-    for (let i = 0; i < allShapes.length; i += 1) {
-      for (let j = 0; j < allShapes[i].getLineArray().length; j += 1) {
+    for (let shape of allShapes) {
+      for (let j = 0; j < shape.getLineArray().length; j += 1) {
         if (
           checkIfIntersect(
             new Line(
               new Point(this.x, this.y, null),
               new Point(width, this.y, null)
             ),
-            allShapes[i].getLineArray()[j]
+            shape.getLineArray()[j]
           )
         ) {
-          this.treeOfEdges.push(allShapes[i].getLineArray()[j]);
+          this.treeOfEdges.push(shape.getLineArray()[j]);
         }
       }
     }
