@@ -20,6 +20,7 @@ let shapesPointDragged;
 let pointDragged = -1;
 let guardDragged = -1;
 let gameShape;
+let pastPathOfCoordinates = [];
 
 function getScrollBarWidth() {
   var $outer = $("<div>")
@@ -275,6 +276,7 @@ function mouseClicked() {
   else if (pointClicked) {
     pointClicked = false;
     pointDragged = -1;
+    pastPathOfCoordinates = [];
   } else if (checkIfClickAVertex()) pointClicked = true;
   else if (shapeClicked) {
     shapeClicked = false;
@@ -344,12 +346,19 @@ function dragPoint() {
     pointClicked === true &&
     checkIfSelfIntersectingPolygon(shapesPointDragged, pointDragged) === false
   ) {
-    console.log(
-      checkIfSelfIntersectingPolygon(shapesPointDragged, pointDragged)
-    );
-
     pointDragged.setX(mouseX);
     pointDragged.setY(mouseY);
+    if (
+      pastPathOfCoordinates.length === 0 ||
+      Math.sqrt(
+        (mouseX - pastPathOfCoordinates[0][0]) ** 2 +
+          (mouseY - pastPathOfCoordinates[0][1]) ** 2
+      ) > 100
+    ) {
+      pastPathOfCoordinates.unshift([mouseX, mouseY]);
+    }
+    if (pastPathOfCoordinates.length > 500) pastPathOfCoordinates.pop();
+
     shapesPointDragged.setEdges();
     updateVertexArrayDistancetoMousePress(shapesPointDragged);
 
@@ -367,7 +376,39 @@ function dragPoint() {
   } else if (
     checkIfSelfIntersectingPolygon(shapesPointDragged, pointDragged) === true
   ) {
-    // continue here
+    for (let coordinate of pastPathOfCoordinates) {
+      pointDragged.setX(coordinate[0]);
+      pointDragged.setY(coordinate[1]);
+
+      shapesPointDragged.setEdges();
+      updateVertexArrayDistancetoMousePress(shapesPointDragged);
+
+      for (let vertex of allVertices) {
+        for (let guard of allguards) {
+          vertex.setSecurityGuardAngle(guard);
+          vertex.setExtendedFrom(guard, null);
+          vertex.setExtendo(guard);
+        }
+      }
+
+      for (let guard of allguards) {
+        guard.sortVertices();
+      }
+      if (
+        checkIfSelfIntersectingPolygon(shapesPointDragged, pointDragged) ===
+        false
+      ) {
+        pointClicked = false;
+        pointDragged = -1;
+        pastPathOfCoordinates = [];
+        return;
+      }
+    }
+    console.log("Big error 1!");
+    pointClicked = false;
+    pointDragged = -1;
+    pastPathOfCoordinates = [];
+    return;
   }
 }
 
