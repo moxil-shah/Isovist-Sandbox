@@ -223,8 +223,14 @@ function renderAllShapes() {
       fill([255, 233, 0]);
     } else fill(shape.getColor());
     beginShape();
-    for (let j = 0; j < shape.vertexArray.length; j += 1) {
-      vertex(shape.vertexArray[j].getX(), shape.vertexArray[j].getY());
+
+    for (let aVertex of shape.getVerticesSet()) {
+      let firstVertex = aVertex;
+      do {
+        vertex(aVertex.getX(), aVertex.getY());
+        aVertex = aVertex.getPointNext();
+      } while (aVertex !== firstVertex);
+      break;
     }
     endShape(CLOSE);
     pop();
@@ -236,20 +242,20 @@ function checkIfClickAVertex() {
 
   for (let shape of allShapes) {
     if (shape === gameShape) continue;
-    for (let j = 0; j < shape.vertexArray.length; j += 1) {
+    for (let aVertex of shape.getVerticesSet()) {
       if (
         between(
           mouseX,
-          shape.vertexArray[j].getX() - 10,
-          shape.vertexArray[j].getX() + 10
+          aVertex.getX() - 10,
+          aVertex.getX() + 10
         ) &&
         between(
           mouseY,
-          shape.vertexArray[j].getY() - 10,
-          shape.vertexArray[j].getY() + 10
+          aVertex.getY() - 10,
+          aVertex.getY() + 10
         )
       ) {
-        pointDragged = shape.vertexArray[j];
+        pointDragged = aVertex;
         shapesPointDragged = shape;
         return true;
       }
@@ -330,9 +336,9 @@ function checkIfClickSecurityGuard() {
 
 function updateVertexArrayDistancetoMousePress(shape) {
   shape.vertexArrayDistancetoMousePress = [];
-  for (let j = 0; j < shape.vertexArray.length; j += 1) {
-    deltaX = mouseX - shape.vertexArray[j].getX();
-    deltaY = mouseY - shape.vertexArray[j].getY();
+  for (let aVertex of shape.getVerticesSet()) {
+    deltaX = mouseX - aVertex.getX();
+    deltaY = mouseY - aVertex.getY();
     shape.vertexArrayDistancetoMousePress.push([deltaX, deltaY]);
   }
 }
@@ -622,45 +628,37 @@ class Shape {
   constructor(nPoints, color) {
     this.id = Date.now();
     this.nPoints = nPoints;
-    this.vertexArray = null;
+    this.vertices = null;
     this.vertexArrayDistancetoMousePress = [];
     this.edges = new Set();
     this.color = color;
   }
 
-  setVertexArray(array) {
-    this.vertexArray = array;
+  setVertexArray(vertexArray) {
+    this.vertices = new Set();
+    vertexArray[0].setPointPrev(vertexArray[vertexArray.length - 1]);
+    vertexArray[0].setPointNext(vertexArray[1]);
+    this.vertices.add(vertexArray[0]);
 
-    this.vertexArray[0].setPointPrev(
-      this.vertexArray[this.vertexArray.length - 1]
+    vertexArray[vertexArray.length - 1].setPointPrev(
+      vertexArray[vertexArray.length - 2]
     );
-    this.vertexArray[0].setPointNext(this.vertexArray[1]);
+    vertexArray[vertexArray.length - 1].setPointNext(vertexArray[0]);
+    this.vertices.add(vertexArray[vertexArray.length - 1]);
 
-    this.vertexArray[this.vertexArray.length - 1].setPointPrev(
-      this.vertexArray[this.vertexArray.length - 2]
-    );
-    this.vertexArray[this.vertexArray.length - 1].setPointNext(
-      this.vertexArray[0]
-    );
-
-    for (let i = 1; i < this.vertexArray.length - 1; i += 1) {
-      this.vertexArray[i].setPointPrev(this.vertexArray[i - 1]);
-      this.vertexArray[i].setPointNext(this.vertexArray[i + 1]);
+    for (let i = 1; i < vertexArray.length - 1; i += 1) {
+      vertexArray[i].setPointPrev(vertexArray[i - 1]);
+      vertexArray[i].setPointNext(vertexArray[i + 1]);
+      this.vertices.add(vertexArray[i]);
     }
   }
 
   setEdges() {
     this.edges = new Set();
-    for (let i = 0; i < this.vertexArray.length - 1; i++) {
-      let aLine = new Line(this.vertexArray[i], this.vertexArray[i + 1]);
+    for (let vertex of this.vertices) {
+      let aLine = new Line(vertex, vertex.getPointNext());
       this.edges.add(aLine);
     }
-
-    let aLine = new Line(
-      this.vertexArray[this.vertexArray.length - 1],
-      this.vertexArray[0]
-    );
-    this.edges.add(aLine);
   }
 
   getName() {
@@ -671,8 +669,8 @@ class Shape {
     return this.edges;
   }
 
-  getVertexArray() {
-    return this.vertexArray;
+  getVerticesSet() {
+    return this.vertices;
   }
 
   getColor() {
@@ -976,8 +974,7 @@ class SecurityGuard {
         this.isovistVertices.add(this.sortedVertices[i]);
 
         if (
-          gameShape.getVertexArray().includes(this.sortedVertices[i]) ===
-            false &&
+          gameShape.getVerticesSet().has(this.sortedVertices[i]) === false &&
           this.sortedVertices[i].getExtendoForSecurityGuard(this) !== "nope"
         ) {
           this.considerExtendoVertices(this.sortedVertices[i]);
