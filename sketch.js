@@ -107,7 +107,7 @@ function polygon(x, y, radius, npoints) {
   }
 
   newShape.setVertexArray(vertexes);
-  newShape.setLineArray();
+  newShape.setEdges();
   allShapes.add(newShape);
 
   for (let vertex of allVertices) {
@@ -217,7 +217,7 @@ function renderVertexClicked() {
 function renderAllShapes() {
   for (let shape of allShapes) {
     push();
-    strokeWeight(5);
+    strokeWeight(2);
     if (shapeDragged === shape) {
       fill([255, 233, 0]);
     } else fill(shape.getColor());
@@ -288,14 +288,14 @@ function checkIfClickInsideShape() {
   for (let shape of allShapes) {
     if (shape === gameShape) continue;
     let lineSegmentCrossesCounter = 0; // for ray trace algorithm
-    for (let j = 0; j < shape.lineArray.length; j += 1) {
+    for (let edge of shape.getEdges()) {
       if (
         checkIfIntersect(
           new Line(
             new Point(mouseX, mouseY, null),
             new Point(width, mouseY, null)
           ),
-          shape.getLineArray()[j]
+          edge
         )
       ) {
         lineSegmentCrossesCounter += 1;
@@ -340,10 +340,17 @@ function dragPoint() {
     pointDragged = -1;
     return;
   }
-  if (pointClicked === true) {
+  if (
+    pointClicked === true &&
+    checkIfSelfIntersectingPolygon(shapesPointDragged, pointDragged) === false
+  ) {
+    console.log(
+      checkIfSelfIntersectingPolygon(shapesPointDragged, pointDragged)
+    );
+
     pointDragged.setX(mouseX);
     pointDragged.setY(mouseY);
-    shapesPointDragged.setLineArray();
+    shapesPointDragged.setEdges();
     updateVertexArrayDistancetoMousePress(shapesPointDragged);
 
     for (let vertex of allVertices) {
@@ -357,7 +364,63 @@ function dragPoint() {
     for (let guard of allguards) {
       guard.sortVertices();
     }
+  } else if (
+    checkIfSelfIntersectingPolygon(shapesPointDragged, pointDragged) === true
+  ) {
+    // continue here
   }
+}
+
+function checkIfSelfIntersectingPolygon(theShape, thePoint) {
+  lines = new Set([
+    new Line(thePoint.getPointPrev(), thePoint),
+    new Line(thePoint.getPointNext(), thePoint),
+  ]);
+
+  let theShapeLines = new Set();
+  let linesToRemove = new Set();
+  for (let shapeLine of theShape.getEdges()) {
+    theShapeLines.add(shapeLine);
+  }
+
+  for (let eachLine of lines) {
+    for (let shapeLine of theShapeLines) {
+      if (
+        (checkIfTwoPointsOverlap(shapeLine.getPoint1(), eachLine.getPoint1()) &&
+          checkIfTwoPointsOverlap(
+            shapeLine.getPoint2(),
+            eachLine.getPoint2()
+          )) ||
+        (checkIfTwoPointsOverlap(shapeLine.getPoint1(), eachLine.getPoint2()) &&
+          checkIfTwoPointsOverlap(shapeLine.getPoint1(), eachLine.getPoint2()))
+      ) {
+        linesToRemove.add(shapeLine);
+      }
+    }
+  }
+  for (let eachLine of linesToRemove) theShapeLines.delete(eachLine);
+
+  for (let eachLine of lines) {
+    for (let shapeLine of theShapeLines) {
+      if (checkIfIntersect(eachLine, shapeLine) === true) {
+        let intersectionPoint = findIntersection(eachLine, shapeLine);
+
+        if (
+          checkIfTwoPointsOverlapRounded(
+            intersectionPoint,
+            thePoint.getPointNext()
+          ) === false &&
+          checkIfTwoPointsOverlapRounded(
+            intersectionPoint,
+            thePoint.getPointPrev()
+          ) === false
+        ) {
+          return true;
+        }
+      }
+    }
+  }
+  return false;
 }
 
 function dragSecurityGuard() {
@@ -398,7 +461,7 @@ function dragShape() {
       );
     }
 
-    shapeDragged.setLineArray();
+    shapeDragged.setEdges();
 
     for (let vertex of allVertices) {
       for (let guard of allguards) {
@@ -414,13 +477,29 @@ function dragShape() {
   }
 }
 
-function findIntersection(x1, y1, x2, y2, x3, y3, x4, y4) {
+function findIntersection(line1, line2) {
   let px =
-    ((x1 * y2 - y1 * x2) * (x3 - x4) - (x1 - x2) * (x3 * y4 - y3 * x4)) /
-    ((x1 - x2) * (y3 - y4) - (y1 - y2) * (x3 - x4));
+    ((line1.getPoint1().getX() * line1.getPoint2().getY() -
+      line1.getPoint1().getY() * line1.getPoint2().getX()) *
+      (line2.getPoint1().getX() - line2.getPoint2().getX()) -
+      (line1.getPoint1().getX() - line1.getPoint2().getX()) *
+        (line2.getPoint1().getX() * line2.getPoint2().getY() -
+          line2.getPoint1().getY() * line2.getPoint2().getX())) /
+    ((line1.getPoint1().getX() - line1.getPoint2().getX()) *
+      (line2.getPoint1().getY() - line2.getPoint2().getY()) -
+      (line1.getPoint1().getY() - line1.getPoint2().getY()) *
+        (line2.getPoint1().getX() - line2.getPoint2().getX()));
   let py =
-    ((x1 * y2 - y1 * x2) * (y3 - y4) - (y1 - y2) * (x3 * y4 - y3 * x4)) /
-    ((x1 - x2) * (y3 - y4) - (y1 - y2) * (x3 - x4));
+    ((line1.getPoint1().getX() * line1.getPoint2().getY() -
+      line1.getPoint1().getY() * line1.getPoint2().getX()) *
+      (line2.getPoint1().getY() - line2.getPoint2().getY()) -
+      (line1.getPoint1().getY() - line1.getPoint2().getY()) *
+        (line2.getPoint1().getX() * line2.getPoint2().getY() -
+          line2.getPoint1().getY() * line2.getPoint2().getX())) /
+    ((line1.getPoint1().getX() - line1.getPoint2().getX()) *
+      (line2.getPoint1().getY() - line2.getPoint2().getY()) -
+      (line1.getPoint1().getY() - line1.getPoint2().getY()) *
+        (line2.getPoint1().getX() - line2.getPoint2().getX()));
   return new Point(px, py, null);
 }
 
@@ -504,7 +583,7 @@ class Shape {
     this.nPoints = nPoints;
     this.vertexArray = null;
     this.vertexArrayDistancetoMousePress = [];
-    this.lineArray = [];
+    this.edges = new Set();
     this.color = color;
   }
 
@@ -529,26 +608,26 @@ class Shape {
     }
   }
 
-  setLineArray() {
-    this.lineArray = [];
+  setEdges() {
+    this.edges = new Set();
     for (let i = 0; i < this.vertexArray.length - 1; i++) {
       let aLine = new Line(this.vertexArray[i], this.vertexArray[i + 1]);
-      this.lineArray.push(aLine);
+      this.edges.add(aLine);
     }
 
     let aLine = new Line(
       this.vertexArray[this.vertexArray.length - 1],
       this.vertexArray[0]
     );
-    this.lineArray.push(aLine);
+    this.edges.add(aLine);
   }
 
   getName() {
     return this.id;
   }
 
-  getLineArray() {
-    return this.lineArray;
+  getEdges() {
+    return this.edges;
   }
 
   getVertexArray() {
@@ -901,14 +980,8 @@ class SecurityGuard {
         )
       ) {
         let intersectionPoint = findIntersection(
-          this.x,
-          this.y,
-          p2.getX(),
-          p2.getY(),
-          sortedTreeOfEdges[i].getPoint1().getX(),
-          sortedTreeOfEdges[i].getPoint1().getY(),
-          sortedTreeOfEdges[i].getPoint2().getX(),
-          sortedTreeOfEdges[i].getPoint2().getY()
+          new Line(new Point(this.x, this.y, null), p2),
+          sortedTreeOfEdges[i]
         );
 
         if (checkIfTwoPointsOverlapRounded(w_i, intersectionPoint) === false) {
@@ -1010,17 +1083,17 @@ class SecurityGuard {
 
   initalIntersect() {
     for (let shape of allShapes) {
-      for (let j = 0; j < shape.getLineArray().length; j += 1) {
+      for (let edge of shape.getEdges()) {
         if (
           checkIfIntersect(
             new Line(
               new Point(this.x, this.y, null),
               new Point(width, this.y, null)
             ),
-            shape.getLineArray()[j]
+            edge
           )
         ) {
-          this.treeOfEdges.push(shape.getLineArray()[j]);
+          this.treeOfEdges.push(edge);
         }
       }
     }
