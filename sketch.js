@@ -107,7 +107,7 @@ function polygon(x, y, radius, npoints) {
     }
   }
 
-  newShape.setVertexArray(vertexes);
+  newShape.setVerticesSet(vertexes);
   newShape.setEdges();
   allShapes.add(newShape);
 
@@ -244,16 +244,8 @@ function checkIfClickAVertex() {
     if (shape === gameShape) continue;
     for (let aVertex of shape.getVerticesSet()) {
       if (
-        between(
-          mouseX,
-          aVertex.getX() - 10,
-          aVertex.getX() + 10
-        ) &&
-        between(
-          mouseY,
-          aVertex.getY() - 10,
-          aVertex.getY() + 10
-        )
+        between(mouseX, aVertex.getX() - 10, aVertex.getX() + 10) &&
+        between(mouseY, aVertex.getY() - 10, aVertex.getY() + 10)
       ) {
         pointDragged = aVertex;
         shapesPointDragged = shape;
@@ -335,11 +327,11 @@ function checkIfClickSecurityGuard() {
 }
 
 function updateVertexArrayDistancetoMousePress(shape) {
-  shape.vertexArrayDistancetoMousePress = [];
+  shape.verticesDistancetoMousePress = new Map();
   for (let aVertex of shape.getVerticesSet()) {
     deltaX = mouseX - aVertex.getX();
     deltaY = mouseY - aVertex.getY();
-    shape.vertexArrayDistancetoMousePress.push([deltaX, deltaY]);
+    shape.setVerticesDistancetoMousePress(aVertex, [deltaX, deltaY]);
   }
 }
 
@@ -494,18 +486,14 @@ function dragShape() {
     return;
   }
   if (shapeClicked === true) {
-    for (let j = 0; j < shapeDragged.vertexArray.length; j += 1) {
-      deltaXCurrent = mouseX - shapeDragged.vertexArray[j].getX();
-      deltaYCurrent = mouseY - shapeDragged.vertexArray[j].getY();
-      deltaX = shapeDragged.vertexArrayDistancetoMousePress[j][0];
-      deltaY = shapeDragged.vertexArrayDistancetoMousePress[j][1];
-      shapeDragged.vertexArray[j].setX(
-        shapeDragged.vertexArray[j].getX() + deltaXCurrent - deltaX
-      );
+    for (let avertex of shapeDragged.getVerticesSet()) {
+      deltaXCurrent = mouseX - avertex.getX();
+      deltaYCurrent = mouseY - avertex.getY();
+      deltaX = shapeDragged.getVerticesDistancetoMousePress(avertex)[0];
+      deltaY = shapeDragged.getVerticesDistancetoMousePress(avertex)[1];
+      avertex.setX(avertex.getX() + deltaXCurrent - deltaX);
 
-      shapeDragged.vertexArray[j].setY(
-        shapeDragged.vertexArray[j].getY() + deltaYCurrent - deltaY
-      );
+      avertex.setY(avertex.getY() + deltaYCurrent - deltaY);
     }
 
     shapeDragged.setEdges();
@@ -629,12 +617,12 @@ class Shape {
     this.id = Date.now();
     this.nPoints = nPoints;
     this.vertices = null;
-    this.vertexArrayDistancetoMousePress = [];
+    this.verticesDistancetoMousePress = new Map();
     this.edges = new Set();
     this.color = color;
   }
 
-  setVertexArray(vertexArray) {
+  setVerticesSet(vertexArray) {
     this.vertices = new Set();
     vertexArray[0].setPointPrev(vertexArray[vertexArray.length - 1]);
     vertexArray[0].setPointNext(vertexArray[1]);
@@ -661,6 +649,10 @@ class Shape {
     }
   }
 
+  setVerticesDistancetoMousePress(theVertex, coordinate) {
+    this.verticesDistancetoMousePress.set(theVertex, coordinate);
+  }
+
   getName() {
     return this.id;
   }
@@ -671,6 +663,10 @@ class Shape {
 
   getVerticesSet() {
     return this.vertices;
+  }
+
+  getVerticesDistancetoMousePress(theVertex) {
+    return this.verticesDistancetoMousePress.get(theVertex);
   }
 
   getColor() {
