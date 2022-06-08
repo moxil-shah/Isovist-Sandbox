@@ -19,8 +19,9 @@ let shapesPointDragged;
 let pointDragged = -1;
 let guardDragged = -1;
 let gameShape;
-let intersectionPointsGlobal = new Set();
+let intersectionPointsGlobal = new Map();
 let pastPathOfCoordinates = [];
+let fornow = true;
 
 function getScrollBarWidth() {
   var $outer = $("<div>")
@@ -51,15 +52,17 @@ function draw() {
   renderAllShapes();
   renderAllSecurityGuards();
   renderVertexClicked();
-  if (intersectionPointsGlobal.size !== 0) {
-    for (let each of intersectionPointsGlobal) {
-      push();
-      strokeWeight(15);
-      stroke("green");
-      point(each[0].getX(), each[0].getY());
-      pop();
-    }
-  }
+
+  // for (const [key, value] of intersectionPointsGlobal) {
+  //   push();
+  //   strokeWeight(15);
+  //   stroke("green");
+  //   for (eachValue of value) {
+  //     point(eachValue.getX(), eachValue.getY());
+  //   }
+  //   pop();
+  // }
+  deletetheselfintersect();
 }
 
 // from the HTML form
@@ -111,7 +114,6 @@ function polygon(x, y, radius, npoints) {
       let sx = x + cos(i) * radius;
       let sy = y + sin(i) * radius;
       aPoint = new Point(sx, sy, newShape);
-
       vertexes.push(aPoint);
     }
   }
@@ -229,22 +231,47 @@ function renderVertexClicked() {
 function renderAllShapes() {
   for (let shape of allShapes) {
     push();
-    strokeWeight(2);
     if (shapeDragged === shape) {
       fill([255, 233, 0]);
     } else fill(shape.getColor());
     beginShape();
 
-    for (let aVertex of shape.getVerticesSet()) {
-      let firstVertex = aVertex;
-      do {
+    let aVertex = shape.getVertexHead();
+    let counter = 0;
+    do {
+      push();
+      strokeWeight(15);
+      stroke("purple");
+      point(aVertex.getX(), aVertex.getY());
+      if (aVertex.getIncludeInRender() === true)
         vertex(aVertex.getX(), aVertex.getY());
-        aVertex = aVertex.getPointNext();
-      } while (aVertex !== firstVertex);
-      break;
-    }
+      pop();
+
+      aVertex = aVertex.getPointNext();
+      counter += 1;
+    } while (aVertex !== shape.vertexHead);
+
+    console.log(counter);
+
     endShape(CLOSE);
     pop();
+  }
+}
+
+function deletetheselfintersect() {
+  for (let shape of allShapes) {
+    let aVertex = shape.getVertexHead();
+    do {
+      if (aVertex.getIncludeInRender() === false) {
+        aVertex.getPointPrev().setPointNext(aVertex.getPointNext());
+        aVertex.getPointNext().setPointPrev(aVertex.getPointPrev());
+        aVertex = aVertex.getPointPrev();
+      }
+      aVertex = aVertex.getPointNext();
+    } while (aVertex !== shape.vertexHead);
+
+    shape.setVerticesSet();
+    shape.setEdges();
   }
 }
 
@@ -360,33 +387,57 @@ function dragPoint() {
       pointDragged
     );
 
+    intersectionPointsGlobal = thething;
+
     for (const [key, value] of thething) {
       let referencePoint;
+      let nextPoint;
       if (key.getPoint1().getPointNext() === key.getPoint2()) {
         referencePoint = key.getPoint1();
+        nextPoint = key.getPoint2();
       } else if (key.getPoint2().getPointNext() === key.getPoint1()) {
         referencePoint = key.getPoint2();
+        nextPoint = key.getPoint1();
       } else {
         console.log("Big Error 1!");
       }
 
-      for (let i = 0; i < thething.get(key).length; i += 1) {
-        thething.get(key)[i] = [
-          thething.get(key)[i],
+      for (let i = 0; i < value.length; i += 1) {
+        value[i] = [
+          value[i],
           Math.sqrt(
-            (referencePoint.getX() - thething.get(key)[i].getX()) ** 2 +
-              (referencePoint.getY() - thething.get(key)[i].getY()) ** 2
+            (referencePoint.getX() - value[i].getX()) ** 2 +
+              (referencePoint.getY() - value[i].getY()) ** 2
           ),
         ];
       }
 
-      thething.get(key).sort(function (a, b) {
+      value.sort(function (a, b) {
         return a[1] - b[1];
       });
-      // console.log(key, value);
-    }
-    // console.log("done");
 
+      for (let i = 0; i < value.length; i += 1) {
+        value[i] = value[i][0];
+
+        value[i].setIncludeInRender(false);
+      }
+      if (value.length > 2) {
+        console.log("not ready yet");
+        for (let i = 1; i < value.length - 1; i += 1) {
+          value[i].setPointPrev(value[i - 1]);
+          value[i].setPointNext(value[i + 1]);
+        }
+      }
+
+      if (value.length === 1) {
+        referencePoint.setPointNext(value[0]);
+        value[0].setPointNext(nextPoint);
+        value[0].setPointPrev(referencePoint);
+        nextPoint.setPointPrev(value[0]);
+      }
+    }
+
+    shapesPointDragged.setVerticesSet();
     shapesPointDragged.setEdges();
     updateVertexArrayDistancetoMousePress(shapesPointDragged);
 
@@ -407,54 +458,25 @@ function dragPoint() {
 }
 
 function checkIfSelfIntersectingPolygon(theShape, thePoint) {
-  lines = [
-    new Line(thePoint.getPointPrev(), thePoint),
-    new Line(thePoint.getPointNext(), thePoint),
-  ];
+  let intersectionPoints = new Map();
 
-  let theShapeLines = new Set();
-  let linesToRemove = new Set();
-  let intersectionPoints = new Map([
-    [lines[0], []],
-    [lines[1], []],
-  ]);
-  for (let shapeLine of theShape.getEdges()) {
-    theShapeLines.add(shapeLine);
-  }
-
-  for (let eachLine of lines) {
-    for (let shapeLine of theShapeLines) {
-      if (
-        (checkIfTwoPointsOverlap(shapeLine.getPoint1(), eachLine.getPoint1()) &&
-          checkIfTwoPointsOverlap(
-            shapeLine.getPoint2(),
-            eachLine.getPoint2()
-          )) ||
-        (checkIfTwoPointsOverlap(shapeLine.getPoint1(), eachLine.getPoint2()) &&
-          checkIfTwoPointsOverlap(shapeLine.getPoint1(), eachLine.getPoint2()))
-      ) {
-        linesToRemove.add(shapeLine);
-      }
-    }
-  }
-  for (let eachLine of linesToRemove) theShapeLines.delete(eachLine);
-
-  for (let eachLine of lines) {
-    for (let shapeLine of theShapeLines) {
+  for (let eachLine of theShape.getEdges()) {
+    for (let shapeLine of theShape.getEdges()) {
+      if (eachLine === shapeLine) continue;
       if (checkIfIntersect(eachLine, shapeLine) === true) {
         let intersectionPoint = findIntersection(eachLine, shapeLine);
+        let indicator = true;
+        for (let eachVertex of theShape.getVerticesSet()) {
+          if (checkIfTwoPointsOverlapRounded(eachVertex, intersectionPoint))
+            indicator = false;
+        }
 
-        if (
-          checkIfTwoPointsOverlapRounded(
-            intersectionPoint,
-            thePoint.getPointNext()
-          ) === false &&
-          checkIfTwoPointsOverlapRounded(
-            intersectionPoint,
-            thePoint.getPointPrev()
-          ) === false
-        ) {
-          intersectionPoints.get(eachLine).push(intersectionPoint);
+        if (indicator === true) {
+          if (intersectionPoints.get(eachLine) !== undefined)
+            intersectionPoints.get(eachLine).push(intersectionPoint);
+          else {
+            intersectionPoints.set(eachLine, [intersectionPoint]);
+          }
         }
       }
     }
@@ -616,6 +638,14 @@ function checkIfTwoLinesIntersectOnEndPoints(line1, line2) {
   );
 }
 
+function checkIfTwoLinesIntersectOnEndPointsRounded(line1, line2) {
+  return (
+    checkIfTwoPointsOverlapRounded(line1.getPoint1(), line2.getPoint1()) ||
+    checkIfTwoPointsOverlapRounded(line1.getPoint2(), line2.getPoint2()) ||
+    checkIfTwoPointsOverlapRounded(line1.getPoint1(), line2.getPoint2())
+  );
+}
+
 class Shape {
   constructor(nPoints, color) {
     this.nPoints = nPoints;
@@ -680,6 +710,10 @@ class Shape {
   getColor() {
     return this.color;
   }
+
+  getVertexHead() {
+    return this.vertexHead;
+  }
 }
 
 class Line {
@@ -725,6 +759,11 @@ class Point {
     this.secuirtyGuardMap = new Map();
     this.extendo = new Map();
     this.extendedFrom = new Map();
+    this.includeInRender = true;
+  }
+
+  setIncludeInRender(yesOrNo) {
+    this.includeInRender = yesOrNo;
   }
 
   setExtendedFrom(guard, aPoint) {
@@ -745,6 +784,10 @@ class Point {
   }
 
   setExtendo(guard) {
+    if (this.includeInRender === false) {
+      this.extendo.set(guard.getName(), "nope");
+      return;
+    }
     let helperVector = createVector(1, 1, 1);
 
     let guardToPointV = createVector(
@@ -827,6 +870,10 @@ class Point {
 
   getExtendoForSecurityGuard(guard) {
     return this.extendo.get(guard.getName());
+  }
+
+  getIncludeInRender() {
+    return this.includeInRender;
   }
 }
 
