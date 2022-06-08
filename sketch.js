@@ -20,6 +20,7 @@ let shapesPointDragged;
 let pointDragged = -1;
 let guardDragged = -1;
 let gameShape;
+let intersectionPointsGlobal = new Set();
 let pastPathOfCoordinates = [];
 
 function getScrollBarWidth() {
@@ -51,6 +52,15 @@ function draw() {
   renderAllShapes();
   renderAllSecurityGuards();
   renderVertexClicked();
+  if (intersectionPointsGlobal.size !== 0) {
+    for (let each of intersectionPointsGlobal) {
+      push();
+      strokeWeight(15);
+      stroke("green");
+      point(each[0].getX(), each[0].getY());
+      pop();
+    }
+  }
 }
 
 // from the HTML form
@@ -100,7 +110,6 @@ function polygon(x, y, radius, npoints) {
     for (let i = 0; i < TWO_PI - HEXAGON_ROUNDING_ERROR; i += angle) {
       let sx = x + cos(i) * radius;
       let sy = y + sin(i) * radius;
-      // console.log("original point", sx, sy);
       aPoint = new Point(sx, sy, newShape);
       allVertices.add(aPoint);
       vertexes.push(aPoint);
@@ -340,22 +349,43 @@ function dragPoint() {
     pointDragged = -1;
     return;
   }
-  if (
-    pointClicked === true &&
-    checkIfSelfIntersectingPolygon(shapesPointDragged, pointDragged) === false
-  ) {
+  if (pointClicked === true) {
     pointDragged.setX(mouseX);
     pointDragged.setY(mouseY);
-    if (
-      pastPathOfCoordinates.length === 0 ||
-      Math.sqrt(
-        (mouseX - pastPathOfCoordinates[0][0]) ** 2 +
-          (mouseY - pastPathOfCoordinates[0][1]) ** 2
-      ) > 100
-    ) {
-      pastPathOfCoordinates.unshift([mouseX, mouseY]);
+
+    let thething = checkIfSelfIntersectingPolygon(
+      shapesPointDragged,
+      pointDragged
+    );
+
+    for (const [key, value] of thething) {
+      let referencePoint;
+      if (key.getPoint1().getPointNext() === key.getPoint2()) {
+        referencePoint = key.getPoint1();
+      } else if (key.getPoint2().getPointNext() === key.getPoint1()) {
+        referencePoint = key.getPoint2();
+      } else {
+        console.log("Big Error 1!");
+      }
+
+      for (let i = 0; i < thething.get(key).length; i += 1) {
+        thething.get(key)[i] = [
+          thething.get(key)[i],
+          Math.sqrt(
+            (referencePoint.getX() - thething.get(key)[i].getX()) ** 2 +
+              (referencePoint.getY() - thething.get(key)[i].getY()) ** 2
+          ),
+        ];
+      }
+
+      thething.get(key).sort(function (a, b) {
+        return a[1] - b[1];
+      });
+      console.log(key, value);
     }
-    if (pastPathOfCoordinates.length > 500) pastPathOfCoordinates.pop();
+    console.log("done");
+
+    
 
     shapesPointDragged.setEdges();
     updateVertexArrayDistancetoMousePress(shapesPointDragged);
@@ -371,53 +401,21 @@ function dragPoint() {
     for (let guard of allguards) {
       guard.sortVertices();
     }
-  } else if (
-    checkIfSelfIntersectingPolygon(shapesPointDragged, pointDragged) === true
-  ) {
-    for (let coordinate of pastPathOfCoordinates) {
-      pointDragged.setX(coordinate[0]);
-      pointDragged.setY(coordinate[1]);
-
-      shapesPointDragged.setEdges();
-      updateVertexArrayDistancetoMousePress(shapesPointDragged);
-
-      for (let vertex of allVertices) {
-        for (let guard of allguards) {
-          vertex.setSecurityGuardAngle(guard);
-          vertex.setExtendedFrom(guard, null);
-          vertex.setExtendo(guard);
-        }
-      }
-
-      for (let guard of allguards) {
-        guard.sortVertices();
-      }
-      if (
-        checkIfSelfIntersectingPolygon(shapesPointDragged, pointDragged) ===
-        false
-      ) {
-        pointClicked = false;
-        pointDragged = -1;
-        pastPathOfCoordinates = [];
-        return;
-      }
-    }
-    console.log("Big error 1!");
-    pointClicked = false;
-    pointDragged = -1;
-    pastPathOfCoordinates = [];
-    return;
   }
 }
 
 function checkIfSelfIntersectingPolygon(theShape, thePoint) {
-  lines = new Set([
+  lines = [
     new Line(thePoint.getPointPrev(), thePoint),
     new Line(thePoint.getPointNext(), thePoint),
-  ]);
+  ];
 
   let theShapeLines = new Set();
   let linesToRemove = new Set();
+  let intersectionPoints = new Map([
+    [lines[0], []],
+    [lines[1], []],
+  ]);
   for (let shapeLine of theShape.getEdges()) {
     theShapeLines.add(shapeLine);
   }
@@ -454,12 +452,12 @@ function checkIfSelfIntersectingPolygon(theShape, thePoint) {
             thePoint.getPointPrev()
           ) === false
         ) {
-          return true;
+          intersectionPoints.get(eachLine).push(intersectionPoint);
         }
       }
     }
   }
-  return false;
+  return intersectionPoints;
 }
 
 function dragSecurityGuard() {
