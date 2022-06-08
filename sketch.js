@@ -20,7 +20,6 @@ let pointDragged = -1;
 let guardDragged = -1;
 let gameShape;
 let intersectionPointsGlobal = new Map();
-let pastPathOfCoordinates = [];
 let fornow = true;
 
 function getScrollBarWidth() {
@@ -77,11 +76,13 @@ function SecurityGuardInput() {
   if (SecurityGuardNames.length !== 0) {
     guard = new SecurityGuard(77.5, 200, SecurityGuardNames.pop());
     for (let eachShape of allShapes) {
-      for (let vertex of eachShape.getVerticesSet()) {
-        vertex.setSecurityGuardAngle(guard);
-        vertex.setExtendedFrom(guard, null);
-        vertex.setExtendo(guard);
-      }
+      let currentVertex = eachShape.getVertexHead();
+      do {
+        currentVertex.setSecurityGuardAngle(guard);
+        currentVertex.setExtendedFrom(guard, null);
+        currentVertex.setExtendo(guard);
+        currentVertex = currentVertex.getPointNext();
+      } while (currentVertex !== eachShape.getVertexHead());
     }
     guard.addAllVertices();
     guard.sortVertices();
@@ -121,14 +122,17 @@ function polygon(x, y, radius, npoints) {
   newShape.setVerticesLinkedList(vertexes);
   newShape.setEdges();
   allShapes.add(newShape);
+
   for (let eachShape of allShapes) {
-    for (let vertex of eachShape.getVerticesSet()) {
+    let currentVertex = eachShape.getVertexHead();
+    do {
       for (let guard of allguards) {
-        vertex.setSecurityGuardAngle(guard);
-        vertex.setExtendedFrom(guard, null);
-        vertex.setExtendo(guard);
+        currentVertex.setSecurityGuardAngle(guard);
+        currentVertex.setExtendedFrom(guard, null);
+        currentVertex.setExtendo(guard);
       }
-    }
+      currentVertex = currentVertex.getPointNext();
+    } while (currentVertex !== eachShape.getVertexHead());
   }
 
   for (let guard of allguards) {
@@ -270,7 +274,6 @@ function deletetheselfintersect() {
       aVertex = aVertex.getPointNext();
     } while (aVertex !== shape.vertexHead);
 
-    shape.setVerticesSet();
     shape.setEdges();
   }
 }
@@ -278,19 +281,23 @@ function deletetheselfintersect() {
 function checkIfClickAVertex() {
   if (pointClicked === true) return false;
 
-  for (let shape of allShapes) {
-    if (shape === gameShape) continue;
-    for (let aVertex of shape.getVerticesSet()) {
+  for (let eachShape of allShapes) {
+    if (eachShape === gameShape) continue;
+
+    let currentVertex = eachShape.getVertexHead();
+    do {
       if (
-        between(mouseX, aVertex.getX() - 10, aVertex.getX() + 10) &&
-        between(mouseY, aVertex.getY() - 10, aVertex.getY() + 10)
+        between(mouseX, currentVertex.getX() - 10, currentVertex.getX() + 10) &&
+        between(mouseY, currentVertex.getY() - 10, currentVertex.getY() + 10)
       ) {
-        pointDragged = aVertex;
-        shapesPointDragged = shape;
+        pointDragged = currentVertex;
+        shapesPointDragged = eachShape;
         return true;
       }
-    }
+      currentVertex = currentVertex.getPointNext();
+    } while (currentVertex !== eachShape.getVertexHead());
   }
+  return false;
 }
 
 function doubleClicked() {
@@ -312,7 +319,7 @@ function mouseClicked() {
   else if (pointClicked) {
     pointClicked = false;
     pointDragged = -1;
-    pastPathOfCoordinates = [];
+
   } else if (checkIfClickAVertex()) pointClicked = true;
   else if (shapeClicked) {
     shapeClicked = false;
@@ -366,11 +373,15 @@ function checkIfClickSecurityGuard() {
 
 function updateVertexArrayDistancetoMousePress(shape) {
   shape.verticesDistancetoMousePress = new Map();
-  for (let aVertex of shape.getVerticesSet()) {
-    deltaX = mouseX - aVertex.getX();
-    deltaY = mouseY - aVertex.getY();
-    shape.setVerticesDistancetoMousePress(aVertex, [deltaX, deltaY]);
-  }
+
+  let currentVertex = shape.getVertexHead();
+  do {
+    // the meat
+    deltaX = mouseX - currentVertex.getX();
+    deltaY = mouseY - currentVertex.getY();
+    shape.setVerticesDistancetoMousePress(currentVertex, [deltaX, deltaY]);
+    currentVertex = currentVertex.getPointNext();
+  } while (currentVertex !== shape.getVertexHead());
 }
 
 function dragPoint() {
@@ -437,21 +448,23 @@ function dragPoint() {
       }
     }
 
-    shapesPointDragged.setVerticesSet();
     shapesPointDragged.setEdges();
     updateVertexArrayDistancetoMousePress(shapesPointDragged);
 
     for (let eachShape of allShapes) {
-      for (let vertex of eachShape.getVerticesSet()) {
+      let currentVertex = eachShape.getVertexHead();
+      do {
         for (let guard of allguards) {
-          vertex.setSecurityGuardAngle(guard);
-          vertex.setExtendedFrom(guard, null);
-          vertex.setExtendo(guard);
+          currentVertex.setSecurityGuardAngle(guard);
+          currentVertex.setExtendedFrom(guard, null);
+          currentVertex.setExtendo(guard);
         }
-      }
+        currentVertex = currentVertex.getPointNext();
+      } while (currentVertex !== eachShape.getVertexHead());
     }
 
     for (let guard of allguards) {
+      guard.addAllVertices();
       guard.sortVertices();
     }
   }
@@ -466,10 +479,17 @@ function checkIfSelfIntersectingPolygon(theShape, thePoint) {
       if (checkIfIntersect(eachLine, shapeLine) === true) {
         let intersectionPoint = findIntersection(eachLine, shapeLine);
         let indicator = true;
-        for (let eachVertex of theShape.getVerticesSet()) {
-          if (checkIfTwoPointsOverlapRounded(eachVertex, intersectionPoint))
+
+        let currentVertex = theShape.getVertexHead();
+        do {
+          if (
+            checkIfTwoPointsOverlapRounded(currentVertex, intersectionPoint)
+          ) {
             indicator = false;
-        }
+            break;
+          }
+          currentVertex = currentVertex.getPointNext();
+        } while (currentVertex !== theShape.getVertexHead());
 
         if (indicator === true) {
           if (intersectionPoints.get(eachLine) !== undefined)
@@ -494,11 +514,13 @@ function dragSecurityGuard() {
     guardDragged.setY(mouseY);
 
     for (let eachShape of allShapes) {
-      for (let vertex of eachShape.getVerticesSet()) {
-        vertex.setSecurityGuardAngle(guardDragged);
-        vertex.setExtendedFrom(guardDragged, null);
-        vertex.setExtendo(guardDragged);
-      }
+      let currentVertex = eachShape.getVertexHead();
+      do {
+        currentVertex.setSecurityGuardAngle(guardDragged);
+        currentVertex.setExtendedFrom(guardDragged, null);
+        currentVertex.setExtendo(guardDragged);
+        currentVertex = currentVertex.getPointNext();
+      } while (currentVertex !== eachShape.getVertexHead());
     }
     guardDragged.sortVertices();
   }
@@ -510,26 +532,30 @@ function dragShape() {
     return;
   }
   if (shapeClicked === true) {
-    for (let avertex of shapeDragged.getVerticesSet()) {
-      deltaXCurrent = mouseX - avertex.getX();
-      deltaYCurrent = mouseY - avertex.getY();
-      deltaX = shapeDragged.getVerticesDistancetoMousePress(avertex)[0];
-      deltaY = shapeDragged.getVerticesDistancetoMousePress(avertex)[1];
-      avertex.setX(avertex.getX() + deltaXCurrent - deltaX);
+    let currentVertex = shapeDragged.getVertexHead();
+    do {
+      deltaXCurrent = mouseX - currentVertex.getX();
+      deltaYCurrent = mouseY - currentVertex.getY();
+      deltaX = shapeDragged.getVerticesDistancetoMousePress(currentVertex)[0];
+      deltaY = shapeDragged.getVerticesDistancetoMousePress(currentVertex)[1];
+      currentVertex.setX(currentVertex.getX() + deltaXCurrent - deltaX);
 
-      avertex.setY(avertex.getY() + deltaYCurrent - deltaY);
-    }
+      currentVertex.setY(currentVertex.getY() + deltaYCurrent - deltaY);
+      currentVertex = currentVertex.getPointNext();
+    } while (currentVertex !== shapeDragged.getVertexHead());
 
     shapeDragged.setEdges();
 
     for (let eachShape of allShapes) {
-      for (let vertex of eachShape.getVerticesSet()) {
+      let currentVertex = eachShape.getVertexHead();
+      do {
         for (let guard of allguards) {
-          vertex.setSecurityGuardAngle(guard);
-          vertex.setExtendedFrom(guard, null);
-          vertex.setExtendo(guard);
+          currentVertex.setSecurityGuardAngle(guard);
+          currentVertex.setExtendedFrom(guard, null);
+          currentVertex.setExtendo(guard);
         }
-      }
+        currentVertex = currentVertex.getPointNext();
+      } while (currentVertex !== eachShape.getVertexHead());
     }
 
     for (let guard of allguards) {
@@ -649,7 +675,6 @@ function checkIfTwoLinesIntersectOnEndPointsRounded(line1, line2) {
 class Shape {
   constructor(nPoints, color) {
     this.nPoints = nPoints;
-    this.vertices = null;
     this.vertexHead;
     this.verticesDistancetoMousePress = new Map();
     this.edges = new Set();
@@ -670,25 +695,17 @@ class Shape {
       vertexArray[i].setPointPrev(vertexArray[i - 1]);
       vertexArray[i].setPointNext(vertexArray[i + 1]);
     }
-
-    this.setVerticesSet();
-  }
-
-  setVerticesSet() {
-    this.vertices = new Set();
-    let currentVertex = this.vertexHead;
-    do {
-      this.vertices.add(currentVertex);
-      currentVertex = currentVertex.getPointNext();
-    } while (currentVertex !== this.vertexHead);
   }
 
   setEdges() {
     this.edges = new Set();
-    for (let vertex of this.vertices) {
-      let aLine = new Line(vertex, vertex.getPointNext());
+
+    let currentVertex = this.vertexHead;
+    do {
+      let aLine = new Line(currentVertex, currentVertex.getPointNext());
       this.edges.add(aLine);
-    }
+      currentVertex = currentVertex.getPointNext();
+    } while (currentVertex !== this.vertexHead);
   }
 
   setVerticesDistancetoMousePress(theVertex, coordinate) {
@@ -697,10 +714,6 @@ class Shape {
 
   getEdges() {
     return this.edges;
-  }
-
-  getVerticesSet() {
-    return this.vertices;
   }
 
   getVerticesDistancetoMousePress(theVertex) {
@@ -901,6 +914,7 @@ class SecurityGuard {
 
     // Go through all the vertices by radian in regards to
     // the straight line from security guard to right hand wall
+    console.log("guard", this.sortedVertices.length);
     for (let i = 0; i < this.sortedVertices.length; i += 1) {
       let toRemove = [];
 
@@ -1021,11 +1035,43 @@ class SecurityGuard {
         );
       }
 
+      // if (i === 3) {
+      //   for (let k = 0; k < this.treeOfEdges.length; k += 1) {
+      //     push();
+      //     stroke("red");
+      //     strokeWeight(15);
+
+      //     line(
+      //       this.treeOfEdges[k].getPoint1().getX(),
+      //       this.treeOfEdges[k].getPoint1().getY(),
+      //       this.treeOfEdges[k].getPoint2().getX(),
+      //       this.treeOfEdges[k].getPoint2().getY()
+      //     );
+      //     stroke("green");
+      //     point(
+      //       this.sortedVertices[i].getX() - 23,
+      //       this.sortedVertices[i].getY() + 23
+      //     );
+      //     pop();
+      //   }
+
+      //   console.log(i, this.visible(this.sortedVertices[i], i));
+      // }
+
       if (this.visible(this.sortedVertices[i]) === true) {
         this.isovistVertices.add(this.sortedVertices[i]);
+        let hasOrNot = false;
+        let currentVertex = gameShape.getVertexHead();
+        do {
+          if (currentVertex === this.sortedVertices[i]) {
+            hasOrNot = true;
+            break;
+          }
+          currentVertex = currentVertex.getPointNext();
+        } while (currentVertex !== gameShape.getVertexHead());
 
         if (
-          gameShape.getVerticesSet().has(this.sortedVertices[i]) === false &&
+          hasOrNot === false &&
           this.sortedVertices[i].getExtendoForSecurityGuard(this) !== "nope"
         ) {
           this.considerExtendoVertices(this.sortedVertices[i]);
@@ -1128,9 +1174,11 @@ class SecurityGuard {
   addAllVertices() {
     this.sortedVertices = [];
     for (let eachShape of allShapes) {
-      for (let vertex of eachShape.getVerticesSet()) {
-        this.sortedVertices.push(vertex);
-      }
+      let currentVertex = eachShape.getVertexHead();
+      do {
+        this.sortedVertices.push(currentVertex);
+        currentVertex = currentVertex.getPointNext();
+      } while (currentVertex !== eachShape.getVertexHead());
     }
   }
 
