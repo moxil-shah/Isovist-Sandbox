@@ -3,7 +3,6 @@
 
 let allShapes = new Set(); // global array of all shapes made
 let allguards = new Set(); // global array of all security guards made
-let allVertices = new Set(); // global array of all the vertices on the map
 const SecurityGuardNames = [
   [0, 0, 255],
   [0, 255, 0],
@@ -74,10 +73,12 @@ function sidesInput() {
 function SecurityGuardInput() {
   if (SecurityGuardNames.length !== 0) {
     guard = new SecurityGuard(77.5, 200, SecurityGuardNames.pop());
-    for (let vertex of allVertices) {
-      vertex.setSecurityGuardAngle(guard);
-      vertex.setExtendedFrom(guard, null);
-      vertex.setExtendo(guard);
+    for (let eachShape of allShapes) {
+      for (let vertex of eachShape.getVerticesSet()) {
+        vertex.setSecurityGuardAngle(guard);
+        vertex.setExtendedFrom(guard, null);
+        vertex.setExtendo(guard);
+      }
     }
     guard.addAllVertices();
     guard.sortVertices();
@@ -102,7 +103,6 @@ function polygon(x, y, radius, npoints) {
       new Point(0, height, newShape),
     ];
     for (let i = 0; i < stage.length; i += 1) {
-      allVertices.add(stage[i]);
       vertexes.push(stage[i]);
     }
   } else {
@@ -111,22 +111,24 @@ function polygon(x, y, radius, npoints) {
       let sx = x + cos(i) * radius;
       let sy = y + sin(i) * radius;
       aPoint = new Point(sx, sy, newShape);
-      allVertices.add(aPoint);
+
       vertexes.push(aPoint);
     }
   }
 
-  newShape.setVerticesSet(vertexes);
+  newShape.setVerticesLinkedList(vertexes);
   newShape.setEdges();
   allShapes.add(newShape);
-
-  for (let vertex of allVertices) {
-    for (let guard of allguards) {
-      vertex.setSecurityGuardAngle(guard);
-      vertex.setExtendedFrom(guard, null);
-      vertex.setExtendo(guard);
+  for (let eachShape of allShapes) {
+    for (let vertex of eachShape.getVerticesSet()) {
+      for (let guard of allguards) {
+        vertex.setSecurityGuardAngle(guard);
+        vertex.setExtendedFrom(guard, null);
+        vertex.setExtendo(guard);
+      }
     }
   }
+
   for (let guard of allguards) {
     guard.addAllVertices();
     guard.sortVertices();
@@ -381,20 +383,20 @@ function dragPoint() {
       thething.get(key).sort(function (a, b) {
         return a[1] - b[1];
       });
-      console.log(key, value);
+      // console.log(key, value);
     }
-    console.log("done");
-
-    
+    // console.log("done");
 
     shapesPointDragged.setEdges();
     updateVertexArrayDistancetoMousePress(shapesPointDragged);
 
-    for (let vertex of allVertices) {
-      for (let guard of allguards) {
-        vertex.setSecurityGuardAngle(guard);
-        vertex.setExtendedFrom(guard, null);
-        vertex.setExtendo(guard);
+    for (let eachShape of allShapes) {
+      for (let vertex of eachShape.getVerticesSet()) {
+        for (let guard of allguards) {
+          vertex.setSecurityGuardAngle(guard);
+          vertex.setExtendedFrom(guard, null);
+          vertex.setExtendo(guard);
+        }
       }
     }
 
@@ -469,10 +471,12 @@ function dragSecurityGuard() {
     guardDragged.setX(mouseX);
     guardDragged.setY(mouseY);
 
-    for (let vertex of allVertices) {
-      vertex.setSecurityGuardAngle(guardDragged);
-      vertex.setExtendedFrom(guardDragged, null);
-      vertex.setExtendo(guardDragged);
+    for (let eachShape of allShapes) {
+      for (let vertex of eachShape.getVerticesSet()) {
+        vertex.setSecurityGuardAngle(guardDragged);
+        vertex.setExtendedFrom(guardDragged, null);
+        vertex.setExtendo(guardDragged);
+      }
     }
     guardDragged.sortVertices();
   }
@@ -496,11 +500,13 @@ function dragShape() {
 
     shapeDragged.setEdges();
 
-    for (let vertex of allVertices) {
-      for (let guard of allguards) {
-        vertex.setSecurityGuardAngle(guard);
-        vertex.setExtendedFrom(guard, null);
-        vertex.setExtendo(guard);
+    for (let eachShape of allShapes) {
+      for (let vertex of eachShape.getVerticesSet()) {
+        for (let guard of allguards) {
+          vertex.setSecurityGuardAngle(guard);
+          vertex.setExtendedFrom(guard, null);
+          vertex.setExtendo(guard);
+        }
       }
     }
 
@@ -612,31 +618,39 @@ function checkIfTwoLinesIntersectOnEndPoints(line1, line2) {
 
 class Shape {
   constructor(nPoints, color) {
-    this.id = Date.now();
     this.nPoints = nPoints;
     this.vertices = null;
+    this.vertexHead;
     this.verticesDistancetoMousePress = new Map();
     this.edges = new Set();
     this.color = color;
   }
 
-  setVerticesSet(vertexArray) {
-    this.vertices = new Set();
+  setVerticesLinkedList(vertexArray) {
     vertexArray[0].setPointPrev(vertexArray[vertexArray.length - 1]);
     vertexArray[0].setPointNext(vertexArray[1]);
-    this.vertices.add(vertexArray[0]);
+    this.vertexHead = vertexArray[0];
 
     vertexArray[vertexArray.length - 1].setPointPrev(
       vertexArray[vertexArray.length - 2]
     );
     vertexArray[vertexArray.length - 1].setPointNext(vertexArray[0]);
-    this.vertices.add(vertexArray[vertexArray.length - 1]);
 
     for (let i = 1; i < vertexArray.length - 1; i += 1) {
       vertexArray[i].setPointPrev(vertexArray[i - 1]);
       vertexArray[i].setPointNext(vertexArray[i + 1]);
-      this.vertices.add(vertexArray[i]);
     }
+
+    this.setVerticesSet();
+  }
+
+  setVerticesSet() {
+    this.vertices = new Set();
+    let currentVertex = this.vertexHead;
+    do {
+      this.vertices.add(currentVertex);
+      currentVertex = currentVertex.getPointNext();
+    } while (currentVertex !== this.vertexHead);
   }
 
   setEdges() {
@@ -649,10 +663,6 @@ class Shape {
 
   setVerticesDistancetoMousePress(theVertex, coordinate) {
     this.verticesDistancetoMousePress.set(theVertex, coordinate);
-  }
-
-  getName() {
-    return this.id;
   }
 
   getEdges() {
@@ -1070,8 +1080,10 @@ class SecurityGuard {
 
   addAllVertices() {
     this.sortedVertices = [];
-    for (let vertex of allVertices) {
-      this.sortedVertices.push(vertex);
+    for (let eachShape of allShapes) {
+      for (let vertex of eachShape.getVerticesSet()) {
+        this.sortedVertices.push(vertex);
+      }
     }
   }
 
