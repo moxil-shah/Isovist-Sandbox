@@ -20,7 +20,6 @@ let pointDragged = -1;
 let guardDragged = -1;
 let gameShape;
 let intersectionPointsGlobal = new Map();
-let fornow = true;
 
 function getScrollBarWidth() {
   var $outer = $("<div>")
@@ -39,7 +38,7 @@ function setup() {
     document.documentElement.clientWidth - getScrollBarWidth(),
     document.documentElement.clientHeight
   );
-  frameRate(120);
+  frameRate(60);
   polygon(null, null, null, 4);
 }
 
@@ -50,6 +49,7 @@ function draw() {
   dragShape();
   renderAllShapes();
   renderAllSecurityGuards();
+  renderAllShapesPoints();
   renderVertexClicked();
 
   // for (const [key, value] of intersectionPointsGlobal) {
@@ -61,7 +61,6 @@ function draw() {
   //   }
   //   pop();
   // }
-  deletetheselfintersect();
 }
 
 // from the HTML form
@@ -94,6 +93,7 @@ function SecurityGuardInput() {
 function polygon(x, y, radius, npoints) {
   let angle = TWO_PI / npoints;
   let vertexes = []; // temp vertexes array to be passed into Shape constructor
+  let copyVertexes = [];
   let newShape = null;
   // gets the vertexes ready and puts them into temp array
 
@@ -114,8 +114,8 @@ function polygon(x, y, radius, npoints) {
     for (let i = 0; i < TWO_PI - HEXAGON_ROUNDING_ERROR; i += angle) {
       let sx = x + cos(i) * radius;
       let sy = y + sin(i) * radius;
-      aPoint = new Point(sx, sy, newShape);
-      vertexes.push(aPoint);
+      vertexes.push(new Point(sx, sy, newShape));
+      copyVertexes.push([sx, sy]);
     }
   }
 
@@ -241,41 +241,49 @@ function renderAllShapes() {
     beginShape();
 
     let aVertex = shape.getVertexHead();
-    let counter = 0;
     do {
       push();
-      strokeWeight(15);
-      stroke("purple");
-      point(aVertex.getX(), aVertex.getY());
       if (aVertex.getIncludeInRender() === true)
         vertex(aVertex.getX(), aVertex.getY());
       pop();
-
       aVertex = aVertex.getPointNext();
-      counter += 1;
     } while (aVertex !== shape.vertexHead);
-
-    console.log(counter);
-
     endShape(CLOSE);
     pop();
   }
 }
 
-function deletetheselfintersect() {
+function renderAllShapesPoints() {
   for (let shape of allShapes) {
-    let aVertex = shape.getVertexHead();
+    let currentVertex = shape.getVertexHead();
     do {
-      if (aVertex.getIncludeInRender() === false) {
-        aVertex.getPointPrev().setPointNext(aVertex.getPointNext());
-        aVertex.getPointNext().setPointPrev(aVertex.getPointPrev());
-        aVertex = aVertex.getPointPrev();
+      if (currentVertex.getIncludeInRender() === true) {
+        push();
+        strokeWeight(10);
+        stroke("white");
+        point(currentVertex.getX(), currentVertex.getY());
+        strokeWeight(5);
+        stroke("black");
+        point(currentVertex.getX(), currentVertex.getY());
+        pop();
       }
-      aVertex = aVertex.getPointNext();
-    } while (aVertex !== shape.vertexHead);
-
-    shape.setEdges();
+      currentVertex = currentVertex.getPointNext();
+    } while (currentVertex !== shape.vertexHead);
   }
+}
+
+function deleteTheSelfIntersect(shape) {
+  let aVertex = shape.getVertexHead();
+  do {
+    if (aVertex.getIncludeInRender() === false) {
+      aVertex.getPointPrev().setPointNext(aVertex.getPointNext());
+      aVertex.getPointNext().setPointPrev(aVertex.getPointPrev());
+      aVertex = aVertex.getPointPrev();
+    }
+    aVertex = aVertex.getPointNext();
+  } while (aVertex !== shape.vertexHead);
+
+  shape.setEdges();
 }
 
 function checkIfClickAVertex() {
@@ -288,7 +296,8 @@ function checkIfClickAVertex() {
     do {
       if (
         between(mouseX, currentVertex.getX() - 10, currentVertex.getX() + 10) &&
-        between(mouseY, currentVertex.getY() - 10, currentVertex.getY() + 10)
+        between(mouseY, currentVertex.getY() - 10, currentVertex.getY() + 10) &&
+        currentVertex.getIncludeInRender() === true
       ) {
         pointDragged = currentVertex;
         shapesPointDragged = eachShape;
@@ -319,7 +328,6 @@ function mouseClicked() {
   else if (pointClicked) {
     pointClicked = false;
     pointDragged = -1;
-
   } else if (checkIfClickAVertex()) pointClicked = true;
   else if (shapeClicked) {
     shapeClicked = false;
@@ -390,13 +398,11 @@ function dragPoint() {
     return;
   }
   if (pointClicked === true) {
+    deleteTheSelfIntersect(shapesPointDragged);
     pointDragged.setX(mouseX);
     pointDragged.setY(mouseY);
 
-    let thething = checkIfSelfIntersectingPolygon(
-      shapesPointDragged,
-      pointDragged
-    );
+    let thething = checkIfSelfIntersectingPolygon(shapesPointDragged);
 
     intersectionPointsGlobal = thething;
 
@@ -432,12 +438,20 @@ function dragPoint() {
 
         value[i].setIncludeInRender(false);
       }
+
       if (value.length > 2) {
-        console.log("not ready yet");
         for (let i = 1; i < value.length - 1; i += 1) {
           value[i].setPointPrev(value[i - 1]);
           value[i].setPointNext(value[i + 1]);
         }
+      }
+      if (value.length >= 2) {
+        referencePoint.setPointNext(value[0]);
+        value[0].setPointNext(value[1]);
+        value[value.length - 1].setPointNext(nextPoint);
+        value[0].setPointPrev(referencePoint);
+        value[value.length - 1].setPointPrev(value[value.length - 2]);
+        nextPoint.setPointPrev(value[value.length - 1]);
       }
 
       if (value.length === 1) {
@@ -470,7 +484,7 @@ function dragPoint() {
   }
 }
 
-function checkIfSelfIntersectingPolygon(theShape, thePoint) {
+function checkIfSelfIntersectingPolygon(theShape) {
   let intersectionPoints = new Map();
 
   for (let eachLine of theShape.getEdges()) {
@@ -676,6 +690,7 @@ class Shape {
   constructor(nPoints, color) {
     this.nPoints = nPoints;
     this.vertexHead;
+    this.orignalVertexHead;
     this.verticesDistancetoMousePress = new Map();
     this.edges = new Set();
     this.color = color;
@@ -914,7 +929,7 @@ class SecurityGuard {
 
     // Go through all the vertices by radian in regards to
     // the straight line from security guard to right hand wall
-    console.log("guard", this.sortedVertices.length);
+
     for (let i = 0; i < this.sortedVertices.length; i += 1) {
       let toRemove = [];
 
