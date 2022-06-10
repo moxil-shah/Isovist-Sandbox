@@ -486,26 +486,21 @@ function dragPoint() {
 
 function checkIfSelfIntersectingPolygon(theShape) {
   let intersectionPoints = new Map();
-
   for (let eachLine of theShape.getEdges()) {
     for (let shapeLine of theShape.getEdges()) {
       if (eachLine === shapeLine) continue;
       if (checkIfIntersect(eachLine, shapeLine) === true) {
         let intersectionPoint = findIntersection(eachLine, shapeLine);
-        let indicator = true;
-
-        let currentVertex = theShape.getVertexHead();
-        do {
-          if (
-            checkIfTwoPointsOverlapRounded(currentVertex, intersectionPoint)
-          ) {
-            indicator = false;
-            break;
-          }
-          currentVertex = currentVertex.getPointNext();
-        } while (currentVertex !== theShape.getVertexHead());
-
-        if (indicator === true) {
+        if (
+          checkIfTwoPointsOverlapRounded(
+            eachLine.getPoint1(),
+            intersectionPoint
+          ) === false &&
+          checkIfTwoPointsOverlapRounded(
+            eachLine.getPoint2(),
+            intersectionPoint
+          ) === false
+        ) {
           if (intersectionPoints.get(eachLine) !== undefined)
             intersectionPoints.get(eachLine).push(intersectionPoint);
           else {
@@ -950,7 +945,6 @@ class SecurityGuard {
           this.considerExtendoVertices(this.sortedVertices[i]);
         }
       }
-      console.log(this.treeOfEdges.length);
       let toRemove = [];
 
       // Delete edges that like on clockwise side of sweep
