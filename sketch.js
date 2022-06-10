@@ -931,6 +931,26 @@ class SecurityGuard {
     // the straight line from security guard to right hand wall
 
     for (let i = 0; i < this.sortedVertices.length; i += 1) {
+      if (this.visible(this.sortedVertices[i]) === true) {
+        this.isovistVertices.add(this.sortedVertices[i]);
+        let hasOrNot = false;
+        let currentVertex = gameShape.getVertexHead();
+        do {
+          if (currentVertex === this.sortedVertices[i]) {
+            hasOrNot = true;
+            break;
+          }
+          currentVertex = currentVertex.getPointNext();
+        } while (currentVertex !== gameShape.getVertexHead());
+
+        if (
+          hasOrNot === false &&
+          this.sortedVertices[i].getExtendoForSecurityGuard(this) !== "nope"
+        ) {
+          this.considerExtendoVertices(this.sortedVertices[i]);
+        }
+      }
+      console.log(this.treeOfEdges.length);
       let toRemove = [];
 
       // Delete edges that like on clockwise side of sweep
@@ -1072,26 +1092,6 @@ class SecurityGuard {
 
       //   console.log(i, this.visible(this.sortedVertices[i], i));
       // }
-
-      if (this.visible(this.sortedVertices[i]) === true) {
-        this.isovistVertices.add(this.sortedVertices[i]);
-        let hasOrNot = false;
-        let currentVertex = gameShape.getVertexHead();
-        do {
-          if (currentVertex === this.sortedVertices[i]) {
-            hasOrNot = true;
-            break;
-          }
-          currentVertex = currentVertex.getPointNext();
-        } while (currentVertex !== gameShape.getVertexHead());
-
-        if (
-          hasOrNot === false &&
-          this.sortedVertices[i].getExtendoForSecurityGuard(this) !== "nope"
-        ) {
-          this.considerExtendoVertices(this.sortedVertices[i]);
-        }
-      }
     }
   }
 
