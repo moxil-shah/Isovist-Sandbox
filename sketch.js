@@ -927,6 +927,7 @@ class SecurityGuard {
     let helperVector = createVector(1, 1, 1);
     this.isovistVertices = new Set();
     this.treeOfEdges = [];
+    this.constructedEdges = [];
     this.root = null;
     this.edgeCounter = 1;
 
@@ -1077,6 +1078,7 @@ class SecurityGuard {
         toAdd.push(addedEdge2);
       }
       if (toAdd.length === 2) {
+        let prevLeft1 = getLeftmostLeaf(this.root);
         if (
           distanceBetweenTwoPoints(
             toAdd[1].getPoint2(),
@@ -1120,6 +1122,20 @@ class SecurityGuard {
           this.root = ainsert(this.root, toAdd[0]);
           this.root = ainsert(this.root, toAdd[1]);
         }
+        let newLeft1 = getLeftmostLeaf(this.root);
+        if (prevLeft1 !== newLeft1) {
+          let qv_i1 = new Line(
+            new Point(this.x, this.y, null),
+            this.sortedVertices[i]
+          );
+
+          let ip1 = findIntersection(qv_i1, prevLeft1.theKey);
+          push();
+          stroke("purple");
+          strokeWeight(20);
+          point(ip1.getX(), ip1.getY());
+          pop();
+        }
       }
 
       if (toAdd.length === 1) {
@@ -1130,11 +1146,24 @@ class SecurityGuard {
 
       if (toAdd.length === 0) {
         let prevLeft = getLeftmostLeaf(this.root);
+
         this.root = deleteNode(this.root, toRemove[0]);
         this.root = deleteNode(this.root, toRemove[1]);
         let newLeft = getLeftmostLeaf(this.root);
 
-  
+        if (prevLeft !== newLeft) {
+          let qv_i = new Line(
+            new Point(this.x, this.y, null),
+            this.sortedVertices[i]
+          );
+
+          let ip = findIntersection(qv_i, prevLeft.theKey);
+          push();
+          stroke("purple");
+          strokeWeight(20);
+          point(ip.getX(), ip.getY());
+          pop();
+        }
       }
     }
   }
@@ -1432,11 +1461,10 @@ class Node {
 }
 
 function getLeftmostLeaf(N) {
-  if (N.left !== null) {
-    getLeftmostLeaf(N.left);
-  } else {
-    return N.theKey;
+  while (N.left !== null) {
+    N = N.left;
   }
+  return N;
 }
 
 // A utility function to get getHeight of the tree
