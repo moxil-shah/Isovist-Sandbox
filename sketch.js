@@ -623,6 +623,10 @@ function orientOrder(p, q, r) {
   return val > 0 ? 1 : 2;
 }
 
+function distanceBetweenTwoPoints(p1, p2) {
+  return Math.sqrt((p1.getX() - p2.getX()) ** 2 + (p1.getY() - p2.getY()) ** 2);
+}
+
 function checkIfIntersect(line1, line2) {
   let p1 = line1.getPoint1();
   let q1 = line1.getPoint2();
@@ -769,6 +773,10 @@ class Line {
       this.Point2.setX(sortedVertices[0].getX());
       this.Point2.setY(sortedVertices[0].getY());
     }
+  }
+
+  getPointThatIsCloserToTop() {
+    return this.Point1.getY() < this.Point2.getY() ? this.Point1 : this.point2;
   }
 }
 
@@ -950,6 +958,7 @@ class SecurityGuard {
         }
       }
       let toRemove = [];
+      let toAdd = [];
 
       // Delete edges that like on clockwise side of sweep
       for (let j = 0; j < this.treeOfEdges.length; j += 1) {
@@ -1034,12 +1043,12 @@ class SecurityGuard {
       ).dot(helperVector);
 
       if (crossProduct3 >= 0) {
-        this.treeOfEdges.push(
-          new Line(
-            this.sortedVertices[i],
-            this.sortedVertices[i].getPointPrev()
-          )
+        let addedEdge = new Line(
+          this.sortedVertices[i],
+          this.sortedVertices[i].getPointPrev()
         );
+        this.treeOfEdges.push(addedEdge);
+        toAdd.push(addedEdge);
       }
 
       let crossProduct4 = p5.Vector.cross(
@@ -1060,37 +1069,149 @@ class SecurityGuard {
       ).dot(helperVector);
 
       if (crossProduct4 >= 0) {
-        this.treeOfEdges.push(
-          new Line(
-            this.sortedVertices[i],
-            this.sortedVertices[i].getPointNext()
-          )
+        let addedEdge2 = new Line(
+          this.sortedVertices[i],
+          this.sortedVertices[i].getPointNext()
         );
+        this.treeOfEdges.push(addedEdge2);
+        toAdd.push(addedEdge2);
+      }
+      if (toAdd.length === 2) {
+        if (
+          distanceBetweenTwoPoints(
+            toAdd[1].getPoint2(),
+            this.sortedVertices[i]
+          ) <
+          distanceBetweenTwoPoints(toAdd[0].getPoint2(), this.sortedVertices[i])
+        ) {
+          let temp = toAdd[0];
+          toAdd[0] = toAdd[1];
+          toAdd[1] = temp;
+        }
+
+        let ans = this.binarySearch(this.sortedVertices[i], this.root);
+        if (ans[1] === "leftfromroot" && ans[0].left === null) {
+          toAdd[1].setPosition(ans[0].theKey.getPosition() / 1.1);
+          toAdd[0].setPosition(toAdd[1].getPosition() / 1.1);
+          this.root = ainsert(this.root, toAdd[1]);
+          this.root = ainsert(this.root, toAdd[0]);
+        } else if (ans[1] === "rightfromroot" && ans[0].right === null) {
+          toAdd[0].setPosition(ans[0].theKey.getPosition() / 0.9);
+          toAdd[1].setPosition(toAdd[0].getPosition() / 0.9);
+          this.root = ainsert(this.root, toAdd[0]);
+          this.root = ainsert(this.root, toAdd[1]);
+        } else if (ans[1] === "leftfromroot") {
+          toAdd[1].setPosition(
+            (ans[0].theKey.getPosition() + ans[0].left.theKey.getPosition()) / 2
+          );
+          toAdd[0].setPosition(
+            (toAdd[1].getPosition() + ans[0].left.theKey.getPosition()) / 2
+          );
+          this.root = ainsert(this.root, toAdd[1]);
+          this.root = ainsert(this.root, toAdd[0]);
+        } else if (ans[1] === "rightfromroot") {
+          toAdd[0].setPosition(
+            (ans[0].theKey.getPosition() + ans[0].right.theKey.getPosition()) /
+              2
+          );
+          toAdd[1].setPosition(
+            (toAdd[0].getPosition() + ans[0].right.theKey.getPosition()) / 2
+          );
+          this.root = ainsert(this.root, toAdd[0]);
+          this.root = ainsert(this.root, toAdd[1]);
+        }
       }
 
-      // if (i === 3) {
-      //   for (let k = 0; k < this.treeOfEdges.length; k += 1) {
-      //     push();
-      //     stroke("red");
-      //     strokeWeight(15);
+      if (toAdd.length === 1) {
+        this.root = deleteNode(this.root, toRemove[0]);
+        toAdd[0].setPosition(toRemove[0].getPosition());
+        this.root = ainsert(this.root, toAdd[0]);
+      }
 
-      //     line(
-      //       this.treeOfEdges[k].getPoint1().getX(),
-      //       this.treeOfEdges[k].getPoint1().getY(),
-      //       this.treeOfEdges[k].getPoint2().getX(),
-      //       this.treeOfEdges[k].getPoint2().getY()
-      //     );
-      //     stroke("green");
-      //     point(
-      //       this.sortedVertices[i].getX() - 23,
-      //       this.sortedVertices[i].getY() + 23
-      //     );
-      //     pop();
-      //   }
+      if (toAdd.length === 0) {
+        let prevLeft = getLeftmostLeaf(this.root);
+        this.root = deleteNode(this.root, toRemove[0]);
+        this.root = deleteNode(this.root, toRemove[1]);
+        let newLeft = getLeftmostLeaf(this.root);
 
-      //   console.log(i, this.visible(this.sortedVertices[i], i));
-      // }
+  
+      }
     }
+  }
+
+  binarySearch(v_i, root) {
+    let rootEdge = root.theKey;
+    let leftEdge;
+    if (root.left === null) leftEdge = null;
+    else leftEdge = root.left.theKey;
+    let rightEdge;
+    if (root.right === null) rightEdge = null;
+    else rightEdge = root.right.theKey;
+
+    if (
+      this.lineSide(v_i, rootEdge) === "left" &&
+      this.lineSide(v_i, leftEdge) === "left"
+    ) {
+      return this.binarySearch(v_i, root.left);
+    }
+
+    if (
+      this.lineSide(v_i, rootEdge) === "right" &&
+      this.lineSide(v_i, rightEdge) === "right"
+    ) {
+      return this.binarySearch(v_i, root.right);
+    }
+
+    if (
+      this.lineSide(v_i, rootEdge) === "left" &&
+      (this.lineSide(v_i, leftEdge) === "right" ||
+        this.lineSide(v_i, leftEdge) === "DNE")
+    ) {
+      return [root, "leftfromroot"];
+    }
+
+    if (
+      this.lineSide(v_i, rootEdge) === "right" &&
+      (this.lineSide(v_i, rightEdge) === "left" ||
+        this.lineSide(v_i, rightEdge) === "DNE")
+    ) {
+      return [root, "rightfromroot"];
+    }
+
+    console.log("Big error 2!");
+  }
+
+  lineSide(v_i, edge) {
+    if (edge === null) {
+      return "DNE";
+    }
+
+    let d =
+      (v_i.getX() - edge.getPoint1().getX()) *
+        (edge.getPoint2().getY() - edge.getPoint1().getY()) -
+      (v_i.getY() - edge.getPoint1().getY()) *
+        (edge.getPoint2().getX() - edge.getPoint1().getX());
+
+    let signOfLeftPoint = this.signLeftPoint(
+      new Point(edge.getPoint1().getX() - 1, edge.getPoint1().getY(), null),
+      edge
+    );
+    if (signOfLeftPoint > 0 && d > 0) {
+      return "left";
+    } else if (signOfLeftPoint < 0 && d < 0) {
+      return "left";
+    } else {
+      return "right";
+    }
+  }
+
+  signLeftPoint(v_i, edge) {
+    return (
+      (v_i.getX() - edge.getPoint1().getX()) *
+        (edge.getPoint2().getY() - edge.getPoint1().getY()) -
+      (v_i.getY() - edge.getPoint1().getY()) *
+        (edge.getPoint2().getX() - edge.getPoint1().getX())
+    );
   }
 
   considerExtendoVertices(w_i) {
@@ -1307,6 +1428,14 @@ class Node {
     this.right = null;
     this.theKey = d;
     this.getHeight = 1;
+  }
+}
+
+function getLeftmostLeaf(N) {
+  if (N.left !== null) {
+    getLeftmostLeaf(N.left);
+  } else {
+    return N.theKey;
   }
 }
 
