@@ -1024,6 +1024,28 @@ class SecurityGuard {
       }
 
       if (toAdd.length === 2) {
+        if (
+          checkIfTwoPointsOverlap(
+            this.sortedVertices[i],
+            toAdd[0].getPoint1()
+          ) === false
+        ) {
+          let temp = toAdd[0].getPoint1();
+          toAdd[0].Point1 = toAdd[0].Point2;
+          toAdd[0].Point2 = temp;
+        }
+
+        if (
+          checkIfTwoPointsOverlap(
+            this.sortedVertices[i],
+            toAdd[1].getPoint1()
+          ) === false
+        ) {
+          let temp = toAdd[1].getPoint1();
+          toAdd[1].Point1 = toAdd[1].Point2;
+          toAdd[1].Point2 = temp;
+        }
+
         let prevLeft1 = getLeftmostLeaf(this.root);
         if (
           distanceBetweenTwoPoints(
@@ -1069,6 +1091,19 @@ class SecurityGuard {
           this.root = ainsert(this.root, toAdd[1]);
         } else {
           console.log("Big error 5!");
+        }
+
+        if (i === -1) {
+          push();
+          strokeWeight(24);
+          stroke("red");
+          line(
+            getLeftmostLeaf(this.root).theKey.getPoint1().getX(),
+            getLeftmostLeaf(this.root).theKey.getPoint1().getY(),
+            getLeftmostLeaf(this.root).theKey.getPoint2().getX(),
+            getLeftmostLeaf(this.root).theKey.getPoint2().getY()
+          );
+          pop();
         }
         let newLeft1 = getLeftmostLeaf(this.root);
         if (prevLeft1 !== newLeft1) {
