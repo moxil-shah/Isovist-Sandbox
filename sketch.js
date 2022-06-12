@@ -991,13 +991,13 @@ class SecurityGuard {
         toRemove.push(this.sortedVertices[i].getLineNext());
       }
 
-      if (i === 2) {
+      if (i === -2) {
         push();
         strokeWeight(20);
         stroke("red");
         point(this.sortedVertices[i].getX(), this.sortedVertices[i].getY());
         pop();
-        
+
         drawline(getLeftmostLeaf(this.root).theKey, "green");
       }
 
@@ -1077,7 +1077,7 @@ class SecurityGuard {
 
         let ans = this.binarySearch(this.sortedVertices[i], this.root, i);
         if (ans[1] === "leftfromroot" && ans[0].left === null) {
-          if (i === 2) {
+          if (i === -2) {
             console.log("in here");
           }
           toAdd[1].setPosition(ans[0].theKey.getPosition() / 1.1);
@@ -1155,7 +1155,7 @@ class SecurityGuard {
           this.counterforshape += 1;
         }
       }
-      if (i === 2) {
+      if (i === -2) {
         drawline(getLeftmostLeaf(this.root).theKey, "red");
       }
     }
@@ -1171,59 +1171,67 @@ class SecurityGuard {
     else rightEdge = root.right.theKey;
 
     if (
-      this.lineSide(v_i, rootEdge) === "left" &&
-      this.lineSide(v_i, leftEdge) === "left"
+      this.lineSide(v_i, rootEdge) === "towardsguardside" &&
+      this.lineSide(v_i, leftEdge) === "towardsguardside"
     ) {
       return this.binarySearch(v_i, root.left, i);
     }
 
     if (
-      this.lineSide(v_i, rootEdge) === "right" &&
-      this.lineSide(v_i, rightEdge) === "right"
+      this.lineSide(v_i, rootEdge) === "awayfromguardside" &&
+      this.lineSide(v_i, rightEdge) === "awayfromguardside"
     ) {
       return this.binarySearch(v_i, root.right, i);
     }
 
     if (
-      this.lineSide(v_i, rootEdge) === "left" &&
-      (this.lineSide(v_i, leftEdge) === "right" ||
+      this.lineSide(v_i, rootEdge) === "towardsguardside" &&
+      (this.lineSide(v_i, leftEdge) === "awayfromguardside" ||
         this.lineSide(v_i, leftEdge) === "DNE")
     ) {
       return [root, "leftfromroot"];
     }
 
     if (
-      this.lineSide(v_i, rootEdge) === "right" &&
-      (this.lineSide(v_i, rightEdge) === "left" ||
+      this.lineSide(v_i, rootEdge) === "awayfromguardside" &&
+      (this.lineSide(v_i, rightEdge) === "towardsguardside" ||
         this.lineSide(v_i, rightEdge) === "DNE")
     ) {
       return [root, "rightfromroot"];
     }
 
-    console.log("Big error 2!");
+    console.log("Big error 2!",  this.lineSide(v_i, rootEdge));
   }
 
   lineSide(v_i, edge) {
-    let helper = createVector(1, 1, 1);
+    // let helper = createVector(1, 1, 1);
+    // if (edge === null) {
+    //   return "DNE";
+    // }
+    // let ep1 = edge.getPoint1(),
+    //   ep2 = edge.getPoint2();
+    // if (edge.getPoint1().getY() > edge.getPoint2().getY()) {
+    //   ep1 = edge.getPoint2();
+    //   ep2 = edge.getPoint1();
+    // }
+    // let crossProduct1 = p5.Vector.cross(
+    //   createVector(ep1.getX() - ep2.getX(), -(ep1.getY() - ep2.getY()), 0),
+    //   createVector(v_i.getX() - ep2.getX(), -(v_i.getY() - ep2.getY()), 0)
+    // ).dot(helper);
+
+    // if (crossProduct1 > 0) {
+    //   return "towardsguardside";
+    // } else {
+    //   return "awayfromguardside";
+    // }
     if (edge === null) {
       return "DNE";
     }
-    let ep1 = edge.getPoint1(),
-      ep2 = edge.getPoint2();
-    if (edge.getPoint1().getY() > edge.getPoint2().getY()) {
-      ep1 = edge.getPoint2();
-      ep2 = edge.getPoint1();
+    let guardtov_i = new Line(new Point(this.x, this.y, null), v_i);
+    if (checkIfIntersect(guardtov_i, edge) === true) {
+      return "awayfromguardside";
     }
-    let crossProduct1 = p5.Vector.cross(
-      createVector(ep1.getX() - ep2.getX(), -(ep1.getY() - ep2.getY()), 0),
-      createVector(v_i.getX() - ep2.getX(), -(v_i.getY() - ep2.getY()), 0)
-    ).dot(helper);
-
-    if (crossProduct1 > 0) {
-      return "left";
-    } else {
-      return "right";
-    }
+    return "towardsguardside";
   }
 
   addAllVertices() {
