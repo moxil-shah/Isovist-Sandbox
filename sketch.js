@@ -760,6 +760,38 @@ class SecurityGuard {
     this.initalIntersect();
     anotherhelper = 0;
     for (let i = 0; i < this.sortedVertices.length; i += 1) {
+      if (this.visible(this.sortedVertices[i], i) === true) {
+        this.isovistVertices.add(this.sortedVertices[i]);
+
+        if (
+          shapeArray[0].getVertexArray().includes(this.sortedVertices[i]) ===
+            false &&
+          this.sortedVertices[i].getExtendoForSecurityGuard(this.name) !==
+            "nope"
+        ) {
+          anotherhelper += 1;
+
+          this.considerExtendoVertices(
+            this.sortedVertices[i],
+            this.sortedVertices[i].getExtendoForSecurityGuard(this.name)
+          );
+          // if (anotherhelper === -1) {
+          //   for (let k = 0; k < this.treeOfEdges.length; k += 1) {
+          //     push();
+          //     stroke("red");
+          //     strokeWeight(15);
+
+          //     line(
+          //       this.treeOfEdges[k][0].getPoint1().getX(),
+          //       this.treeOfEdges[k][0].getPoint1().getY(),
+          //       this.treeOfEdges[k][0].getPoint2().getX(),
+          //       this.treeOfEdges[k][0].getPoint2().getY()
+          //     );
+          //     pop();
+          //   }
+          // }
+        }
+      }
       if (i === -1) {
         push();
         strokeWeight(23);
@@ -772,7 +804,6 @@ class SecurityGuard {
       anotherhelper += 1;
 
       for (let k = 0; k < this.treeOfEdges.length; k += 1) {
-        
         if (
           this.treeOfEdges[k][0].getPoint1().getX() ===
             this.sortedVertices[i].getX() &&
@@ -830,8 +861,6 @@ class SecurityGuard {
         }
       }
 
-    
-
       for (let y = 0; y < toRemove.length; y += 1) {
         for (let z = 0; z < this.treeOfEdges.length; z += 1) {
           if (this.treeOfEdges[z][0] === toRemove[y]) {
@@ -840,12 +869,10 @@ class SecurityGuard {
           }
         }
       }
-      
+
       this.treeOfEdges = this.treeOfEdges.filter(
         (el) => !toRemove.includes(el)
       );
-
-
 
       let v1 = createVector(
         this.sortedVertices[i].getX() - this.getX(),
@@ -937,41 +964,6 @@ class SecurityGuard {
 
       //   console.log(i, this.visible(this.sortedVertices[i], i));
       // }
-
-      if (this.visible(this.sortedVertices[i], i) === true) {
-   
-
-        this.isovistVertices.add(this.sortedVertices[i]);
-
-        if (
-          shapeArray[0].getVertexArray().includes(this.sortedVertices[i]) ===
-            false &&
-          this.sortedVertices[i].getExtendoForSecurityGuard(this.name) !==
-            "nope"
-        ) {
-          anotherhelper += 1;
-
-          this.considerExtendoVertices(
-            this.sortedVertices[i],
-            this.sortedVertices[i].getExtendoForSecurityGuard(this.name)
-          );
-          // if (anotherhelper === -1) {
-          //   for (let k = 0; k < this.treeOfEdges.length; k += 1) {
-          //     push();
-          //     stroke("red");
-          //     strokeWeight(15);
-
-          //     line(
-          //       this.treeOfEdges[k][0].getPoint1().getX(),
-          //       this.treeOfEdges[k][0].getPoint1().getY(),
-          //       this.treeOfEdges[k][0].getPoint2().getX(),
-          //       this.treeOfEdges[k][0].getPoint2().getY()
-          //     );
-          //     pop();
-          //   }
-          // }
-        }
-      }
     }
   }
 
@@ -1105,7 +1097,6 @@ class SecurityGuard {
     }
 
     if (visibleToSecurityGuard === true) {
-
       return this.line3(w_i, index);
     } else {
       return false;
