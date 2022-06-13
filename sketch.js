@@ -1085,16 +1085,13 @@ class SecurityGuard {
 
         let ans = this.binarySearch(this.sortedVertices[i], this.root, i);
         if (ans[1] === "leftfromroot" && ans[0].left === null) {
-          if (i === -2) {
-            console.log("in here");
-          }
-          toAdd[1].setPosition(ans[0].theKey.getPosition() / 1.1);
-          toAdd[0].setPosition(toAdd[1].getPosition() / 1.1);
+          toAdd[1].setPosition(ans[0].theKey.getPosition() - 0.01);
+          toAdd[0].setPosition(toAdd[1].getPosition() - 0.01);
           this.root = ainsert(this.root, toAdd[1]);
           this.root = ainsert(this.root, toAdd[0]);
         } else if (ans[1] === "rightfromroot" && ans[0].right === null) {
-          toAdd[0].setPosition(ans[0].theKey.getPosition() / 0.9);
-          toAdd[1].setPosition(toAdd[0].getPosition() / 0.9);
+          toAdd[0].setPosition(ans[0].theKey.getPosition() + 0.01);
+          toAdd[1].setPosition(toAdd[0].getPosition() + 0.01);
           this.root = ainsert(this.root, toAdd[0]);
           this.root = ainsert(this.root, toAdd[1]);
         } else if (ans[1] === "leftfromroot") {
@@ -1328,7 +1325,6 @@ class SecurityGuard {
       this.root = ainsert(this.root, edge);
       this.edgeCounter += 1;
       console.log("adding", edge.getPosition());
-      
     }
     // push();
     // strokeWeight(24);
@@ -1466,8 +1462,57 @@ function ainsert(node, theKey) {
   else if (theKey.getPosition() > node.theKey.getPosition())
     node.right = ainsert(node.right, theKey);
   // Equal theKeys not allowed
-  else return node;
+  else {
+    console.log("duplicate insertion");
+    return node;
+  }
+  /* 2. Update getHeight of this ancestor node */
+  node.getHeight = 1 + getMax(getHeight(node.left), getHeight(node.right));
 
+  /* 3. Get the balance factor of this ancestor
+    node to check whether this node became
+    Wunbalanced */
+  let balance = getBalance(node);
+
+  // If this node becomes unbalanced, then
+  // there are 4 cases Left Left Case
+  if (balance > 1 && theKey.getPosition() < node.left.theKey.getPosition())
+    return rightRotate(node);
+
+  // Right Right Case
+  if (balance < -1 && theKey.getPosition() > node.right.theKey.getPosition())
+    return leftRotate(node);
+
+  // Left Right Case
+  if (balance > 1 && theKey.getPosition() > node.left.theKey.getPosition()) {
+    node.left = leftRotate(node.left);
+    return rightRotate(node);
+  }
+
+  // Right Left Case
+  if (balance < -1 && theKey.getPosition() < node.right.theKey.getPosition()) {
+    node.right = rightRotate(node.right);
+    return leftRotate(node);
+  }
+
+  /* return the (unchanged) node pointer */
+  return node;
+}
+
+
+function ainsertmodified(node, theKey) {
+  /* 1. Perform the normal BST rotation */
+  if (node == null) return new Node(theKey);
+
+  if (theKey.getPosition() < node.theKey.getPosition())
+    node.left = ainsert(node.left, theKey);
+  else if (theKey.getPosition() > node.theKey.getPosition())
+    node.right = ainsert(node.right, theKey);
+  // Equal theKeys not allowed
+  else {
+    console.log("duplicate insertion");
+    return node;
+  }
   /* 2. Update getHeight of this ancestor node */
   node.getHeight = 1 + getMax(getHeight(node.left), getHeight(node.right));
 
