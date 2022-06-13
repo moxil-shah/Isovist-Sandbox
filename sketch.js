@@ -938,7 +938,15 @@ class SecurityGuard {
     this.counterforshape = 0;
     let leftPrev;
     let leftNew;
-
+    for (let eachShape of allShapes) {
+      let currentVertex = eachShape.getVertexHead();
+      do {
+        currentVertex.getLineNext().setPosition(null);
+        currentVertex.getLinePrev().setPosition(null);
+        currentVertex = currentVertex.getPointNext();
+      } while (currentVertex !== eachShape.getVertexHead());
+    }
+    console.log("new rotation below");
     this.initalIntersect();
 
     for (let i = 0; i < this.sortedVertices.length; i += 1) {
@@ -1111,6 +1119,8 @@ class SecurityGuard {
         } else {
           console.log("Big error 5!");
         }
+        console.log("adding", toAdd[0].getPosition());
+        console.log("adding", toAdd[1].getPosition());
 
         leftNew = getLeftmostLeaf(this.root).theKey;
         if (leftPrev !== leftNew) {
@@ -1123,9 +1133,12 @@ class SecurityGuard {
         }
       } else if (toAdd.length === 1) {
         leftPrev = getLeftmostLeaf(this.root).theKey;
-        this.root = deleteNode(this.root, toRemove[0]);
+        // console.log(toRemove[0].getPosition());
+        //console.log(this.root.theKey.getPosition());
         toAdd[0].setPosition(toRemove[0].getPosition());
-        this.root = ainsert(this.root, toAdd[0]);
+        console.log("updating", toRemove[0].getPosition());
+        searchAVL(this.root, toRemove[0].getPosition()).theKey = toAdd[0];
+
         leftNew = getLeftmostLeaf(this.root).theKey;
         if (leftPrev !== leftNew) {
           if (toRemove[0] !== leftPrev) {
@@ -1145,6 +1158,8 @@ class SecurityGuard {
         this.root = deleteNode(this.root, toRemove[0]);
         this.root = deleteNode(this.root, toRemove[1]);
         leftNew = getLeftmostLeaf(this.root).theKey;
+        console.log("removing", toRemove[0].getPosition());
+        console.log("removing", toRemove[1].getPosition());
 
         if (leftPrev !== leftNew) {
           push();
@@ -1200,7 +1215,7 @@ class SecurityGuard {
       return [root, "rightfromroot"];
     }
 
-    console.log("Big error 2!",  this.lineSide(v_i, rootEdge));
+    console.log("Big error 2!", this.lineSide(v_i, rootEdge));
   }
 
   lineSide(v_i, edge) {
@@ -1312,6 +1327,8 @@ class SecurityGuard {
       edge.setPosition(this.edgeCounter);
       this.root = ainsert(this.root, edge);
       this.edgeCounter += 1;
+      console.log("adding", edge.getPosition());
+      
     }
     // push();
     // strokeWeight(24);
@@ -1581,4 +1598,20 @@ function preOrder(node) {
     preOrder(node.left);
     preOrder(node.right);
   }
+}
+function searchAVL(root, key) {
+  // Base Cases: root is null
+  // or key is present at root
+  if (root == null || root.theKey.getPosition() == key) {
+    if (root === null) {
+      console.log("big error agian");
+    }
+    return root;
+  }
+
+  // Key is greater than root's key
+  if (root.theKey.getPosition() < key) return searchAVL(root.right, key);
+
+  // Key is smaller than root's key
+  return searchAVL(root.left, key);
 }
