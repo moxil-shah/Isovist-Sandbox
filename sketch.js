@@ -949,12 +949,14 @@ class SecurityGuard {
     this.root;
     this.edgeCounter;
     this.counterforshape = 0;
+    this.treeOfEdges = [];
   }
 
   visibleVertices() {
     this.isovistVertices = new Set();
 
     this.root = null;
+    this.treeOfEdges = [];
     this.edgeCounter = 1;
     this.counterforshape = 0;
     let leftPrev;
@@ -1097,25 +1099,31 @@ class SecurityGuard {
         // pop();
         console.log("adding", toAdd[0], toAdd[1]);
 
-        let adding1 = ainsertmodified(
-          this.root,
-          toAdd[0],
-          this.sortedVertices[i],
-          this
-        );
-        console.log(adding1, toAdd[0]);
-        if (adding1 === "duplicate") {
-        } else this.root = adding1;
-        let adding2 = ainsertmodified(
-          this.root,
-          toAdd[1],
-          this.sortedVertices[i],
-          this
-        );
-        preOrder(this.root);
-        console.log(adding2);
-        if (adding2 === "duplicate") {
-        } else this.root = adding2;
+        if (this.treeOfEdges.includes(toAdd[0]) === false) {
+          let adding1 = ainsertmodified(
+            this.root,
+            toAdd[0],
+            this.sortedVertices[i],
+            this
+          );
+          console.log("here", adding1, toAdd[0]);
+          if (adding1 === "duplicate") {
+          } else this.root = adding1;
+        }
+
+        if (true) {
+          let adding2 = ainsertmodified(
+            this.root,
+            toAdd[1],
+            this.sortedVertices[i],
+            this
+          );
+          preOrder(this.root);
+          console.log("here2", adding2);
+          if (adding2 === "duplicate") {
+          } else this.root = adding2;
+        }
+
         preOrder(this.root);
         leftNew = getLeftmostLeaf(this.root).theKey;
         if (leftPrev !== leftNew) {
@@ -1266,7 +1274,7 @@ class SecurityGuard {
   }
 
   initalIntersect() {
-    let treeOfEdges = [];
+    this.treeOfEdges = [];
     for (let shape of allShapes) {
       for (let edge of shape.getEdges()) {
         if (
@@ -1290,29 +1298,30 @@ class SecurityGuard {
               (this.y - intersectionPoint.getY()) ** 2
           );
           edge.setPosition(distanceFromIntersectiontoGuard);
-          treeOfEdges.push(edge);
+          this.treeOfEdges.push(edge);
         }
       }
     }
-    treeOfEdges.sort(function (a, b) {
+    this.treeOfEdges.sort(function (a, b) {
       return a.getPosition() - b.getPosition();
     });
 
-    for (let edge of treeOfEdges) {
+    for (let edge of this.treeOfEdges) {
+      console.log(edge.getPosition());
       edge.setPosition(this.edgeCounter);
       this.root = ainsert(this.root, edge);
       this.edgeCounter += 1;
     }
-    // push();
-    // strokeWeight(24);
-    // stroke("red");
-    // line(
-    //   getLeftmostLeaf(this.root).theKey.getPoint1().getX(),
-    //   getLeftmostLeaf(this.root).theKey.getPoint1().getY(),
-    //   getLeftmostLeaf(this.root).theKey.getPoint2().getX(),
-    //   getLeftmostLeaf(this.root).theKey.getPoint2().getY()
-    // );
-    // pop();
+    push();
+    strokeWeight(24);
+    stroke("red");
+    line(
+      this.root.theKey.getPoint1().getX(),
+      this.root.theKey.getPoint1().getY(),
+      this.root.theKey.getPoint2().getX(),
+      this.root.theKey.getPoint2().getY()
+    );
+    pop();
     preOrder(this.root);
   }
 
