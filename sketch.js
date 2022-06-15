@@ -1084,12 +1084,12 @@ class SecurityGuard {
         // pop();
 
         let ans = this.binarySearch(this.sortedVertices[i], this.root, i);
-        if (ans[1] === "leftfromroot" && ans[0].left === null) {
+        if (ans[1] === "leftfromroot" || ans[0].left === null) {
           toAdd[1].setPosition(ans[0].theKey.getPosition() - 0.01);
           toAdd[0].setPosition(toAdd[1].getPosition() - 0.01);
           this.root = ainsert(this.root, toAdd[1]);
           this.root = ainsert(this.root, toAdd[0]);
-        } else if (ans[1] === "rightfromroot" && ans[0].right === null) {
+        } else if (ans[1] === "rightfromroot" || ans[0].right === null) {
           toAdd[0].setPosition(ans[0].theKey.getPosition() + 0.01);
           toAdd[1].setPosition(toAdd[0].getPosition() + 0.01);
           this.root = ainsert(this.root, toAdd[0]);
@@ -1499,15 +1499,14 @@ function ainsert(node, theKey) {
   return node;
 }
 
-
-function ainsertmodified(node, theKey) {
+function ainsertmodified(node, theKey, v_i, guard) {
   /* 1. Perform the normal BST rotation */
   if (node == null) return new Node(theKey);
 
-  if (theKey.getPosition() < node.theKey.getPosition())
-    node.left = ainsert(node.left, theKey);
-  else if (theKey.getPosition() > node.theKey.getPosition())
-    node.right = ainsert(node.right, theKey);
+  if (guard.lineSide(v_i, node.theKey) === "towardsguardside")
+    node.left = ainsertmodified(node.left, theKey, v_i, guard);
+  else if (guard.lineSide(v_i, node.theKey) === "awayfromguardside")
+    node.right = ainsertmodified(node.right, theKey, v_i, guard);
   // Equal theKeys not allowed
   else {
     console.log("duplicate insertion");
@@ -1523,21 +1522,33 @@ function ainsertmodified(node, theKey) {
 
   // If this node becomes unbalanced, then
   // there are 4 cases Left Left Case
-  if (balance > 1 && theKey.getPosition() < node.left.theKey.getPosition())
+  if (
+    balance > 1 &&
+    guard.lineSide(v_i, node.left.theKey) === "towardsguardside"
+  )
     return rightRotate(node);
 
   // Right Right Case
-  if (balance < -1 && theKey.getPosition() > node.right.theKey.getPosition())
+  if (
+    balance < -1 &&
+    guard.lineSide(v_i, node.right.theKey) === "awayfromguardside"
+  )
     return leftRotate(node);
 
   // Left Right Case
-  if (balance > 1 && theKey.getPosition() > node.left.theKey.getPosition()) {
+  if (
+    balance > 1 &&
+    guard.lineSide(v_i, node.left.theKey) === "awayfromguardside"
+  ) {
     node.left = leftRotate(node.left);
     return rightRotate(node);
   }
 
   // Right Left Case
-  if (balance < -1 && theKey.getPosition() < node.right.theKey.getPosition()) {
+  if (
+    balance < -1 &&
+    guard.lineSide(v_i, node.right.theKey) === "towardsguardside"
+  ) {
     node.right = rightRotate(node.right);
     return leftRotate(node);
   }
@@ -1559,17 +1570,17 @@ function minValueNode(node) {
   return current;
 }
 
-function deleteNode(theRoot, theKey) {
+function deleteNode(theRoot, theKey, v_i, guard) {
   // STEP 1: PERFORM STANDARD BST DELETE
   if (theRoot == null) return theRoot;
 
   // If the theKey to be deleted is smaller than
   // the theRoot's theKey, then it lies in left subtree
-  if (theKey.getPosition() < theRoot.theKey.getPosition())
+  if (guard.lineSide(v_i, theRoot.theKey) === "towardsguardside")
     theRoot.left = deleteNode(theRoot.left, theKey);
   // If the theKey to be deleted is greater than the
   // theRoot's theKey, then it lies in right subtree
-  else if (theKey.getPosition() > theRoot.theKey.getPosition())
+  else if (guard.lineSide(v_i, theRoot.theKey) === "awayfromguardside")
     theRoot.right = deleteNode(theRoot.right, theKey);
   // if theKey is same as theRoot's theKey, then this is the node
   // to be deleted
@@ -1644,10 +1655,10 @@ function preOrder(node) {
     preOrder(node.right);
   }
 }
-function searchAVL(root, key) {
+function searchAVL(root, key, v_i, guard) {
   // Base Cases: root is null
   // or key is present at root
-  if (root == null || root.theKey.getPosition() == key) {
+  if (root == null || root.theKey == key) {
     if (root === null) {
       console.log("big error agian");
     }
@@ -1655,7 +1666,8 @@ function searchAVL(root, key) {
   }
 
   // Key is greater than root's key
-  if (root.theKey.getPosition() < key) return searchAVL(root.right, key);
+  if (guard.lineSide(v_i, root.theKey) === "awayfromguardside")
+    return searchAVL(root.right, key);
 
   // Key is smaller than root's key
   return searchAVL(root.left, key);
