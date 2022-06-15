@@ -668,6 +668,13 @@ function checkIfVertexIsEndPointOfALine(aVertex, aLine) {
   );
 }
 
+function checkIfVertexIsEndPointOfALineRounded(aVertex, aLine) {
+  return (
+    checkIfTwoPointsOverlapRounded(aVertex, aLine.getPoint1()) ||
+    checkIfTwoPointsOverlapRounded(aVertex, aLine.getPoint2())
+  );
+}
+
 function checkIfTwoLinesIntersectOnEndPoints(line1, line2) {
   return (
     checkIfTwoPointsOverlap(line1.getPoint1(), line2.getPoint1()) ||
@@ -1293,6 +1300,9 @@ class SecurityGuard {
             ),
             edge
           );
+          if (checkIfVertexIsEndPointOfALineRounded(intersectionPoint, edge)) {
+            continue;
+          }
           let distanceFromIntersectiontoGuard = Math.sqrt(
             (this.x - intersectionPoint.getX()) ** 2 +
               (this.y - intersectionPoint.getY()) ** 2
