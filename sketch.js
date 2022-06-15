@@ -682,11 +682,13 @@ function checkIfTwoLinesAreTheSame(line1, line2) {
     checkIfTwoPointsOverlap(line1.getPoint1(), line2.getPoint1()) &&
     checkIfTwoPointsOverlap(line1.getPoint2(), line2.getPoint2())
   ) {
+    console.log("brgsdfgsdfdfsgsdgdfsgsduh");
     return true;
   } else if (
     checkIfTwoPointsOverlap(line1.getPoint2(), line2.getPoint1()) &&
     checkIfTwoPointsOverlap(line1.getPoint1(), line2.getPoint2())
   ) {
+    console.log("brdfgdfsgsdfsduh");
     return true;
   } else {
     return false;
