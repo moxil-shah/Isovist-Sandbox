@@ -20,6 +20,7 @@ let pointDragged = -1;
 let guardDragged = -1;
 let gameShape;
 let intersectionPointsGlobal = new Map();
+let temphelp = 0;
 
 function getScrollBarWidth() {
   var $outer = $("<div>")
@@ -101,12 +102,26 @@ function polygon(x, y, radius, npoints) {
   } else {
     newShape = new Shape(npoints, "white");
 
-    vertexes.push(new Point(70, 100, newShape));
-    copyVertexes.push([70, 100]);
-    vertexes.push(new Point(70, 150, newShape));
-    copyVertexes.push([70, 150]);
-    vertexes.push(new Point(150, 150, newShape));
-    copyVertexes.push([150, 150]);
+    if (temphelp === 0) {
+      vertexes.push(new Point(70, 100, newShape));
+      copyVertexes.push([70, 100]);
+      vertexes.push(new Point(70, 150, newShape));
+      copyVertexes.push([70, 150]);
+      vertexes.push(new Point(150, 150, newShape));
+      copyVertexes.push([150, 150]);
+      vertexes.push(new Point(150, 100, newShape));
+      copyVertexes.push([150, 100]);
+    } else {
+      vertexes.push(new Point(200, 100, newShape));
+      copyVertexes.push([200, 100]);
+      vertexes.push(new Point(200, 150, newShape));
+      copyVertexes.push([200, 150]);
+      vertexes.push(new Point(280, 150, newShape));
+      copyVertexes.push([280, 150]);
+      vertexes.push(new Point(280, 100, newShape));
+      copyVertexes.push([280, 100]);
+    }
+    temphelp += 1;
 
     // for (let i = 0; i < TWO_PI - HEXAGON_ROUNDING_ERROR; i += angle) {
     //   let sx = x + cos(i) * radius;
@@ -832,8 +847,6 @@ class SecurityGuard {
     for (let i = 0; i < this.sortedVertices.length; i += 1) {
       let toRemove = [];
       let toAdd = [];
-      if (i === 0)
-        console.log(this.sortedVertices[i].getAngleForSecurityGuard(this.name));
 
       let crossProduct3 = p5.Vector.cross(
         createVector(
@@ -852,10 +865,27 @@ class SecurityGuard {
         )
       ).dot(createVector(1, 1, 1));
 
-      if (crossProduct3 >= 0) {
+      if (crossProduct3 > 0) {
         toAdd.push(this.sortedVertices[i].getLinePrev());
-      } else {
+      } else if (crossProduct3 < 0) {
         toRemove.push(this.sortedVertices[i].getLinePrev());
+      } else {
+        console.log(
+          this.sortedVertices[i].getLinePrev(),
+          "a",
+          searchAVL(this.root, this.sortedVertices[i].getLinePrev(), true)
+        );
+        if (
+          searchAVL(
+            this.root,
+            this.sortedVertices[i].getLinePrev().getPosition(),
+            true
+          ) === null
+        ) {
+          toAdd.push(this.sortedVertices[i].getLinePrev());
+        } else {
+          toRemove.push(this.sortedVertices[i].getLinePrev());
+        }
       }
 
       let crossProduct4 = p5.Vector.cross(
@@ -875,10 +905,23 @@ class SecurityGuard {
         )
       ).dot(createVector(1, 1, 1));
 
-      if (crossProduct4 >= 0) {
+      if (crossProduct4 > 0) {
         toAdd.push(this.sortedVertices[i].getLineNext());
-      } else {
+      } else if (crossProduct4 < 0) {
         toRemove.push(this.sortedVertices[i].getLineNext());
+      } else {
+        console.log(this.sortedVertices[i].getLineNext(), "b");
+        if (
+          searchAVL(
+            this.root,
+            this.sortedVertices[i].getLineNext().getPosition(),
+            true
+          ) === null
+        ) {
+          toAdd.push(this.sortedVertices[i].getLineNext());
+        } else {
+          toRemove.push(this.sortedVertices[i].getLineNext());
+        }
       }
 
       if (i === -2) {
@@ -1016,7 +1059,8 @@ class SecurityGuard {
         //console.log(this.root.theKey.getPosition());
         toAdd[0].setPosition(toRemove[0].getPosition());
         console.log("updating", toRemove[0].getPosition());
-        searchAVL(this.root, toRemove[0].getPosition()).theKey = toAdd[0];
+        searchAVL(this.root, toRemove[0].getPosition(), false).theKey =
+          toAdd[0];
 
         leftNew = getLeftmostLeaf(this.root).theKey;
         if (leftPrev !== leftNew) {
@@ -1539,19 +1583,20 @@ function preOrder(node) {
     preOrder(node.right);
   }
 }
-function searchAVL(root, key) {
+function searchAVL(root, key, override) {
   // Base Cases: root is null
   // or key is present at root
-  if (root == null || root.theKey.getPosition() == key) {
-    if (root === null) {
+  if (root === null || root.theKey.getPosition() === key) {
+    if (root === null && override === false) {
       console.log("big error agian");
     }
     return root;
   }
 
   // Key is greater than root's key
-  if (root.theKey.getPosition() < key) return searchAVL(root.right, key);
+  if (root.theKey.getPosition() < key)
+    return searchAVL(root.right, key, override);
 
   // Key is smaller than root's key
-  return searchAVL(root.left, key);
+  return searchAVL(root.left, key, override);
 }
