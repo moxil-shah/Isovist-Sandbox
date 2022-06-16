@@ -107,6 +107,12 @@ function polygon(x, y, radius, npoints) {
       copyVertexes.push([70, 100]);
       vertexes.push(new Point(70, 150, newShape));
       copyVertexes.push([70, 150]);
+      vertexes.push(new Point(80, 150, newShape));
+      copyVertexes.push([80, 150]);
+      vertexes.push(new Point(90, 190, newShape));
+      copyVertexes.push([90, 190]);
+      vertexes.push(new Point(120, 150, newShape));
+      copyVertexes.push([120, 150]);
       vertexes.push(new Point(150, 150, newShape));
       copyVertexes.push([150, 150]);
       vertexes.push(new Point(150, 100, newShape));
