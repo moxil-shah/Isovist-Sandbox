@@ -1132,8 +1132,10 @@ class SecurityGuard {
         }
       } else if (toAdd.length === 0) {
         leftPrev = getLeftmostLeaf(this.root).theKey;
-        this.root = deleteNode(this.root, toRemove[0]);
-        this.root = deleteNode(this.root, toRemove[1]);
+        // this.root = deleteNode(this.root, toRemove[0]);
+        // this.root = deleteNode(this.root, toRemove[1]);
+        this.root = deleteNodeModified(this.root, toRemove[0], this.sortedVertices[i], this, toRemove);
+        this.root = deleteNodeModified(this.root, toRemove[1], this.sortedVertices[i], this, toRemove);
         leftNew = getLeftmostLeaf(this.root).theKey;
         console.log("removing", toRemove[0].getPosition());
         console.log("removing", toRemove[1].getPosition());
@@ -1208,6 +1210,21 @@ class SecurityGuard {
 
   lineSideModified(v_i, edge, other) {
     if (edge === null) {
+      return "DNE";
+    }
+    let guardtov_i = new Line(new Point(this.x, this.y, null), v_i);
+    if (checkIfIntersect(guardtov_i, edge) === true) {
+      if (edge === other[0]) {
+        return "awayfromguardside";
+      } else if (edge === other[1]) {
+        return "towardsguardside";
+      } else return "awayfromguardside";
+    }
+    return "towardsguardside";
+  }
+
+  lineSideModifiedtoDel(v_i, edge, other, thingtodel) {
+    if (edge === null || edge === thingtodel) {
       return "DNE";
     }
     let guardtov_i = new Line(new Point(this.x, this.y, null), v_i);
@@ -1542,7 +1559,8 @@ function ainsertmodified(node, theKey, v_i, guard, other) {
   // Right Right Case
   if (
     balance < -1 &&
-    guard.lineSideModified(v_i, node.right.theKey, other) === "awayfromguardside"
+    guard.lineSideModified(v_i, node.right.theKey, other) ===
+      "awayfromguardside"
   )
     return leftRotate(node);
 
@@ -1579,6 +1597,100 @@ function minValueNode(node) {
   while (current.left != null) current = current.left;
 
   return current;
+}
+
+function deleteNodeModified(theRoot, theKey, v_i, guard, other) {
+  // STEP 1: PERFORM STANDARD BST DELETE
+  //console.log(guard.lineSideForDeleting(v_i, theRoot.theKey), theKey);
+  if (theRoot === null) return theRoot;
+
+  // If the theKey to be deleted is smaller than
+  // the theRoot's theKey, then it lies in left subtree
+  if (guard.lineSideModifiedtoDel(v_i, theRoot.theKey, other, theKey) === "towardsguardside")
+    theRoot.left = deleteNodeModified(theRoot.left, theKey, v_i, guard, other);
+  // If the theKey to be deleted is greater than the
+  // theRoot's theKey, then it lies in right subtree
+  else if (guard.lineSideModifiedtoDel(v_i, theRoot.theKey, other, theKey) === "awayfromguardside")
+    theRoot.right = deleteNodeModified(
+      theRoot.right,
+      theKey,
+      v_i,
+      guard,
+      other
+    );
+  // if theKey is same as theRoot's theKey, then this is the node
+  // to be deleted
+  else {
+    let prev = theKey;
+    theKey = guard.lineSideModifiedtoDel(v_i, theRoot.theKey, other, theKey);
+    if (theKey === prev) {
+    } else {
+      deletehelper = true;
+    }
+    // node with only one child or no child
+    if (theRoot.left === null || theRoot.right === null) {
+      let temp = null;
+      if (temp === theRoot.left) temp = theRoot.right;
+      else temp = theRoot.left;
+
+      // No child case
+      if (temp === null) {
+        temp = theRoot;
+        theRoot = null;
+      } // One child case
+      else theRoot = temp; // Copy the contents of
+      // the non-empty child
+    } else {
+      // node with two children: Get the inorder
+      // successor (smallest in the right subtree)
+      let temp = minValueNode(theRoot.right);
+
+      // Copy the inorder successor's data to this node
+      theRoot.theKey = temp.theKey;
+
+      // Delete the inorder successor
+      theRoot.right = deleteNodeModified(
+        theRoot.right,
+        temp.theKey,
+        v_i,
+        guard,
+        other
+      );
+    }
+  }
+
+  // If the tree had only one node then return
+  if (theRoot === null) return theRoot;
+
+  // STEP 2: UPDATE getHeight OF THE CURRENT NODE
+  theRoot.getHeight =
+    getMax(getHeight(theRoot.left), getHeight(theRoot.right)) + 1;
+
+  // STEP 3: GET THE BALANCE FACTOR OF THIS NODE (to check whether
+  // this node became unbalanced)
+  let balance = getBalance(theRoot);
+
+  // If this node becomes unbalanced, then there are 4 cases
+  // Left Left Case
+  if (balance > 1 && getBalance(theRoot.left) >= 0) return rightRotate(theRoot);
+
+  // Left Right Case
+  if (balance > 1 && getBalance(theRoot.left) < 0) {
+    theRoot.left = leftRotate(theRoot.left);
+    return rightRotate(theRoot);
+  }
+
+  // Right Right Case
+  if (balance < -1 && getBalance(theRoot.right) <= 0)
+    return leftRotate(theRoot);
+
+  // Right Left Case
+  if (balance < -1 && getBalance(theRoot.right) > 0) {
+    theRoot.right = rightRotate(theRoot.right);
+    return leftRotate(theRoot);
+  }
+
+  return theRoot;
 }
 
 function deleteNode(theRoot, theKey) {
