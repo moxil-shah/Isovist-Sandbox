@@ -1018,13 +1018,37 @@ class SecurityGuard {
         if (ans[1] === "leftfromroot" && ans[0].left === null) {
           toAdd[1].setPosition(ans[0].theKey.getPosition() - 0.03);
           toAdd[0].setPosition(toAdd[1].getPosition() - 0.03);
-          this.root = ainsert(this.root, toAdd[1]);
-          this.root = ainsert(this.root, toAdd[0]);
+          this.root = ainsertmodified(
+            this.root,
+            toAdd[1],
+            this.sortedVertices[i],
+            this,
+            toAdd
+          );
+          this.root = ainsertmodified(
+            this.root,
+            toAdd[0],
+            this.sortedVertices[i],
+            this,
+            toAdd
+          );
         } else if (ans[1] === "rightfromroot" && ans[0].right === null) {
           toAdd[0].setPosition(ans[0].theKey.getPosition() + 0.01);
           toAdd[1].setPosition(toAdd[0].getPosition() + 0.01);
-          this.root = ainsert(this.root, toAdd[0]);
-          this.root = ainsert(this.root, toAdd[1]);
+          this.root = ainsertmodified(
+            this.root,
+            toAdd[0],
+            this.sortedVertices[i],
+            this,
+            toAdd
+          );
+          this.root = ainsertmodified(
+            this.root,
+            toAdd[1],
+            this.sortedVertices[i],
+            this,
+            toAdd
+          );
         } else if (ans[1] === "leftfromroot") {
           toAdd[1].setPosition(
             (ans[0].theKey.getPosition() + ans[0].left.theKey.getPosition()) / 2
@@ -1032,8 +1056,20 @@ class SecurityGuard {
           toAdd[0].setPosition(
             (toAdd[1].getPosition() + ans[0].left.theKey.getPosition()) / 2
           );
-          this.root = ainsert(this.root, toAdd[1]);
-          this.root = ainsert(this.root, toAdd[0]);
+          this.root = ainsertmodified(
+            this.root,
+            toAdd[1],
+            this.sortedVertices[i],
+            this,
+            toAdd
+          );
+          this.root = ainsertmodified(
+            this.root,
+            toAdd[0],
+            this.sortedVertices[i],
+            this,
+            toAdd
+          );
         } else if (ans[1] === "rightfromroot") {
           toAdd[0].setPosition(
             (ans[0].theKey.getPosition() + ans[0].right.theKey.getPosition()) /
@@ -1042,8 +1078,20 @@ class SecurityGuard {
           toAdd[1].setPosition(
             (toAdd[0].getPosition() + ans[0].right.theKey.getPosition()) / 2
           );
-          this.root = ainsert(this.root, toAdd[0]);
-          this.root = ainsert(this.root, toAdd[1]);
+          this.root = ainsertmodified(
+            this.root,
+            toAdd[0],
+            this.sortedVertices[i],
+            this,
+            toAdd
+          );
+          this.root = ainsertmodified(
+            this.root,
+            toAdd[1],
+            this.sortedVertices[i],
+            this,
+            toAdd
+          );
         } else {
           console.log("Big error 5!");
         }
@@ -1154,6 +1202,21 @@ class SecurityGuard {
     let guardtov_i = new Line(new Point(this.x, this.y, null), v_i);
     if (checkIfIntersect(guardtov_i, edge) === true) {
       return "awayfromguardside";
+    }
+    return "towardsguardside";
+  }
+
+  lineSideModified(v_i, edge, other) {
+    if (edge === null) {
+      return "DNE";
+    }
+    let guardtov_i = new Line(new Point(this.x, this.y, null), v_i);
+    if (checkIfIntersect(guardtov_i, edge) === true) {
+      if (edge === other[0]) {
+        return "awayfromguardside";
+      } else if (edge === other[1]) {
+        return "towardsguardside";
+      } else return "awayfromguardside";
     }
     return "towardsguardside";
   }
@@ -1399,7 +1462,7 @@ function getBalance(N) {
 
 function ainsert(node, theKey) {
   /* 1. Perform the normal BST rotation */
-  if (theKey.getPosition() === 0.985) preOrder(node);
+
   if (node == null) return new Node(theKey);
 
   if (theKey.getPosition() < node.theKey.getPosition())
@@ -1445,14 +1508,16 @@ function ainsert(node, theKey) {
   return node;
 }
 
-function ainsertmodified(node, theKey) {
+function ainsertmodified(node, theKey, v_i, guard, other) {
   /* 1. Perform the normal BST rotation */
   if (node == null) return new Node(theKey);
 
-  if (theKey.getPosition() < node.theKey.getPosition())
-    node.left = ainsert(node.left, theKey);
-  else if (theKey.getPosition() > node.theKey.getPosition())
-    node.right = ainsert(node.right, theKey);
+  if (guard.lineSideModified(v_i, node.theKey, other) === "towardsguardside")
+    node.left = ainsertmodified(node.left, theKey, v_i, guard, other);
+  else if (
+    guard.lineSideModified(v_i, node.theKey, other) === "awayfromguardside"
+  )
+    node.right = ainsertmodified(node.right, theKey, v_i, guard, other);
   // Equal theKeys not allowed
   else {
     console.log("duplicate insertion");
@@ -1468,21 +1533,33 @@ function ainsertmodified(node, theKey) {
 
   // If this node becomes unbalanced, then
   // there are 4 cases Left Left Case
-  if (balance > 1 && theKey.getPosition() < node.left.theKey.getPosition())
+  if (
+    balance > 1 &&
+    guard.lineSideModified(v_i, node.left.theKey, other) === "towardsguardside"
+  )
     return rightRotate(node);
 
   // Right Right Case
-  if (balance < -1 && theKey.getPosition() > node.right.theKey.getPosition())
+  if (
+    balance < -1 &&
+    guard.lineSideModified(v_i, node.right.theKey, other) === "awayfromguardside"
+  )
     return leftRotate(node);
 
   // Left Right Case
-  if (balance > 1 && theKey.getPosition() > node.left.theKey.getPosition()) {
+  if (
+    balance > 1 &&
+    guard.lineSideModified(v_i, node.left.theKey, other) === "awayfromguardside"
+  ) {
     node.left = leftRotate(node.left);
     return rightRotate(node);
   }
 
   // Right Left Case
-  if (balance < -1 && theKey.getPosition() < node.right.theKey.getPosition()) {
+  if (
+    balance < -1 &&
+    guard.lineSideModified(v_i, node.right.theKey, other) === "towardsguardside"
+  ) {
     node.right = rightRotate(node.right);
     return leftRotate(node);
   }
