@@ -876,16 +876,14 @@ class SecurityGuard {
       } else if (crossProduct3 < 0) {
         toRemove.push(this.sortedVertices[i].getLinePrev());
       } else {
-        console.log(
-          this.sortedVertices[i].getLinePrev(),
-          "a",
-          searchAVL(this.root, this.sortedVertices[i].getLinePrev(), true)
-        );
+
         if (
-          searchAVL(
+          searchAVLMod(
             this.root,
-            this.sortedVertices[i].getLinePrev().getPosition(),
-            true
+            this.sortedVertices[i].getLinePrev(),
+            true,
+            this.sortedVertices[i],
+            this
           ) === null
         ) {
           toAdd.push(this.sortedVertices[i].getLinePrev());
@@ -918,10 +916,12 @@ class SecurityGuard {
       } else {
         console.log(this.sortedVertices[i].getLineNext(), "b");
         if (
-          searchAVL(
+          searchAVLMod(
             this.root,
-            this.sortedVertices[i].getLineNext().getPosition(),
-            true
+            this.sortedVertices[i].getLineNext(),
+            true,
+            this.sortedVertices[i],
+            this
           ) === null
         ) {
           toAdd.push(this.sortedVertices[i].getLineNext());
@@ -1113,8 +1113,20 @@ class SecurityGuard {
         //console.log(this.root.theKey.getPosition());
         toAdd[0].setPosition(toRemove[0].getPosition());
         console.log("updating", toRemove[0].getPosition());
-        searchAVL(this.root, toRemove[0].getPosition(), false).theKey =
-          toAdd[0];
+        let toup = searchAVLMod(
+          this.root,
+          toRemove[0],
+          false,
+          this.sortedVertices[i],
+          this
+        );
+
+        if (toup === null) {
+          console.log(i);
+          console.alert(i);
+        } else {
+          toup.theKey = toAdd[0];
+        }
 
         leftNew = getLeftmostLeaf(this.root).theKey;
         if (leftPrev !== leftNew) {
@@ -1308,6 +1320,20 @@ class SecurityGuard {
       } else if (edge === other[1]) {
         return "towardsguardside";
       } else return "awayfromguardside";
+    }
+    return "towardsguardside";
+  }
+
+  lineSideModifiedtoSearch(v_i, edge, thingtoSearch) {
+    if (edge === null) {
+      return "DNE";
+    }
+    if (edge === thingtoSearch) {
+      return "found";
+    }
+    let guardtov_i = new Line(new Point(this.x, this.y, null), v_i);
+    if (checkIfIntersect(guardtov_i, edge) === true) {
+      return "awayfromguardside";
     }
     return "towardsguardside";
   }
@@ -1874,4 +1900,25 @@ function searchAVL(root, key, override) {
 
   // Key is smaller than root's key
   return searchAVL(root.left, key, override);
+}
+
+function searchAVLMod(root, key, override, v_i, guard) {
+  // Base Cases: root is null
+  // or key is present at root
+  if (root === null || root.theKey === key) {
+    if (root === null && override === false) {
+      console.log("big error agian");
+    }
+    return root;
+  }
+
+  // Key is greater than root's key
+  if (
+    guard.lineSideModifiedtoSearch(v_i, root.theKey, key) ===
+    "awayfromguardside"
+  ) {
+    return searchAVLMod(root.right, key, override, v_i, guard);
+  }
+  // Key is smaller than root's key
+  return searchAVLMod(root.left, key, override, v_i, guard);
 }
