@@ -851,14 +851,6 @@ class SecurityGuard {
     this.initalIntersect();
 
     for (let i = 0; i < this.sortedVertices.length; i += 1) {
-      // if (i === 2) {
-      //   push();
-      //   strokeWeight(24);
-      //   stroke("green");
-      //   point(this.sortedVertices[i].getX(), this.sortedVertices[i].getY());
-
-      //   pop();
-      // }
       let toRemove = [];
       let toAdd = [];
 
@@ -884,13 +876,16 @@ class SecurityGuard {
       } else if (crossProduct3 < 0) {
         toRemove.push(this.sortedVertices[i].getLinePrev());
       } else {
+        console.log(
+          this.sortedVertices[i].getLinePrev(),
+          "a",
+          searchAVL(this.root, this.sortedVertices[i].getLinePrev(), true)
+        );
         if (
-          searchAVLMod(
+          searchAVL(
             this.root,
-            this.sortedVertices[i].getLinePrev(),
-            true,
-            this.sortedVertices[i],
-            this
+            this.sortedVertices[i].getLinePrev().getPosition(),
+            true
           ) === null
         ) {
           toAdd.push(this.sortedVertices[i].getLinePrev());
@@ -921,13 +916,12 @@ class SecurityGuard {
       } else if (crossProduct4 < 0) {
         toRemove.push(this.sortedVertices[i].getLineNext());
       } else {
+        console.log(this.sortedVertices[i].getLineNext(), "b");
         if (
-          searchAVLMod(
+          searchAVL(
             this.root,
-            this.sortedVertices[i].getLineNext(),
-            true,
-            this.sortedVertices[i],
-            this
+            this.sortedVertices[i].getLineNext().getPosition(),
+            true
           ) === null
         ) {
           toAdd.push(this.sortedVertices[i].getLineNext());
@@ -1020,23 +1014,89 @@ class SecurityGuard {
         // );
         // pop();
 
-        this.root = ainsertmodified(
-          this.root,
-          toAdd[0],
-          this.sortedVertices[i],
-          this,
-          toAdd
-        );
-        this.root = ainsertmodified(
-          this.root,
-          toAdd[1],
-          this.sortedVertices[i],
-          this,
-          toAdd
-        );
-
-        // console.log("adding", toAdd[0].getPosition());
-        // console.log("adding", toAdd[1].getPosition());
+        let ans = this.binarySearch(this.sortedVertices[i], this.root, i);
+        if (ans[1] === "leftfromroot" && ans[0].left === null) {
+          toAdd[1].setPosition(ans[0].theKey.getPosition() - 0.03);
+          toAdd[0].setPosition(toAdd[1].getPosition() - 0.03);
+          this.root = ainsertmodified(
+            this.root,
+            toAdd[1],
+            this.sortedVertices[i],
+            this,
+            toAdd
+          );
+          this.root = ainsertmodified(
+            this.root,
+            toAdd[0],
+            this.sortedVertices[i],
+            this,
+            toAdd
+          );
+        } else if (ans[1] === "rightfromroot" && ans[0].right === null) {
+          toAdd[0].setPosition(ans[0].theKey.getPosition() + 0.01);
+          toAdd[1].setPosition(toAdd[0].getPosition() + 0.01);
+          this.root = ainsertmodified(
+            this.root,
+            toAdd[0],
+            this.sortedVertices[i],
+            this,
+            toAdd
+          );
+          this.root = ainsertmodified(
+            this.root,
+            toAdd[1],
+            this.sortedVertices[i],
+            this,
+            toAdd
+          );
+        } else if (ans[1] === "leftfromroot") {
+          toAdd[1].setPosition(
+            (ans[0].theKey.getPosition() + ans[0].left.theKey.getPosition()) / 2
+          );
+          toAdd[0].setPosition(
+            (toAdd[1].getPosition() + ans[0].left.theKey.getPosition()) / 2
+          );
+          this.root = ainsertmodified(
+            this.root,
+            toAdd[1],
+            this.sortedVertices[i],
+            this,
+            toAdd
+          );
+          this.root = ainsertmodified(
+            this.root,
+            toAdd[0],
+            this.sortedVertices[i],
+            this,
+            toAdd
+          );
+        } else if (ans[1] === "rightfromroot") {
+          toAdd[0].setPosition(
+            (ans[0].theKey.getPosition() + ans[0].right.theKey.getPosition()) /
+              2
+          );
+          toAdd[1].setPosition(
+            (toAdd[0].getPosition() + ans[0].right.theKey.getPosition()) / 2
+          );
+          this.root = ainsertmodified(
+            this.root,
+            toAdd[0],
+            this.sortedVertices[i],
+            this,
+            toAdd
+          );
+          this.root = ainsertmodified(
+            this.root,
+            toAdd[1],
+            this.sortedVertices[i],
+            this,
+            toAdd
+          );
+        } else {
+          console.log("Big error 5!");
+        }
+        console.log("adding", toAdd[0].getPosition());
+        console.log("adding", toAdd[1].getPosition());
 
         leftNew = getLeftmostLeaf(this.root).theKey;
         if (leftPrev !== leftNew) {
@@ -1052,41 +1112,9 @@ class SecurityGuard {
         // console.log(toRemove[0].getPosition());
         //console.log(this.root.theKey.getPosition());
         toAdd[0].setPosition(toRemove[0].getPosition());
-        // console.log("updating", toRemove[0].getPosition());
-
-        if (i === 3) {
-          console.log("start");
-          preOrder(this.root);
-          console.log("end");
-          push();
-          strokeWeight(24);
-          stroke("green");
-          console.log(this.sortedVertices[i]);
-          point(this.sortedVertices[i].getX(), this.sortedVertices[i].getY());
-          // stroke("red");
-          // line(
-          //   toRemove[0].getPoint1().getX(),
-          //   toRemove[0].getPoint1().getY(),
-          //   toRemove[0].getPoint2().getX(),
-          //   toRemove[0].getPoint2().getY()
-          // );
-          pop();
-        }
-
-        let toup = searchAVLMod(
-          this.root,
-          toRemove[0],
-          false,
-          this.sortedVertices[i],
-          this
-        );
-
-        if (toup === null) {
-          console.log(i);
-          console.alert(i);
-        } else {
-          toup.theKey = toAdd[0];
-        }
+        console.log("updating", toRemove[0].getPosition());
+        searchAVL(this.root, toRemove[0].getPosition(), false).theKey =
+          toAdd[0];
 
         leftNew = getLeftmostLeaf(this.root).theKey;
         if (leftPrev !== leftNew) {
@@ -1103,16 +1131,64 @@ class SecurityGuard {
           this.counterforshape += 1;
         }
       } else if (toAdd.length === 0) {
+
+
+        if (
+          checkIfTwoPointsOverlap(
+            this.sortedVertices[i],
+            toRemove[0].getPoint1()
+          ) === false
+        ) {
+          let temp = toRemove[0].getPoint1();
+          toRemove[0].Point1 = toRemove[0].Point2;
+          toRemove[0].Point2 = temp;
+        }
+
+        if (
+          checkIfTwoPointsOverlap(
+            this.sortedVertices[i],
+            toRemove[1].getPoint1()
+          ) === false
+        ) {
+          let temp = toRemove[1].getPoint1();
+          toRemove[1].Point1 = toRemove[1].Point2;
+          toRemove[1].Point2 = temp;
+        }
+
+   
+
+        let vmain = createVector(
+          this.sortedVertices[i].getX() - this.getX(),
+          -(this.sortedVertices[i].getY() - this.getY()),
+          0
+        );
+
+        let v1 = createVector(
+          toRemove[0].getPoint2().getX() - toRemove[0].getPoint1().getX(),
+          -(toRemove[0].getPoint2().getY() - toRemove[0].getPoint1().getY()),
+          0
+        );
+
+        let v2 = createVector(
+          toRemove[1].getPoint2().getX() - toRemove[1].getPoint1().getX(),
+          -(toRemove[1].getPoint2().getY() - toRemove[1].getPoint1().getY()),
+          0
+        );
+
+        let angleBetween1 = Math.abs(vmain.angleBetween(v1));
+        let angleBetween2 = Math.abs(vmain.angleBetween(v2));
+
+        if (angleBetween2 > angleBetween1) {
+          let temp = toRemove[0];
+          toRemove[0] = toRemove[1];
+          toRemove[1] = temp;
+        }
+        
+        preOrder(this.root);
+        console.log("done");
         leftPrev = getLeftmostLeaf(this.root).theKey;
         // this.root = deleteNode(this.root, toRemove[0]);
         // this.root = deleteNode(this.root, toRemove[1]);
-        this.root = deleteNodeModified(
-          this.root,
-          toRemove[0],
-          this.sortedVertices[i],
-          this,
-          toRemove
-        );
         this.root = deleteNodeModified(
           this.root,
           toRemove[1],
@@ -1120,9 +1196,21 @@ class SecurityGuard {
           this,
           toRemove
         );
+        console.log(toRemove[0]);
+        preOrder(this.root);
+        console.log("done");
+        this.root = deleteNodeModified(
+          this.root,
+          toRemove[0],
+          this.sortedVertices[i],
+          this,
+          toRemove
+        );
+        preOrder(this.root);
+        console.log("done");
         leftNew = getLeftmostLeaf(this.root).theKey;
-        // console.log("removing", toRemove[0].getPosition());
-        // console.log("removing", toRemove[1].getPosition());
+        console.log("removing", toRemove[0].getPosition());
+        console.log("removing", toRemove[1].getPosition());
 
         if (leftPrev !== leftNew) {
           push();
@@ -1133,10 +1221,49 @@ class SecurityGuard {
           this.counterforshape += 1;
         }
       }
-      if (i === -2) {
-        drawline(getLeftmostLeaf(this.root).theKey, "red");
-      }
     }
+  }
+
+  binarySearch(v_i, root, i) {
+    let rootEdge = root.theKey;
+    let leftEdge;
+    if (root.left === null) leftEdge = null;
+    else leftEdge = root.left.theKey;
+    let rightEdge;
+    if (root.right === null) rightEdge = null;
+    else rightEdge = root.right.theKey;
+
+    if (
+      this.lineSide(v_i, rootEdge) === "towardsguardside" &&
+      this.lineSide(v_i, leftEdge) === "towardsguardside"
+    ) {
+      return this.binarySearch(v_i, root.left, i);
+    }
+
+    if (
+      this.lineSide(v_i, rootEdge) === "awayfromguardside" &&
+      this.lineSide(v_i, rightEdge) === "awayfromguardside"
+    ) {
+      return this.binarySearch(v_i, root.right, i);
+    }
+
+    if (
+      this.lineSide(v_i, rootEdge) === "towardsguardside" &&
+      (this.lineSide(v_i, leftEdge) === "awayfromguardside" ||
+        this.lineSide(v_i, leftEdge) === "DNE")
+    ) {
+      return [root, "leftfromroot"];
+    }
+
+    if (
+      this.lineSide(v_i, rootEdge) === "awayfromguardside" &&
+      (this.lineSide(v_i, rightEdge) === "towardsguardside" ||
+        this.lineSide(v_i, rightEdge) === "DNE")
+    ) {
+      return [root, "rightfromroot"];
+    }
+
+    console.log("Big error 2!", this.lineSide(v_i, rootEdge));
   }
 
   lineSide(v_i, edge) {
@@ -1166,8 +1293,13 @@ class SecurityGuard {
   }
 
   lineSideModifiedtoDel(v_i, edge, other, thingtodel) {
-    if (edge === null || edge === thingtodel) {
+    if (edge === null) {
+      console.alert("sdfg");
       return "DNE";
+    }
+    if (edge === thingtodel) {
+      console.log("sdfljkgdflghjk");
+      return "found";
     }
     let guardtov_i = new Line(new Point(this.x, this.y, null), v_i);
     if (checkIfIntersect(guardtov_i, edge) === true) {
@@ -1176,20 +1308,6 @@ class SecurityGuard {
       } else if (edge === other[1]) {
         return "towardsguardside";
       } else return "awayfromguardside";
-    }
-    return "towardsguardside";
-  }
-
-  lineSideModifiedtoSearch(v_i, edge, thingtoSearch) {
-    if (edge === null) {
-      return "DNE";
-    }
-    if (edge === thingtoSearch) {
-      return "found";
-    }
-    let guardtov_i = new Line(new Point(this.x, this.y, null), v_i);
-    if (checkIfIntersect(guardtov_i, edge) === true) {
-      return "awayfromguardside";
     }
     return "towardsguardside";
   }
@@ -1264,7 +1382,7 @@ class SecurityGuard {
                 0
               )
             ).dot(createVector(1, 1, 1));
-            //console.log(crossProduct5, "c5");
+            console.log(crossProduct5, "c5");
             if (crossProduct5 >= 0) continue;
           }
           if (edge.getPoint2().getAngleForSecurityGuard(this.name) === 0) {
@@ -1280,7 +1398,7 @@ class SecurityGuard {
                 0
               )
             ).dot(createVector(1, 1, 1));
-            //console.log(crossProduct6, "c6");
+            console.log(crossProduct6, "c6");
 
             if (crossProduct6 >= 0) continue;
           }
@@ -1308,7 +1426,7 @@ class SecurityGuard {
       edge.setPosition(this.edgeCounter);
       this.root = ainsert(this.root, edge);
       this.edgeCounter += 1;
-      //console.log("adding initial", edge.getPosition());
+      console.log("adding initial", edge.getPosition());
     }
     // push();
     // strokeWeight(24);
@@ -1756,25 +1874,4 @@ function searchAVL(root, key, override) {
 
   // Key is smaller than root's key
   return searchAVL(root.left, key, override);
-}
-
-function searchAVLMod(root, key, override, v_i, guard) {
-  // Base Cases: root is null
-  // or key is present at root
-  if (root === null || root.theKey === key) {
-    if (root === null && override === false) {
-      console.log("big error agian");
-    }
-    return root;
-  }
-
-  // Key is greater than root's key
-  if (
-    guard.lineSideModifiedtoSearch(v_i, root.theKey, key) ===
-    "awayfromguardside"
-  ) {
-    return searchAVLMod(root.right, key, override, v_i, guard);
-  }
-  // Key is smaller than root's key
-  return searchAVLMod(root.left, key, override, v_i, guard);
 }
