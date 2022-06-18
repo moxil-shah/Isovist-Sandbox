@@ -489,6 +489,12 @@ function dragShape() {
     return;
   }
   if (shapeClicked === true) {
+    // console.log(
+    //   checkIfIntersect(
+    //     new Line(new Point(50, 50, null), new Point(70, 50, null)),
+    //     new Line(new Point(30, 50, null), new Point(100, 50, null)),
+    //   )
+    // );
     let currentVertex = shapeDragged.getVertexHead();
     do {
       deltaXCurrent = mouseX - currentVertex.getX();
@@ -876,11 +882,6 @@ class SecurityGuard {
       } else if (crossProduct3 < 0) {
         toRemove.push(this.sortedVertices[i].getLinePrev());
       } else {
-        console.log(
-          this.sortedVertices[i].getLinePrev(),
-          "a",
-          searchAVL(this.root, this.sortedVertices[i].getLinePrev(), true)
-        );
         if (
           searchAVL(
             this.root,
@@ -916,7 +917,6 @@ class SecurityGuard {
       } else if (crossProduct4 < 0) {
         toRemove.push(this.sortedVertices[i].getLineNext());
       } else {
-        console.log(this.sortedVertices[i].getLineNext(), "b");
         if (
           searchAVL(
             this.root,
@@ -1134,8 +1134,20 @@ class SecurityGuard {
         leftPrev = getLeftmostLeaf(this.root).theKey;
         // this.root = deleteNode(this.root, toRemove[0]);
         // this.root = deleteNode(this.root, toRemove[1]);
-        this.root = deleteNodeModified(this.root, toRemove[0], this.sortedVertices[i], this, toRemove);
-        this.root = deleteNodeModified(this.root, toRemove[1], this.sortedVertices[i], this, toRemove);
+        this.root = deleteNodeModified(
+          this.root,
+          toRemove[0],
+          this.sortedVertices[i],
+          this,
+          toRemove
+        );
+        this.root = deleteNodeModified(
+          this.root,
+          toRemove[1],
+          this.sortedVertices[i],
+          this,
+          toRemove
+        );
         leftNew = getLeftmostLeaf(this.root).theKey;
         console.log("removing", toRemove[0].getPosition());
         console.log("removing", toRemove[1].getPosition());
@@ -1234,6 +1246,20 @@ class SecurityGuard {
       } else if (edge === other[1]) {
         return "towardsguardside";
       } else return "awayfromguardside";
+    }
+    return "towardsguardside";
+  }
+
+  lineSideModifiedtoSearch(v_i, edge, thingtoSearch) {
+    if (edge === null) {
+      return "DNE";
+    }
+    if (edge === thingtoSearch) {
+      return "found";
+    }
+    let guardtov_i = new Line(new Point(this.x, this.y, null), v_i);
+    if (checkIfIntersect(guardtov_i, edge) === true) {
+      return "awayfromguardside";
     }
     return "towardsguardside";
   }
@@ -1606,11 +1632,17 @@ function deleteNodeModified(theRoot, theKey, v_i, guard, other) {
 
   // If the theKey to be deleted is smaller than
   // the theRoot's theKey, then it lies in left subtree
-  if (guard.lineSideModifiedtoDel(v_i, theRoot.theKey, other, theKey) === "towardsguardside")
+  if (
+    guard.lineSideModifiedtoDel(v_i, theRoot.theKey, other, theKey) ===
+    "towardsguardside"
+  )
     theRoot.left = deleteNodeModified(theRoot.left, theKey, v_i, guard, other);
   // If the theKey to be deleted is greater than the
   // theRoot's theKey, then it lies in right subtree
-  else if (guard.lineSideModifiedtoDel(v_i, theRoot.theKey, other, theKey) === "awayfromguardside")
+  else if (
+    guard.lineSideModifiedtoDel(v_i, theRoot.theKey, other, theKey) ===
+    "awayfromguardside"
+  )
     theRoot.right = deleteNodeModified(
       theRoot.right,
       theKey,
@@ -1794,4 +1826,25 @@ function searchAVL(root, key, override) {
 
   // Key is smaller than root's key
   return searchAVL(root.left, key, override);
+}
+
+function searchAVLMod(root, key, override, v_i, guard) {
+  // Base Cases: root is null
+  // or key is present at root
+  if (root === null || root.theKey === key) {
+    if (root === null && override === false) {
+      console.log("big error agian");
+    }
+    return root;
+  }
+
+  // Key is greater than root's key
+  if (
+    guard.lineSideModifiedtoSearch(v_i, root.theKey, key) ===
+    "awayfromguardside"
+  ) {
+    return searchAVLMod(root.right, key, override, v_i, guard);
+  }
+  // Key is smaller than root's key
+  return searchAVLMod(root.left, key, override, v_i, guard);
 }
