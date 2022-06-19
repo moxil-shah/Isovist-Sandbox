@@ -102,39 +102,39 @@ function polygon(x, y, radius, npoints) {
   } else {
     newShape = new Shape(npoints, "white");
 
-    // if (temphelp === 0) {
-    //   vertexes.push(new Point(70, 100, newShape));
-    //   copyVertexes.push([70, 100]);
-    //   vertexes.push(new Point(70, 150, newShape));
-    //   copyVertexes.push([70, 150]);
-    //   vertexes.push(new Point(80, 150, newShape));
-    //   copyVertexes.push([80, 150]);
-    //   vertexes.push(new Point(90, 190, newShape));
-    //   copyVertexes.push([90, 190]);
-    //   vertexes.push(new Point(120, 150, newShape));
-    //   copyVertexes.push([120, 150]);
-    //   vertexes.push(new Point(150, 150, newShape));
-    //   copyVertexes.push([150, 150]);
-    //   vertexes.push(new Point(150, 100, newShape));
-    //   copyVertexes.push([150, 100]);
-    // } else {
-    //   vertexes.push(new Point(200, 100, newShape));
-    //   copyVertexes.push([200, 100]);
-    //   vertexes.push(new Point(200, 150, newShape));
-    //   copyVertexes.push([200, 150]);
-    //   vertexes.push(new Point(280, 150, newShape));
-    //   copyVertexes.push([280, 150]);
-    //   vertexes.push(new Point(280, 100, newShape));
-    //   copyVertexes.push([280, 100]);
-    // }
-    // temphelp += 1;
-
-    for (let i = 0; i < TWO_PI - HEXAGON_ROUNDING_ERROR; i += angle) {
-      let sx = x + cos(i) * radius;
-      let sy = y + sin(i) * radius;
-      vertexes.push(new Point(sx, sy, newShape));
-      copyVertexes.push([sx, sy]);
+    if (temphelp === 0) {
+      vertexes.push(new Point(70, 100, newShape));
+      copyVertexes.push([70, 100]);
+      vertexes.push(new Point(70, 150, newShape));
+      copyVertexes.push([70, 150]);
+      vertexes.push(new Point(80, 150, newShape));
+      copyVertexes.push([80, 150]);
+      vertexes.push(new Point(90, 150, newShape));
+      copyVertexes.push([90, 150]);
+      vertexes.push(new Point(130, 150, newShape));
+      copyVertexes.push([130, 150]);
+      vertexes.push(new Point(150, 150, newShape));
+      copyVertexes.push([150, 150]);
+      vertexes.push(new Point(150, 100, newShape));
+      copyVertexes.push([150, 100]);
+    } else {
+      // vertexes.push(new Point(200, 100, newShape));
+      // copyVertexes.push([200, 100]);
+      // vertexes.push(new Point(200, 150, newShape));
+      // copyVertexes.push([200, 150]);
+      // vertexes.push(new Point(280, 150, newShape));
+      // copyVertexes.push([280, 150]);
+      // vertexes.push(new Point(280, 100, newShape));
+      // copyVertexes.push([280, 100]);
     }
+    temphelp += 1;
+
+    // for (let i = 0; i < TWO_PI - HEXAGON_ROUNDING_ERROR; i += angle) {
+    //   let sx = x + cos(i) * radius;
+    //   let sy = y + sin(i) * radius;
+    //   vertexes.push(new Point(sx, sy, newShape));
+    //   copyVertexes.push([sx, sy]);
+    // }
   }
 
   newShape.setVerticesLinkedList(vertexes);
@@ -852,9 +852,10 @@ class SecurityGuard {
       } while (currentVertex !== eachShape.getVertexHead());
     }
     console.log("new rotation below");
-    this.initalIntersect();
+    this.initialIntersect();
 
     for (let i = 0; i < this.sortedVertices.length; i += 1) {
+      console.log(i)
       let toRemove = [];
       let toAdd = [];
 
@@ -1249,8 +1250,13 @@ class SecurityGuard {
     pop();
   }
 
-  initalIntersect() {
-    let treeOfEdges = [];
+  initialIntersect() {
+    // Add all edges intersecting lineToRightWall to the AVL Tree in order
+    // of intersection, first being closest edge to security guard. Intersection
+    // does not mean colinear edges with the lineToRightWall. Intersection does
+    // not count endpoints, except when the edge goes below the lineToRightWall.
+    // If it goes above then does not count.
+    let initialIntersectEdges = [];
     for (let shape of allShapes) {
       for (let edge of shape.getEdges()) {
         if (checkIfIntersect(this.lineToRightWall, edge)) {
@@ -1292,18 +1298,32 @@ class SecurityGuard {
             intersectionPoint
           );
           edge.setPosition(distanceFromIntersectiontoGuard);
-          treeOfEdges.push(edge);
+          initialIntersectEdges.push(edge);
         }
       }
     }
-    treeOfEdges.sort(function (a, b) {
+    // sort edges closest intersection to farthest intersection
+    initialIntersectEdges.sort(function (a, b) {
       return a.getPosition() - b.getPosition();
     });
 
-    for (let edge of treeOfEdges) {
-      edge.setPosition(this.edgeCounter);
-      this.root = ainsert(this.root, edge);
-      this.edgeCounter += 1;
+    console.log(initialIntersectEdges);
+
+    let temp = ["red", "blue", "green", "yellow", "pink"];
+    for (let i = 0; i < initialIntersectEdges.length; i += 1) {
+      initialIntersectEdges[i].setPosition(i);
+      this.root = ainsert(this.root, initialIntersectEdges[i]);
+
+      push();
+      strokeWeight(14);
+      stroke(temp[i]);
+      line(
+        initialIntersectEdges[i].getPoint1().getX(),
+        initialIntersectEdges[i].getPoint1().getY(),
+        initialIntersectEdges[i].getPoint2().getX(),
+        initialIntersectEdges[i].getPoint2().getY()
+      );
+      pop();
     }
   }
 
