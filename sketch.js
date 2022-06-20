@@ -64,7 +64,7 @@ function sidesInput() {
 // from the HTML form
 function SecurityGuardInput() {
   if (SecurityGuardNames.length !== 0) {
-    guard = new SecurityGuard(27.5, 150, SecurityGuardNames.pop());
+    guard = new SecurityGuard(27.5, 100, SecurityGuardNames.pop());
     for (let eachShape of allShapes) {
       let currentVertex = eachShape.getVertexHead();
       do {
@@ -350,70 +350,8 @@ function dragPoint() {
     return;
   }
   if (pointClicked === true) {
-    deleteTheSelfIntersect(shapesPointDragged);
     pointDragged.setX(mouseX);
     pointDragged.setY(mouseY);
-
-    let thething = checkIfSelfIntersectingPolygon(shapesPointDragged);
-
-    intersectionPointsGlobal = thething;
-
-    for (const [key, value] of thething) {
-      let referencePoint;
-      let nextPoint;
-      if (key.getPoint1().getPointNext() === key.getPoint2()) {
-        referencePoint = key.getPoint1();
-        nextPoint = key.getPoint2();
-      } else if (key.getPoint2().getPointNext() === key.getPoint1()) {
-        referencePoint = key.getPoint2();
-        nextPoint = key.getPoint1();
-      } else {
-        console.log("Big Error 1!");
-      }
-
-      for (let i = 0; i < value.length; i += 1) {
-        value[i] = [
-          value[i],
-          Math.sqrt(
-            (referencePoint.getX() - value[i].getX()) ** 2 +
-              (referencePoint.getY() - value[i].getY()) ** 2
-          ),
-        ];
-      }
-
-      value.sort(function (a, b) {
-        return a[1] - b[1];
-      });
-
-      for (let i = 0; i < value.length; i += 1) {
-        value[i] = value[i][0];
-
-        value[i].setIncludeInRender(false);
-      }
-
-      if (value.length > 2) {
-        for (let i = 1; i < value.length - 1; i += 1) {
-          value[i].setPointPrev(value[i - 1]);
-          value[i].setPointNext(value[i + 1]);
-        }
-      }
-      if (value.length >= 2) {
-        referencePoint.setPointNext(value[0]);
-        value[0].setPointNext(value[1]);
-        value[value.length - 1].setPointNext(nextPoint);
-        value[0].setPointPrev(referencePoint);
-        value[value.length - 1].setPointPrev(value[value.length - 2]);
-        nextPoint.setPointPrev(value[value.length - 1]);
-      }
-
-      if (value.length === 1) {
-        referencePoint.setPointNext(value[0]);
-        value[0].setPointNext(nextPoint);
-        value[0].setPointPrev(referencePoint);
-        nextPoint.setPointPrev(value[0]);
-      }
-    }
-
     shapesPointDragged.setEdges();
     updateVertexArrayDistancetoMousePress(shapesPointDragged);
 
@@ -432,35 +370,6 @@ function dragPoint() {
       guard.sortVertices();
     }
   }
-}
-
-function checkIfSelfIntersectingPolygon(theShape) {
-  let intersectionPoints = new Map();
-  for (let eachLine of theShape.getEdges()) {
-    for (let shapeLine of theShape.getEdges()) {
-      if (eachLine === shapeLine) continue;
-      if (checkIfIntersect(eachLine, shapeLine) === true) {
-        let intersectionPoint = findIntersection(eachLine, shapeLine);
-        if (
-          checkIfTwoPointsOverlapRounded(
-            eachLine.getPoint1(),
-            intersectionPoint
-          ) === false &&
-          checkIfTwoPointsOverlapRounded(
-            eachLine.getPoint2(),
-            intersectionPoint
-          ) === false
-        ) {
-          if (intersectionPoints.get(eachLine) !== undefined)
-            intersectionPoints.get(eachLine).push(intersectionPoint);
-          else {
-            intersectionPoints.set(eachLine, [intersectionPoint]);
-          }
-        }
-      }
-    }
-  }
-  return intersectionPoints;
 }
 
 function dragSecurityGuard() {
@@ -698,10 +607,14 @@ class Line {
     this.Point1 = p1;
     this.Point2 = p2;
     this.position = null;
+    this.positionPrior = null;
   }
 
   setPosition(position) {
     this.position = position;
+  }
+  setPositionPrior(positionPrior) {
+    this.positionPrior = positionPrior;
   }
 
   getPoint1() {
@@ -714,6 +627,10 @@ class Line {
 
   getPosition() {
     return this.position;
+  }
+
+  getPositionPrior() {
+    return this.positionPrior;
   }
 
   getPointThatIsCloserToTop() {
@@ -843,6 +760,7 @@ class SecurityGuard {
     this.edgeCounter = 1;
     let leftPrev;
     let leftNew;
+    let removeNext = null;
     for (let eachShape of allShapes) {
       let currentVertex = eachShape.getVertexHead();
       do {
@@ -855,7 +773,8 @@ class SecurityGuard {
     this.initialIntersect();
 
     for (let i = 0; i < this.sortedVertices.length; i += 1) {
-      console.log(i)
+      console.log(i);
+      preOrder(this.root);
       let toRemove = [];
       let toAdd = [];
 
@@ -1200,6 +1119,7 @@ class SecurityGuard {
       return "found";
     }
     let guardtov_i = new Line(new Point(this.x, this.y, null), v_i);
+    console.log(checkIfIntersect(guardtov_i, edge));
     if (checkIfIntersect(guardtov_i, edge) === true) {
       return "awayfromguardside";
     }
@@ -1297,14 +1217,16 @@ class SecurityGuard {
             this.SecurityGuardPoint,
             intersectionPoint
           );
-          edge.setPosition(distanceFromIntersectiontoGuard);
+          edge.setPositionPrior(
+            Math.round(distanceFromIntersectiontoGuard * 1000) / 1000
+          );
           initialIntersectEdges.push(edge);
         }
       }
     }
     // sort edges closest intersection to farthest intersection
     initialIntersectEdges.sort(function (a, b) {
-      return a.getPosition() - b.getPosition();
+      return a.getPositionPrior() - b.getPositionPrior();
     });
 
     console.log(initialIntersectEdges);
