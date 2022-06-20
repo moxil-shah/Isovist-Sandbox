@@ -64,7 +64,7 @@ function sidesInput() {
 // from the HTML form
 function SecurityGuardInput() {
   if (SecurityGuardNames.length !== 0) {
-    guard = new SecurityGuard(27.5, 100, SecurityGuardNames.pop());
+    guard = new SecurityGuard(27.5, 150, SecurityGuardNames.pop());
     for (let eachShape of allShapes) {
       let currentVertex = eachShape.getVertexHead();
       do {
@@ -103,6 +103,10 @@ function polygon(x, y, radius, npoints) {
     newShape = new Shape(npoints, "white");
 
     if (temphelp === 0) {
+      vertexes.push(new Point(90, 100, newShape));
+      copyVertexes.push([90, 100]);
+      vertexes.push(new Point(110, 100, newShape));
+      copyVertexes.push([110, 100]);
       vertexes.push(new Point(70, 100, newShape));
       copyVertexes.push([70, 100]);
       vertexes.push(new Point(70, 150, newShape));
@@ -725,8 +729,33 @@ class Point {
     return this.secuirtyGuardMap.get(guard);
   }
 
-  getExtendo() {
-    return this.extendo;
+  getEdgeClosestToSecurityGuard(guard) {
+    let vmain = createVector(
+      this.x - guard.getX(),
+      -(this.y - guard.getY()),
+      0
+    );
+
+    let v1 = createVector(
+      this.pointPrev.getX() - this.x,
+      -(this.pointPrev.getY() - this.y),
+      0
+    );
+
+    let v2 = createVector(
+      this.pointNext.getX() - this.x,
+      -(this.pointNext.getY() - this.y),
+      0
+    );
+
+    let angleBetween1 = Math.abs(vmain.angleBetween(v1));
+    let angleBetween2 = Math.abs(vmain.angleBetween(v2));
+    if (angleBetween1 >= PI) angleBetween1 = angleBetween1 - PI;
+    if (angleBetween2 >= PI) angleBetween2 = angleBetween2 - PI;
+
+    if (angleBetween1 < angleBetween2) {
+      return this.lineToPointPrev;
+    } else return this.lineToPointNext;
   }
 
   getIncludeInRender() {
@@ -760,7 +789,6 @@ class SecurityGuard {
     this.edgeCounter = 1;
     let leftPrev;
     let leftNew;
-    let removeNext = null;
     for (let eachShape of allShapes) {
       let currentVertex = eachShape.getVertexHead();
       do {
@@ -1121,6 +1149,11 @@ class SecurityGuard {
     let guardtov_i = new Line(new Point(this.x, this.y, null), v_i);
     console.log(checkIfIntersect(guardtov_i, edge));
     if (checkIfIntersect(guardtov_i, edge) === true) {
+      if (thingtoSearch === v_i.getEdgeClosestToSecurityGuard(guard))
+      {
+        return "towardsguardside";
+      }
+        
       return "awayfromguardside";
     }
     return "towardsguardside";
@@ -1267,14 +1300,6 @@ class SecurityGuard {
 
   getName() {
     return this.name;
-  }
-
-  getOrderedIsovistVertices() {
-    return this.orderedIsovistVertices;
-  }
-
-  getIsovistVertices() {
-    return this.isovistVertices;
   }
 }
 
