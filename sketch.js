@@ -64,7 +64,7 @@ function sidesInput() {
 // from the HTML form
 function SecurityGuardInput() {
   if (SecurityGuardNames.length !== 0) {
-    guard = new SecurityGuard(27.5, 150, SecurityGuardNames.pop());
+    guard = new SecurityGuard(27.5, 100, SecurityGuardNames.pop());
     for (let eachShape of allShapes) {
       let currentVertex = eachShape.getVertexHead();
       do {
@@ -103,18 +103,19 @@ function polygon(x, y, radius, npoints) {
     newShape = new Shape(npoints, "white");
 
     if (temphelp === 0) {
-      vertexes.push(new Point(90, 100, newShape));
-      copyVertexes.push([90, 100]);
+    
       vertexes.push(new Point(110, 100, newShape));
       copyVertexes.push([110, 100]);
+      vertexes.push(new Point(90, 100, newShape));
+      copyVertexes.push([90, 100]);
       vertexes.push(new Point(70, 100, newShape));
       copyVertexes.push([70, 100]);
       vertexes.push(new Point(70, 150, newShape));
       copyVertexes.push([70, 150]);
-      vertexes.push(new Point(80, 150, newShape));
-      copyVertexes.push([80, 150]);
-      vertexes.push(new Point(90, 150, newShape));
-      copyVertexes.push([90, 150]);
+      vertexes.push(new Point(85, 150, newShape));
+      copyVertexes.push([85, 150]);
+      vertexes.push(new Point(100, 150, newShape));
+      copyVertexes.push([100, 150]);
       vertexes.push(new Point(130, 150, newShape));
       copyVertexes.push([130, 150]);
       vertexes.push(new Point(150, 150, newShape));
@@ -1147,13 +1148,13 @@ class SecurityGuard {
       return "found";
     }
     let guardtov_i = new Line(new Point(this.x, this.y, null), v_i);
-    console.log(checkIfIntersect(guardtov_i, edge));
+    //console.log(checkIfIntersect(guardtov_i, edge));
     if (checkIfIntersect(guardtov_i, edge) === true) {
-      if (thingtoSearch === v_i.getEdgeClosestToSecurityGuard(guard))
-      {
-        return "towardsguardside";
-      }
-        
+      // if (thingtoSearch === v_i.getEdgeClosestToSecurityGuard(guard))
+      // {
+      //   return "towardsguardside";
+      // }
+
       return "awayfromguardside";
     }
     return "towardsguardside";
@@ -1612,7 +1613,7 @@ function deleteNodeModified(theRoot, theKey, v_i, guard, other) {
 // node
 function preOrder(node) {
   if (node != null) {
-    console.log(node.theKey.getPoint1(), node.theKey.getPoint2(), +" ");
+    console.log(node.theKey.getPoint1(), node.theKey.getPoint2(), " ");
     preOrder(node.left);
     preOrder(node.right);
   }
