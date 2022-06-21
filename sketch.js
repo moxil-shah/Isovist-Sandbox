@@ -836,20 +836,6 @@ class SecurityGuard {
         toAdd.push(this.sortedVertices[i].getLinePrev());
       } else if (crossProduct3 < 0) {
         toRemove.push(this.sortedVertices[i].getLinePrev());
-      } else {
-        if (
-          searchAVLMod(
-            this.root,
-            this.sortedVertices[i].getLinePrev(),
-            true,
-            this.sortedVertices[i],
-            this
-          ) === null
-        ) {
-          toAdd.push(this.sortedVertices[i].getLinePrev());
-        } else {
-          toRemove.push(this.sortedVertices[i].getLinePrev());
-        }
       }
 
       let crossProduct4 = p5.Vector.cross(
@@ -873,20 +859,6 @@ class SecurityGuard {
         toAdd.push(this.sortedVertices[i].getLineNext());
       } else if (crossProduct4 < 0) {
         toRemove.push(this.sortedVertices[i].getLineNext());
-      } else {
-        if (
-          searchAVLMod(
-            this.root,
-            this.sortedVertices[i].getLineNext(),
-            true,
-            this.sortedVertices[i],
-            this
-          ) === null
-        ) {
-          toAdd.push(this.sortedVertices[i].getLineNext());
-        } else {
-          toRemove.push(this.sortedVertices[i].getLineNext());
-        }
       }
 
       if (toAdd.length === 2) {
@@ -989,7 +961,7 @@ class SecurityGuard {
           point(this.sortedVertices[i].getX(), this.sortedVertices[i].getY());
           pop();
         }
-      } else if (toAdd.length === 1) {
+      } else if (toAdd.length === 1 && toRemove.length === 1) {
         leftPrev = getLeftmostLeaf(this.root).theKey;
         // console.log("updating", toRemove[0]);
         let toup = searchAVLMod(
@@ -1020,7 +992,7 @@ class SecurityGuard {
           point(this.sortedVertices[i].getX(), this.sortedVertices[i].getY());
           pop();
         }
-      } else if (toAdd.length === 0) {
+      } else if (toRemove.length === 2) {
         if (
           checkIfTwoPointsOverlap(
             this.sortedVertices[i],
@@ -1091,6 +1063,51 @@ class SecurityGuard {
         leftNew = getLeftmostLeaf(this.root).theKey;
         // console.log("removing", toRemove[0].getPosition());
         // console.log("removing", toRemove[1].getPosition());
+
+        if (leftPrev !== leftNew) {
+          push();
+          stroke("purple");
+          strokeWeight(20);
+          point(this.sortedVertices[i].getX(), this.sortedVertices[i].getY());
+          pop();
+        }
+      } else if (toAdd.length === 1) {
+        leftPrev = getLeftmostLeaf(this.root).theKey;
+        this.root = ainsertmodified(
+          this.root,
+          toAdd[0],
+          this.sortedVertices[i],
+          this,
+          [false, false]
+        );
+
+        // console.log("adding", toAdd[0].getPosition());
+
+        leftNew = getLeftmostLeaf(this.root).theKey;
+        if (leftPrev !== leftNew) {
+          push();
+          stroke("purple");
+          strokeWeight(20);
+          point(this.sortedVertices[i].getX(), this.sortedVertices[i].getY());
+          pop();
+        }
+      } else if (toRemove.length === 1)
+      {
+        leftPrev = getLeftmostLeaf(this.root).theKey;
+
+
+
+        this.root = deleteNodeModified(
+          this.root,
+          toRemove[0],
+          this.sortedVertices[i],
+          this,
+          [false, false]
+        );
+
+        leftNew = getLeftmostLeaf(this.root).theKey;
+        // console.log("removing", toRemove[0].getPosition());
+     
 
         if (leftPrev !== leftNew) {
           push();
