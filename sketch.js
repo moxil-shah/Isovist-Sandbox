@@ -105,18 +105,18 @@ function polygon(x, y, radius, npoints) {
     if (temphelp === 0) {
       // vertexes.push(new Point(110, 100, newShape));
       // copyVertexes.push([110, 100]);
-      // vertexes.push(new Point(90, 100, newShape));
-      // copyVertexes.push([90, 100]);
+      vertexes.push(new Point(90, 100, newShape));
+      copyVertexes.push([90, 100]);
       vertexes.push(new Point(70, 100, newShape));
       copyVertexes.push([70, 100]);
       vertexes.push(new Point(70, 150, newShape));
       copyVertexes.push([70, 150]);
-      // vertexes.push(new Point(85, 150, newShape));
-      // copyVertexes.push([85, 150]);
-      // vertexes.push(new Point(100, 150, newShape));
-      // copyVertexes.push([100, 150]);
-      // vertexes.push(new Point(130, 150, newShape));
-      // copyVertexes.push([130, 150]);
+      vertexes.push(new Point(85, 150, newShape));
+      copyVertexes.push([85, 150]);
+      vertexes.push(new Point(100, 150, newShape));
+      copyVertexes.push([100, 150]);
+      vertexes.push(new Point(130, 150, newShape));
+      copyVertexes.push([130, 150]);
       vertexes.push(new Point(150, 150, newShape));
       copyVertexes.push([150, 150]);
       vertexes.push(new Point(150, 100, newShape));
@@ -1091,11 +1091,8 @@ class SecurityGuard {
           point(this.sortedVertices[i].getX(), this.sortedVertices[i].getY());
           pop();
         }
-      } else if (toRemove.length === 1)
-      {
+      } else if (toRemove.length === 1) {
         leftPrev = getLeftmostLeaf(this.root).theKey;
-
-
 
         this.root = deleteNodeModified(
           this.root,
@@ -1107,7 +1104,6 @@ class SecurityGuard {
 
         leftNew = getLeftmostLeaf(this.root).theKey;
         // console.log("removing", toRemove[0].getPosition());
-     
 
         if (leftPrev !== leftNew) {
           push();
@@ -1231,6 +1227,25 @@ class SecurityGuard {
     pop();
   }
 
+  getAngleFromLinetoRightWall(edge) {
+    if (edge.getPoint1().getX() - edge.getPoint2().getX() === 0) {
+      console.log(PI / 2);
+      return PI / 2;
+    }
+    let angle = Math.atan(
+      (edge.getPoint1().getY() - edge.getPoint2().getY()) /
+        (edge.getPoint1().getX() - edge.getPoint2().getX())
+    );
+    if (angle >= PI) {
+      console.alert("uh oh");
+    }
+    if (angle < 0) {
+      angle = angle + PI;
+    }
+    console.log(angle);
+    return angle;
+  }
+
   initialIntersect() {
     // Add all edges intersecting lineToRightWall to the AVL Tree in order
     // of intersection, first being closest edge to security guard. Intersection
@@ -1285,14 +1300,19 @@ class SecurityGuard {
         }
       }
     }
+    let theguard = this;
     // sort edges closest intersection to farthest intersection
     initialIntersectEdges.sort(function (a, b) {
-      return a.getPositionPrior() - b.getPositionPrior();
+      return (
+        a.getPositionPrior() - b.getPositionPrior() ||
+        theguard.getAngleFromLinetoRightWall(b) -
+          theguard.getAngleFromLinetoRightWall(a)
+      );
     });
 
     console.log(initialIntersectEdges);
 
-    let temp = ["red", "blue", "green", "yellow", "pink"];
+    let temp = ["red", "blue", "green", "yellow", "pink", "orange", "brown"];
     for (let i = 0; i < initialIntersectEdges.length; i += 1) {
       initialIntersectEdges[i].setPosition(i);
       this.root = ainsert(this.root, initialIntersectEdges[i]);
@@ -1308,6 +1328,7 @@ class SecurityGuard {
       );
       pop();
     }
+   
   }
 
   setX(x) {
