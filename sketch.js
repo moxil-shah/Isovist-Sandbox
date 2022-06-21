@@ -775,7 +775,7 @@ class SecurityGuard {
     this.name = name;
     this.size = 15;
     this.sortedVertices = [];
-    this.orderedIsovistVertices = [];
+    this.constructedEdges = [];
     this.root;
     this.lineToRightWall;
   }
@@ -900,14 +900,14 @@ class SecurityGuard {
           toAdd[1] = temp;
         }
 
-        this.root = ainsertmodified(
+        this.root = insertNode(
           this.root,
           toAdd[0],
           this.sortedVertices[i],
           this,
           toAdd
         );
-        this.root = ainsertmodified(
+        this.root = insertNode(
           this.root,
           toAdd[1],
           this.sortedVertices[i],
@@ -915,8 +915,8 @@ class SecurityGuard {
           toAdd
         );
 
-        // console.log("adding", toAdd[0].getPosition());
-        // console.log("adding", toAdd[1].getPosition());
+        // console.log("adding", toAdd[0]);
+        // console.log("adding", toAdd[1]);
 
         leftNew = getLeftmostLeaf(this.root).theKey;
         if (leftPrev !== leftNew) {
@@ -929,7 +929,7 @@ class SecurityGuard {
       } else if (toAdd.length === 1 && toRemove.length === 1) {
         leftPrev = getLeftmostLeaf(this.root).theKey;
         // console.log("updating", toRemove[0]);
-        let toUpdate = searchAVLMod(
+        let toUpdate = searchAVLForNode(
           this.root,
           toRemove[0],
           false,
@@ -1006,7 +1006,7 @@ class SecurityGuard {
 
         leftPrev = getLeftmostLeaf(this.root).theKey;
 
-        this.root = deleteNodeModified(
+        this.root = deleteNode(
           this.root,
           toRemove[1],
           this.sortedVertices[i],
@@ -1014,7 +1014,7 @@ class SecurityGuard {
           toRemove
         );
 
-        this.root = deleteNodeModified(
+        this.root = deleteNode(
           this.root,
           toRemove[0],
           this.sortedVertices[i],
@@ -1024,8 +1024,8 @@ class SecurityGuard {
 
         leftNew = getLeftmostLeaf(this.root).theKey;
 
-        // console.log("removing", toRemove[0].getPosition());
-        // console.log("removing", toRemove[1].getPosition());
+        // console.log("removing", toRemove[0]);
+        // console.log("removing", toRemove[1]);
 
         if (leftPrev !== leftNew) {
           push();
@@ -1036,7 +1036,7 @@ class SecurityGuard {
         }
       } else if (toAdd.length === 1) {
         leftPrev = getLeftmostLeaf(this.root).theKey;
-        this.root = ainsertmodified(
+        this.root = insertNode(
           this.root,
           toAdd[0],
           this.sortedVertices[i],
@@ -1044,7 +1044,7 @@ class SecurityGuard {
           [false, false]
         );
 
-        // console.log("adding", toAdd[0].getPosition());
+        // console.log("adding", toAdd[0]);
 
         leftNew = getLeftmostLeaf(this.root).theKey;
         if (leftPrev !== leftNew) {
@@ -1057,7 +1057,7 @@ class SecurityGuard {
       } else if (toRemove.length === 1) {
         leftPrev = getLeftmostLeaf(this.root).theKey;
 
-        this.root = deleteNodeModified(
+        this.root = deleteNode(
           this.root,
           toRemove[0],
           this.sortedVertices[i],
@@ -1066,7 +1066,7 @@ class SecurityGuard {
         );
 
         leftNew = getLeftmostLeaf(this.root).theKey;
-        // console.log("removing", toRemove[0].getPosition());
+        // console.log("removing", toRemove[0]);
 
         if (leftPrev !== leftNew) {
           push();
@@ -1075,60 +1075,38 @@ class SecurityGuard {
           point(this.sortedVertices[i].getX(), this.sortedVertices[i].getY());
           pop();
         }
-      } else {
-        console.alert();
       }
     }
   }
 
-  lineSideModified(v_i, edge, other) {
-    if (edge === null) {
-      console.log("jkl;adsf;kl");
-      return "DNE";
-    }
+  lineSideToInsert(v_i, edge, other) {
+    if (edge === null) return "DNE";
     let guardtov_i = new Line(new Point(this.x, this.y, null), v_i);
     if (checkIfIntersect(guardtov_i, edge) === true) {
-      if (edge === other[0]) {
-        return "awayfromguardside";
-      } else if (edge === other[1]) {
-        return "towardsguardside";
-      } else return "awayfromguardside";
+      if (edge === other[0]) return "away";
+      else if (edge === other[1]) return "toward";
+      else return "away";
     }
-    return "towardsguardside";
+    return "toward";
   }
 
-  lineSideModifiedtoDel(v_i, edge, other, thingtodel) {
-    if (edge === null) {
-      console.alert("sdfg");
-      return "DNE";
-    }
-    if (edge === thingtodel) {
+  lineSideToDelete(v_i, edge, other, edgeToDelete) {
+    if (edge === edgeToDelete) {
       return "found";
     }
     let guardtov_i = new Line(new Point(this.x, this.y, null), v_i);
     if (checkIfIntersect(guardtov_i, edge) === true) {
-      if (edge === other[0]) {
-        return "awayfromguardside";
-      } else if (edge === other[1]) {
-        return "towardsguardside";
-      } else return "awayfromguardside";
+      if (edge === other[0]) return "away";
+      else if (edge === other[1]) return "toward";
+      else return "away";
     }
-    return "towardsguardside";
+    return "toward";
   }
 
-  lineSideModifiedtoSearch(v_i, edge, thingtoSearch) {
-    if (edge === null) {
-      return "DNE";
-    }
-    if (edge === thingtoSearch) {
-      return "found";
-    }
+  lineSideToSearch(v_i, edge) {
     let guardtov_i = new Line(new Point(this.x, this.y, null), v_i);
-    //console.log(checkIfIntersect(guardtov_i, edge));
-    if (checkIfIntersect(guardtov_i, edge) === true) {
-      return "awayfromguardside";
-    }
-    return "towardsguardside";
+    if (checkIfIntersect(guardtov_i, edge) === true) return "away";
+    return "toward";
   }
 
   addAllVertices() {
@@ -1148,17 +1126,14 @@ class SecurityGuard {
     this.sortedVertices.sort(function (a, b) {
       return (
         a.getAngleForSecurityGuard(name) - b.getAngleForSecurityGuard(name) ||
-        Math.sqrt((theGuard.x - a.getX()) ** 2 + (theGuard.y - a.getY()) ** 2) -
-          Math.sqrt((theGuard.x - b.getX()) ** 2 + (theGuard.y - b.getY()) ** 2)
-      );
-    });
-  }
-
-  sortIsovistVertices() {
-    let name = this.name;
-    this.orderedIsovistVertices.sort(function (a, b) {
-      return (
-        a.getAngleForSecurityGuard(name) - b.getAngleForSecurityGuard(name)
+        distanceBetweenTwoPoints(
+          new Point(theGuard.getX(), theGuard.getY(), null),
+          a
+        ) -
+          distanceBetweenTwoPoints(
+            new Point(theGuard.getX(), theGuard.getY(), null),
+            b
+          )
       );
     });
   }
@@ -1251,7 +1226,10 @@ class SecurityGuard {
     });
     for (let i = 0; i < initialIntersectEdges.length; i += 1) {
       initialIntersectEdges[i].setPosition(i);
-      this.root = ainsert(this.root, initialIntersectEdges[i]);
+      this.root = insertNodeInitialIntersect(
+        this.root,
+        initialIntersectEdges[i]
+      );
     }
   }
 
@@ -1277,10 +1255,10 @@ class SecurityGuard {
 }
 
 class Node {
-  constructor(d) {
+  constructor(edge) {
     this.left = null;
     this.right = null;
-    this.theKey = d;
+    this.theKey = edge;
     this.getHeight = 1;
   }
 }
@@ -1358,19 +1336,19 @@ function getBalance(N) {
   return getHeight(N.left) - getHeight(N.right);
 }
 
-function ainsert(node, theKey) {
+function insertNodeInitialIntersect(node, theKey) {
   /* 1. Perform the normal BST rotation */
 
   if (node == null) return new Node(theKey);
 
   if (theKey.getPosition() < node.theKey.getPosition())
-    node.left = ainsert(node.left, theKey);
+    node.left = insertNodeInitialIntersect(node.left, theKey);
   else if (theKey.getPosition() > node.theKey.getPosition())
-    node.right = ainsert(node.right, theKey);
+    node.right = insertNodeInitialIntersect(node.right, theKey);
   // Equal theKeys not allowed
   else {
-    console.log(theKey);
-    console.alert("duplicate insertion");
+    console.log(theKey, "duplicate insertion");
+    console.alert();
     return node;
   }
   /* 2. Update getHeight of this ancestor node */
@@ -1406,19 +1384,18 @@ function ainsert(node, theKey) {
   return node;
 }
 
-function ainsertmodified(node, theKey, v_i, guard, other) {
+function insertNode(node, theKey, v_i, guard, other) {
   /* 1. Perform the normal BST rotation */
   if (node == null) return new Node(theKey);
 
-  if (guard.lineSideModified(v_i, node.theKey, other) === "towardsguardside")
-    node.left = ainsertmodified(node.left, theKey, v_i, guard, other);
-  else if (
-    guard.lineSideModified(v_i, node.theKey, other) === "awayfromguardside"
-  )
-    node.right = ainsertmodified(node.right, theKey, v_i, guard, other);
+  if (guard.lineSideToInsert(v_i, node.theKey, other) === "toward")
+    node.left = insertNode(node.left, theKey, v_i, guard, other);
+  else if (guard.lineSideToInsert(v_i, node.theKey, other) === "away")
+    node.right = insertNode(node.right, theKey, v_i, guard, other);
   // Equal theKeys not allowed
   else {
     console.log("duplicate insertion");
+    console.alert();
     return node;
   }
   /* 2. Update getHeight of this ancestor node */
@@ -1433,22 +1410,21 @@ function ainsertmodified(node, theKey, v_i, guard, other) {
   // there are 4 cases Left Left Case
   if (
     balance > 1 &&
-    guard.lineSideModified(v_i, node.left.theKey, other) === "towardsguardside"
+    guard.lineSideToInsert(v_i, node.left.theKey, other) === "toward"
   )
     return rightRotate(node);
 
   // Right Right Case
   if (
     balance < -1 &&
-    guard.lineSideModified(v_i, node.right.theKey, other) ===
-      "awayfromguardside"
+    guard.lineSideToInsert(v_i, node.right.theKey, other) === "away"
   )
     return leftRotate(node);
 
   // Left Right Case
   if (
     balance > 1 &&
-    guard.lineSideModified(v_i, node.left.theKey, other) === "awayfromguardside"
+    guard.lineSideToInsert(v_i, node.left.theKey, other) === "away"
   ) {
     node.left = leftRotate(node.left);
     return rightRotate(node);
@@ -1457,7 +1433,7 @@ function ainsertmodified(node, theKey, v_i, guard, other) {
   // Right Left Case
   if (
     balance < -1 &&
-    guard.lineSideModified(v_i, node.right.theKey, other) === "towardsguardside"
+    guard.lineSideToInsert(v_i, node.right.theKey, other) === "toward"
   ) {
     node.right = rightRotate(node.right);
     return leftRotate(node);
@@ -1480,36 +1456,25 @@ function minValueNode(node) {
   return current;
 }
 
-function deleteNodeModified(theRoot, theKey, v_i, guard, other) {
+function deleteNode(theRoot, theKey, v_i, guard, other) {
   // STEP 1: PERFORM STANDARD BST DELETE
-  //console.log(guard.lineSideForDeleting(v_i, theRoot.theKey), theKey);
   if (theRoot === null) return theRoot;
 
   // If the theKey to be deleted is smaller than
   // the theRoot's theKey, then it lies in left subtree
-  if (
-    guard.lineSideModifiedtoDel(v_i, theRoot.theKey, other, theKey) ===
-    "towardsguardside"
-  )
-    theRoot.left = deleteNodeModified(theRoot.left, theKey, v_i, guard, other);
+  if (guard.lineSideToDelete(v_i, theRoot.theKey, other, theKey) === "toward")
+    theRoot.left = deleteNode(theRoot.left, theKey, v_i, guard, other);
   // If the theKey to be deleted is greater than the
   // theRoot's theKey, then it lies in right subtree
   else if (
-    guard.lineSideModifiedtoDel(v_i, theRoot.theKey, other, theKey) ===
-    "awayfromguardside"
+    guard.lineSideToDelete(v_i, theRoot.theKey, other, theKey) === "away"
   )
-    theRoot.right = deleteNodeModified(
-      theRoot.right,
-      theKey,
-      v_i,
-      guard,
-      other
-    );
+    theRoot.right = deleteNode(theRoot.right, theKey, v_i, guard, other);
   // if theKey is same as theRoot's theKey, then this is the node
   // to be deleted
   else {
     let prev = theKey;
-    theKey = guard.lineSideModifiedtoDel(v_i, theRoot.theKey, other, theKey);
+    theKey = guard.lineSideToDelete(v_i, theRoot.theKey, other, theKey);
     if (theKey === prev) {
     } else {
       deletehelper = true;
@@ -1536,13 +1501,7 @@ function deleteNodeModified(theRoot, theKey, v_i, guard, other) {
       theRoot.theKey = temp.theKey;
 
       // Delete the inorder successor
-      theRoot.right = deleteNodeModified(
-        theRoot.right,
-        temp.theKey,
-        v_i,
-        guard,
-        other
-      );
+      theRoot.right = deleteNode(theRoot.right, temp.theKey, v_i, guard, other);
     }
   }
 
@@ -1591,7 +1550,7 @@ function preOrder(node) {
   }
 }
 
-function searchAVLMod(root, key, override, v_i, guard) {
+function searchAVLForNode(root, key, override, v_i, guard) {
   // Base Cases: root is null
   // or key is present at root
   if (root === null || root.theKey === key) {
@@ -1602,12 +1561,9 @@ function searchAVLMod(root, key, override, v_i, guard) {
   }
 
   // Key is greater than root's key
-  if (
-    guard.lineSideModifiedtoSearch(v_i, root.theKey, key) ===
-    "awayfromguardside"
-  ) {
-    return searchAVLMod(root.right, key, override, v_i, guard);
+  if (guard.lineSideToSearch(v_i, root.theKey) === "away") {
+    return searchAVLForNode(root.right, key, override, v_i, guard);
   }
   // Key is smaller than root's key
-  return searchAVLMod(root.left, key, override, v_i, guard);
+  return searchAVLForNode(root.left, key, override, v_i, guard);
 }
