@@ -64,7 +64,7 @@ function sidesInput() {
 // from the HTML form
 function SecurityGuardInput() {
   if (SecurityGuardNames.length !== 0) {
-    guard = new SecurityGuard(27.5, 100, SecurityGuardNames.pop());
+    guard = new SecurityGuard(27.5, 150, SecurityGuardNames.pop());
     for (let eachShape of allShapes) {
       let currentVertex = eachShape.getVertexHead();
       do {
@@ -103,34 +103,33 @@ function polygon(x, y, radius, npoints) {
     newShape = new Shape(npoints, "white");
 
     if (temphelp === 0) {
-    
-      vertexes.push(new Point(110, 100, newShape));
-      copyVertexes.push([110, 100]);
-      vertexes.push(new Point(90, 100, newShape));
-      copyVertexes.push([90, 100]);
+      // vertexes.push(new Point(110, 100, newShape));
+      // copyVertexes.push([110, 100]);
+      // vertexes.push(new Point(90, 100, newShape));
+      // copyVertexes.push([90, 100]);
       vertexes.push(new Point(70, 100, newShape));
       copyVertexes.push([70, 100]);
       vertexes.push(new Point(70, 150, newShape));
       copyVertexes.push([70, 150]);
-      vertexes.push(new Point(85, 150, newShape));
-      copyVertexes.push([85, 150]);
-      vertexes.push(new Point(100, 150, newShape));
-      copyVertexes.push([100, 150]);
-      vertexes.push(new Point(130, 150, newShape));
-      copyVertexes.push([130, 150]);
+      // vertexes.push(new Point(85, 150, newShape));
+      // copyVertexes.push([85, 150]);
+      // vertexes.push(new Point(100, 150, newShape));
+      // copyVertexes.push([100, 150]);
+      // vertexes.push(new Point(130, 150, newShape));
+      // copyVertexes.push([130, 150]);
       vertexes.push(new Point(150, 150, newShape));
       copyVertexes.push([150, 150]);
       vertexes.push(new Point(150, 100, newShape));
       copyVertexes.push([150, 100]);
     } else {
-      // vertexes.push(new Point(200, 100, newShape));
-      // copyVertexes.push([200, 100]);
-      // vertexes.push(new Point(200, 150, newShape));
-      // copyVertexes.push([200, 150]);
-      // vertexes.push(new Point(280, 150, newShape));
-      // copyVertexes.push([280, 150]);
-      // vertexes.push(new Point(280, 100, newShape));
-      // copyVertexes.push([280, 100]);
+      vertexes.push(new Point(200, 100, newShape));
+      copyVertexes.push([200, 100]);
+      vertexes.push(new Point(200, 150, newShape));
+      copyVertexes.push([200, 150]);
+      vertexes.push(new Point(280, 150, newShape));
+      copyVertexes.push([280, 150]);
+      vertexes.push(new Point(280, 100, newShape));
+      copyVertexes.push([280, 100]);
     }
     temphelp += 1;
 
@@ -613,6 +612,7 @@ class Line {
     this.Point2 = p2;
     this.position = null;
     this.positionPrior = null;
+    this.slope = (p1.getY() - p2.getY()) / (p1.getX() - p2.getX());
   }
 
   setPosition(position) {
@@ -806,6 +806,14 @@ class SecurityGuard {
       preOrder(this.root);
       let toRemove = [];
       let toAdd = [];
+      this.lineToRightWall = new Line(
+        new Point(this.x, this.y, null),
+        new Point(
+          this.sortedVertices[i].getX(),
+          this.sortedVertices[i].getY(),
+          null
+        )
+      );
 
       let crossProduct3 = p5.Vector.cross(
         createVector(
@@ -1150,10 +1158,12 @@ class SecurityGuard {
     let guardtov_i = new Line(new Point(this.x, this.y, null), v_i);
     //console.log(checkIfIntersect(guardtov_i, edge));
     if (checkIfIntersect(guardtov_i, edge) === true) {
-      // if (thingtoSearch === v_i.getEdgeClosestToSecurityGuard(guard))
-      // {
-      //   return "towardsguardside";
-      // }
+      if (
+        thingtoSearch === v_i.getEdgeClosestToSecurityGuard(guard) &&
+        this.lineToRightWall.slope === thingtoSearch.slope
+      ) {
+        return "towardsguardside";
+      }
 
       return "awayfromguardside";
     }
