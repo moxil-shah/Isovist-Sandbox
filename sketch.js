@@ -105,18 +105,18 @@ function polygon(x, y, radius, npoints) {
     if (temphelp === 0) {
       // vertexes.push(new Point(110, 100, newShape));
       // copyVertexes.push([110, 100]);
-      vertexes.push(new Point(90, 100, newShape));
-      copyVertexes.push([90, 100]);
+      // vertexes.push(new Point(90, 100, newShape));
+      // copyVertexes.push([90, 100]);
       vertexes.push(new Point(70, 100, newShape));
       copyVertexes.push([70, 100]);
       vertexes.push(new Point(70, 150, newShape));
       copyVertexes.push([70, 150]);
       vertexes.push(new Point(85, 150, newShape));
       copyVertexes.push([85, 150]);
-      vertexes.push(new Point(100, 150, newShape));
-      copyVertexes.push([100, 150]);
-      vertexes.push(new Point(130, 150, newShape));
-      copyVertexes.push([130, 150]);
+      // vertexes.push(new Point(100, 150, newShape));
+      // copyVertexes.push([100, 150]);
+      // vertexes.push(new Point(130, 150, newShape));
+      // copyVertexes.push([130, 150]);
       vertexes.push(new Point(150, 150, newShape));
       copyVertexes.push([150, 150]);
       vertexes.push(new Point(150, 100, newShape));
@@ -608,11 +608,10 @@ class Shape {
 
 class Line {
   constructor(p1, p2) {
-    this.Point1 = p1;
-    this.Point2 = p2;
+    this.point1 = p1;
+    this.point2 = p2;
     this.position = null;
     this.positionPrior = null;
-    this.slope = (p1.getY() - p2.getY()) / (p1.getX() - p2.getX());
   }
 
   setPosition(position) {
@@ -622,12 +621,20 @@ class Line {
     this.positionPrior = positionPrior;
   }
 
+  setPoint1(p1) {
+    this.point1 = p1;
+  }
+
+  setPoint2(p2) {
+    this.point2 = p2;
+  }
+
   getPoint1() {
-    return this.Point1;
+    return this.point1;
   }
 
   getPoint2() {
-    return this.Point2;
+    return this.point2;
   }
 
   getPosition() {
@@ -636,10 +643,6 @@ class Line {
 
   getPositionPrior() {
     return this.positionPrior;
-  }
-
-  getPointThatIsCloserToTop() {
-    return this.Point1.getY() < this.Point2.getY() ? this.Point1 : this.point2;
   }
 }
 
@@ -773,37 +776,25 @@ class SecurityGuard {
     this.size = 15;
     this.sortedVertices = [];
     this.orderedIsovistVertices = [];
-    this.isovistVertices = new Set();
     this.root;
-    this.edgeCounter;
     this.lineToRightWall;
   }
 
   visibleVertices() {
-    this.isovistVertices = new Set();
-    this.constructedEdges = [];
     this.root = null;
     this.lineToRightWall = new Line(
       new Point(this.x, this.y, null),
       new Point(width, this.y, null)
     );
-    this.edgeCounter = 1;
     let leftPrev;
     let leftNew;
-    for (let eachShape of allShapes) {
-      let currentVertex = eachShape.getVertexHead();
-      do {
-        currentVertex.getLineNext().setPosition(null);
-        currentVertex.getLinePrev().setPosition(null);
-        currentVertex = currentVertex.getPointNext();
-      } while (currentVertex !== eachShape.getVertexHead());
-    }
-    console.log("new rotation below");
+
     this.initialIntersect();
 
     for (let i = 0; i < this.sortedVertices.length; i += 1) {
-      console.log(i);
-      preOrder(this.root);
+      // console.log(i);
+      // preOrder(this.root);
+      // console.log("done")
       let toRemove = [];
       let toAdd = [];
       this.lineToRightWall = new Line(
@@ -815,7 +806,7 @@ class SecurityGuard {
         )
       );
 
-      let crossProduct3 = p5.Vector.cross(
+      let crossProduct1 = p5.Vector.cross(
         createVector(
           this.sortedVertices[i].getX() - this.getX(),
           -(this.sortedVertices[i].getY() - this.getY()),
@@ -832,13 +823,11 @@ class SecurityGuard {
         )
       ).dot(createVector(1, 1, 1));
 
-      if (crossProduct3 > 0) {
-        toAdd.push(this.sortedVertices[i].getLinePrev());
-      } else if (crossProduct3 < 0) {
+      if (crossProduct1 > 0) toAdd.push(this.sortedVertices[i].getLinePrev());
+      else if (crossProduct1 < 0)
         toRemove.push(this.sortedVertices[i].getLinePrev());
-      }
 
-      let crossProduct4 = p5.Vector.cross(
+      let crossProduct2 = p5.Vector.cross(
         createVector(
           this.sortedVertices[i].getX() - this.getX(),
           -(this.sortedVertices[i].getY() - this.getY()),
@@ -855,11 +844,9 @@ class SecurityGuard {
         )
       ).dot(createVector(1, 1, 1));
 
-      if (crossProduct4 > 0) {
-        toAdd.push(this.sortedVertices[i].getLineNext());
-      } else if (crossProduct4 < 0) {
+      if (crossProduct2 > 0) toAdd.push(this.sortedVertices[i].getLineNext());
+      else if (crossProduct2 < 0)
         toRemove.push(this.sortedVertices[i].getLineNext());
-      }
 
       if (toAdd.length === 2) {
         if (
@@ -869,8 +856,8 @@ class SecurityGuard {
           ) === false
         ) {
           let temp = toAdd[0].getPoint1();
-          toAdd[0].Point1 = toAdd[0].Point2;
-          toAdd[0].Point2 = temp;
+          toAdd[0].setPoint1(toAdd[0].getPoint2());
+          toAdd[0].setPoint2(temp);
         }
 
         if (
@@ -880,8 +867,8 @@ class SecurityGuard {
           ) === false
         ) {
           let temp = toAdd[1].getPoint1();
-          toAdd[1].Point1 = toAdd[1].Point2;
-          toAdd[1].Point2 = temp;
+          toAdd[1].setPoint1(toAdd[1].getPoint2());
+          toAdd[1].setPoint2(temp);
         }
 
         leftPrev = getLeftmostLeaf(this.root).theKey;
@@ -913,28 +900,6 @@ class SecurityGuard {
           toAdd[1] = temp;
         }
 
-        // push();
-        // strokeWeight(14);
-        // stroke("red");
-        // line(
-        //   toAdd[0].getPoint1().getX(),
-        //   toAdd[0].getPoint1().getY(),
-        //   toAdd[0].getPoint2().getX(),
-        //   toAdd[0].getPoint2().getY()
-        // );
-        // pop();
-
-        // push();
-        // strokeWeight(14);
-        // stroke("green");
-        // line(
-        //   toAdd[1].getPoint1().getX(),
-        //   toAdd[1].getPoint1().getY(),
-        //   toAdd[1].getPoint2().getX(),
-        //   toAdd[1].getPoint2().getY()
-        // );
-        // pop();
-
         this.root = ainsertmodified(
           this.root,
           toAdd[0],
@@ -964,7 +929,7 @@ class SecurityGuard {
       } else if (toAdd.length === 1 && toRemove.length === 1) {
         leftPrev = getLeftmostLeaf(this.root).theKey;
         // console.log("updating", toRemove[0]);
-        let toup = searchAVLMod(
+        let toUpdate = searchAVLMod(
           this.root,
           toRemove[0],
           false,
@@ -972,20 +937,17 @@ class SecurityGuard {
           this
         );
 
-        if (toup === null) {
+        if (toUpdate === null) {
           console.log(i);
-          console.alert(i);
-        } else {
-          toup.theKey = toAdd[0];
-        }
+          console.alert();
+        } else toUpdate.theKey = toAdd[0];
 
         leftNew = getLeftmostLeaf(this.root).theKey;
         if (leftPrev !== leftNew) {
           if (toRemove[0] !== leftPrev) {
-            console.log("Big Big error!");
+            console.log("Big error 1!");
+            console.alert();
           }
-          // drawline(leftPrev, "blue");
-          // drawline(leftNew, "yellow");
           push();
           stroke("purple");
           strokeWeight(20);
@@ -1000,8 +962,8 @@ class SecurityGuard {
           ) === false
         ) {
           let temp = toRemove[0].getPoint1();
-          toRemove[0].Point1 = toRemove[0].Point2;
-          toRemove[0].Point2 = temp;
+          toRemove[0].setPoint1(toRemove[0].getPoint2());
+          toRemove[0].setPoint2(temp);
         }
 
         if (
@@ -1011,8 +973,8 @@ class SecurityGuard {
           ) === false
         ) {
           let temp = toRemove[1].getPoint1();
-          toRemove[1].Point1 = toRemove[1].Point2;
-          toRemove[1].Point2 = temp;
+          toRemove[1].setPoint1(toRemove[1].getPoint2());
+          toRemove[1].setPoint2(temp);
         }
 
         let vmain = createVector(
@@ -1061,6 +1023,7 @@ class SecurityGuard {
         );
 
         leftNew = getLeftmostLeaf(this.root).theKey;
+
         // console.log("removing", toRemove[0].getPosition());
         // console.log("removing", toRemove[1].getPosition());
 
@@ -1112,23 +1075,15 @@ class SecurityGuard {
           point(this.sortedVertices[i].getX(), this.sortedVertices[i].getY());
           pop();
         }
+      } else {
+        console.alert();
       }
     }
   }
 
-  lineSide(v_i, edge) {
-    if (edge === null) {
-      return "DNE";
-    }
-    let guardtov_i = new Line(new Point(this.x, this.y, null), v_i);
-    if (checkIfIntersect(guardtov_i, edge) === true) {
-      return "awayfromguardside";
-    }
-    return "towardsguardside";
-  }
-
   lineSideModified(v_i, edge, other) {
     if (edge === null) {
+      console.log("jkl;adsf;kl");
       return "DNE";
     }
     let guardtov_i = new Line(new Point(this.x, this.y, null), v_i);
@@ -1171,13 +1126,6 @@ class SecurityGuard {
     let guardtov_i = new Line(new Point(this.x, this.y, null), v_i);
     //console.log(checkIfIntersect(guardtov_i, edge));
     if (checkIfIntersect(guardtov_i, edge) === true) {
-      if (
-        thingtoSearch === v_i.getEdgeClosestToSecurityGuard(guard) &&
-        this.lineToRightWall.slope === thingtoSearch.slope
-      ) {
-        return "towardsguardside";
-      }
-
       return "awayfromguardside";
     }
     return "towardsguardside";
@@ -1228,21 +1176,12 @@ class SecurityGuard {
   }
 
   getAngleFromLinetoRightWall(edge) {
-    if (edge.getPoint1().getX() - edge.getPoint2().getX() === 0) {
-      console.log(PI / 2);
-      return PI / 2;
-    }
+    if (edge.getPoint1().getX() === edge.getPoint2().getX()) return PI / 2;
     let angle = Math.atan(
       (edge.getPoint1().getY() - edge.getPoint2().getY()) /
         (edge.getPoint1().getX() - edge.getPoint2().getX())
     );
-    if (angle >= PI) {
-      console.alert("uh oh");
-    }
-    if (angle < 0) {
-      angle = angle + PI;
-    }
-    console.log(angle);
+    if (angle < 0) angle = angle + PI;
     return angle;
   }
 
@@ -1300,35 +1239,20 @@ class SecurityGuard {
         }
       }
     }
-    let theguard = this;
-    // sort edges closest intersection to farthest intersection
+    // sort edges closest intersection to farthest intersection. If tie, use angle to figure
+    // out which edge is intersected first
+    let guard = this;
     initialIntersectEdges.sort(function (a, b) {
       return (
         a.getPositionPrior() - b.getPositionPrior() ||
-        theguard.getAngleFromLinetoRightWall(b) -
-          theguard.getAngleFromLinetoRightWall(a)
+        guard.getAngleFromLinetoRightWall(b) -
+          guard.getAngleFromLinetoRightWall(a)
       );
     });
-
-    console.log(initialIntersectEdges);
-
-    let temp = ["red", "blue", "green", "yellow", "pink", "orange", "brown"];
     for (let i = 0; i < initialIntersectEdges.length; i += 1) {
       initialIntersectEdges[i].setPosition(i);
       this.root = ainsert(this.root, initialIntersectEdges[i]);
-
-      push();
-      strokeWeight(14);
-      stroke(temp[i]);
-      line(
-        initialIntersectEdges[i].getPoint1().getX(),
-        initialIntersectEdges[i].getPoint1().getY(),
-        initialIntersectEdges[i].getPoint2().getX(),
-        initialIntersectEdges[i].getPoint2().getY()
-      );
-      pop();
     }
-   
   }
 
   setX(x) {
@@ -1672,7 +1596,7 @@ function searchAVLMod(root, key, override, v_i, guard) {
   // or key is present at root
   if (root === null || root.theKey === key) {
     if (root === null && override === false) {
-      console.log("big error agian");
+      console.log("Big error 2!");
     }
     return root;
   }
