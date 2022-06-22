@@ -59,7 +59,7 @@ function sidesInput() {
 // from the HTML form
 function SecurityGuardInput() {
   if (SecurityGuardNames.length !== 0) {
-    guard = new SecurityGuard(27.5, 150, SecurityGuardNames.pop());
+    guard = new SecurityGuard(177.5, 150, SecurityGuardNames.pop());
     for (let eachShape of allShapes) {
       let currentVertex = eachShape.getVertexHead();
       do {
@@ -97,11 +97,41 @@ function polygon(x, y, radius, npoints) {
   } else {
     newShape = new Shape(npoints, "white");
 
-    for (let i = 0; i < TWO_PI - HEXAGON_ROUNDING_ERROR; i += angle) {
-      let sx = x + cos(i) * radius;
-      let sy = y + sin(i) * radius;
-      vertexes.push(new Point(sx, sy, newShape));
-      copyVertexes.push([sx, sy]);
+    if (allShapes.size === 1) {
+      // vertexes.push(new Point(110, 100, newShape));
+      // copyVertexes.push([110, 100]);
+      vertexes.push(new Point(90, 100, newShape));
+      copyVertexes.push([90, 100]);
+      vertexes.push(new Point(70, 100, newShape));
+      copyVertexes.push([70, 100]);
+      vertexes.push(new Point(70, 150, newShape));
+      copyVertexes.push([70, 150]);
+      vertexes.push(new Point(85, 150, newShape));
+      copyVertexes.push([85, 150]);
+      vertexes.push(new Point(100, 150, newShape));
+      copyVertexes.push([100, 150]);
+      vertexes.push(new Point(130, 150, newShape));
+      copyVertexes.push([130, 150]);
+      vertexes.push(new Point(150, 150, newShape));
+      copyVertexes.push([150, 150]);
+      vertexes.push(new Point(150, 100, newShape));
+      copyVertexes.push([150, 100]);
+    } else if (allShapes.size === 2) {
+      vertexes.push(new Point(200, 100, newShape));
+      copyVertexes.push([200, 100]);
+      vertexes.push(new Point(200, 150, newShape));
+      copyVertexes.push([200, 150]);
+      vertexes.push(new Point(280, 150, newShape));
+      copyVertexes.push([280, 150]);
+      vertexes.push(new Point(280, 100, newShape));
+      copyVertexes.push([280, 100]);
+    } else {
+      for (let i = 0; i < TWO_PI - HEXAGON_ROUNDING_ERROR; i += angle) {
+        let sx = x + cos(i) * radius;
+        let sy = y + sin(i) * radius;
+        vertexes.push(new Point(sx, sy, newShape));
+        copyVertexes.push([sx, sy]);
+      }
     }
   }
 
@@ -134,6 +164,19 @@ function renderAllSecurityGuards() {
     if (guardDragged !== -1) guard = guardDragged;
 
     guard.visibleVertices();
+
+    push();
+    stroke("red");
+    strokeWeight(15);
+    // for (let eachedge of guard.constructedEdges) {
+    //   line(
+    //     eachedge.getPoint1().getX(),
+    //     eachedge.getPoint1().getY(),
+    //     eachedge.getPoint2().getX(),
+    //     eachedge.getPoint2().getY()
+    //   );
+    // }
+    pop();
 
     push();
     fill(guard.getName()[0], guard.getName()[1], guard.getName()[2], 100);
@@ -605,7 +648,7 @@ class SecurityGuard {
     this.name = name;
     this.size = 15;
     this.sortedVertices = [];
-    this.constructedEdges = [];
+    this.constructedPoints = [];
     this.root;
     this.lineToRightWall;
   }
@@ -618,13 +661,11 @@ class SecurityGuard {
     );
     let leftPrev;
     let leftNew;
+    this.constructedPoints = [];
 
     this.initialIntersect();
 
     for (let i = 0; i < this.sortedVertices.length; i += 1) {
-      if (i === 0) {
-        this.constructVisibilityEdge(null, null, this.sortedVertices[0]);
-      }
       // console.log(i);
       // preOrder(this.root);
       // console.log("done")
@@ -714,6 +755,7 @@ class SecurityGuard {
           strokeWeight(20);
           point(this.sortedVertices[i].getX(), this.sortedVertices[i].getY());
           pop();
+          this.constructVisibilityEdge(leftPrev, this.sortedVertices[i]);
         }
       } else if (toAdd.length === 1 && toRemove.length === 1) {
         leftPrev = getLeftmostLeaf(this.root).theKey;
@@ -777,6 +819,7 @@ class SecurityGuard {
           strokeWeight(20);
           point(this.sortedVertices[i].getX(), this.sortedVertices[i].getY());
           pop();
+          this.constructVisibilityEdge(leftNew, this.sortedVertices[i]);
         }
       } else if (toAdd.length === 1) {
         leftPrev = getLeftmostLeaf(this.root).theKey;
@@ -975,9 +1018,12 @@ class SecurityGuard {
         initialIntersectEdges[i]
       );
     }
+    this.constructedPoints.push(
+      findIntersection(this.lineToRightWall, initialIntersectEdges[0])
+    );
   }
 
-  constructVisibilityEdge(leftPrev, leftNew, v_i) {
+  constructVisibilityEdge(edge, v_i) {
     let vectorTov_i = createVector(
       v_i.getX() - this.x,
       -(v_i.getY() - this.y),
@@ -996,15 +1042,23 @@ class SecurityGuard {
         null
       )
     );
-    push();
-    stroke("red");
-    line(
-      this.x,
-      this.y,
-      lineFromSecurityGuardTov_iAndMore.getPoint2().getX(),
-      lineFromSecurityGuardTov_iAndMore.getPoint2().getY()
-    );
-    pop();
+    // push();
+    // stroke("red");
+    // line(
+    //   this.x,
+    //   this.y,
+    //   lineFromSecurityGuardTov_iAndMore.getPoint2().getX(),
+    //   lineFromSecurityGuardTov_iAndMore.getPoint2().getY()
+    // );
+    // pop();
+
+    if (checkIfIntersect(lineFromSecurityGuardTov_iAndMore, edge) === true) {
+      let intersectionPoint = findIntersection(
+        lineFromSecurityGuardTov_iAndMore,
+        edge
+      );
+      this.constructedPoints.push(new Line(v_i, intersectionPoint));
+    }
   }
 
   setX(x) {
