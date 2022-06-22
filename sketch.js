@@ -622,6 +622,9 @@ class SecurityGuard {
     this.initialIntersect();
 
     for (let i = 0; i < this.sortedVertices.length; i += 1) {
+      if (i === 0) {
+        this.constructVisibilityEdge(null, null, this.sortedVertices[0]);
+      }
       // console.log(i);
       // preOrder(this.root);
       // console.log("done")
@@ -972,6 +975,36 @@ class SecurityGuard {
         initialIntersectEdges[i]
       );
     }
+  }
+
+  constructVisibilityEdge(leftPrev, leftNew, v_i) {
+    let vectorTov_i = createVector(
+      v_i.getX() - this.x,
+      -(v_i.getY() - this.y),
+      0
+    );
+    let vectorTov_iNormalized = p5.Vector.normalize(vectorTov_i);
+    let canvasWidth =
+      document.documentElement.clientWidth - getScrollBarWidth();
+    let canvasHeight = document.documentElement.clientHeight;
+    let maxDistance = ceil(Math.sqrt(canvasWidth ** 2 + canvasHeight ** 2));
+    let lineFromSecurityGuardTov_iAndMore = new Line(
+      new Point(this.x, this.y, null),
+      new Point(
+        v_i.getX() + vectorTov_iNormalized.x * maxDistance,
+        v_i.getY() - vectorTov_iNormalized.y * maxDistance,
+        null
+      )
+    );
+    push();
+    stroke("red");
+    line(
+      this.x,
+      this.y,
+      lineFromSecurityGuardTov_iAndMore.getPoint2().getX(),
+      lineFromSecurityGuardTov_iAndMore.getPoint2().getY()
+    );
+    pop();
   }
 
   setX(x) {
