@@ -20,7 +20,6 @@ let pointDragged = -1;
 let guardDragged = -1;
 let gameShape;
 let intersectionPointsGlobal = new Map();
-let temphelp = 0;
 
 function getScrollBarWidth() {
   var $outer = $("<div>")
@@ -102,43 +101,12 @@ function polygon(x, y, radius, npoints) {
   } else {
     newShape = new Shape(npoints, "white");
 
-    if (temphelp === 0) {
-      // vertexes.push(new Point(110, 100, newShape));
-      // copyVertexes.push([110, 100]);
-      // vertexes.push(new Point(90, 100, newShape));
-      // copyVertexes.push([90, 100]);
-      vertexes.push(new Point(70, 100, newShape));
-      copyVertexes.push([70, 100]);
-      vertexes.push(new Point(70, 150, newShape));
-      copyVertexes.push([70, 150]);
-      vertexes.push(new Point(85, 150, newShape));
-      copyVertexes.push([85, 150]);
-      // vertexes.push(new Point(100, 150, newShape));
-      // copyVertexes.push([100, 150]);
-      // vertexes.push(new Point(130, 150, newShape));
-      // copyVertexes.push([130, 150]);
-      vertexes.push(new Point(150, 150, newShape));
-      copyVertexes.push([150, 150]);
-      vertexes.push(new Point(150, 100, newShape));
-      copyVertexes.push([150, 100]);
-    } else {
-      vertexes.push(new Point(200, 100, newShape));
-      copyVertexes.push([200, 100]);
-      vertexes.push(new Point(200, 150, newShape));
-      copyVertexes.push([200, 150]);
-      vertexes.push(new Point(280, 150, newShape));
-      copyVertexes.push([280, 150]);
-      vertexes.push(new Point(280, 100, newShape));
-      copyVertexes.push([280, 100]);
+    for (let i = 0; i < TWO_PI - HEXAGON_ROUNDING_ERROR; i += angle) {
+      let sx = x + cos(i) * radius;
+      let sy = y + sin(i) * radius;
+      vertexes.push(new Point(sx, sy, newShape));
+      copyVertexes.push([sx, sy]);
     }
-    temphelp += 1;
-
-    // for (let i = 0; i < TWO_PI - HEXAGON_ROUNDING_ERROR; i += angle) {
-    //   let sx = x + cos(i) * radius;
-    //   let sy = y + sin(i) * radius;
-    //   vertexes.push(new Point(sx, sy, newShape));
-    //   copyVertexes.push([sx, sy]);
-    // }
   }
 
   newShape.setVerticesLinkedList(vertexes);
@@ -227,20 +195,6 @@ function renderAllShapesPoints() {
       currentVertex = currentVertex.getPointNext();
     } while (currentVertex !== shape.vertexHead);
   }
-}
-
-function deleteTheSelfIntersect(shape) {
-  let aVertex = shape.getVertexHead();
-  do {
-    if (aVertex.getIncludeInRender() === false) {
-      aVertex.getPointPrev().setPointNext(aVertex.getPointNext());
-      aVertex.getPointNext().setPointPrev(aVertex.getPointPrev());
-      aVertex = aVertex.getPointPrev();
-    }
-    aVertex = aVertex.getPointNext();
-  } while (aVertex !== shape.vertexHead);
-
-  shape.setEdges();
 }
 
 function checkIfClickAVertex() {
@@ -356,7 +310,6 @@ function dragPoint() {
   if (pointClicked === true) {
     pointDragged.setX(mouseX);
     pointDragged.setY(mouseY);
-    shapesPointDragged.setEdges();
     updateVertexArrayDistancetoMousePress(shapesPointDragged);
 
     for (let eachShape of allShapes) {
@@ -413,9 +366,6 @@ function dragShape() {
       currentVertex.setY(currentVertex.getY() + deltaYCurrent - deltaY);
       currentVertex = currentVertex.getPointNext();
     } while (currentVertex !== shapeDragged.getVertexHead());
-
-    shapeDragged.setEdges();
-
     for (let eachShape of allShapes) {
       let currentVertex = eachShape.getVertexHead();
       do {
@@ -654,8 +604,6 @@ class Point {
     this.pointNext = null;
     this.parentShape = parentShape;
     this.secuirtyGuardMap = new Map();
-    this.extendo = new Map();
-    this.extendedFrom = new Map();
     this.includeInRender = true;
     this.lineToPointPrev;
     this.lineToPointNext;
