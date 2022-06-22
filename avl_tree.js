@@ -1,12 +1,18 @@
 class Node {
-  constructor(d) {
+  constructor(edge) {
     this.left = null;
     this.right = null;
-    this.theKey = d;
+    this.theKey = edge;
     this.getHeight = 1;
   }
 }
 
+function getLeftmostLeaf(N) {
+  while (N.left !== null) {
+    N = N.left;
+  }
+  return N;
+}
 
 // A utility function to get getHeight of the tree
 function getHeight(N) {
@@ -17,6 +23,19 @@ function getHeight(N) {
 // A utility function to get getMaximum of two integers
 function getMax(a, b) {
   return a > b ? a : b;
+}
+
+function drawline(aline, c) {
+  push();
+  strokeWeight(14);
+  stroke(c);
+  line(
+    aline.getPoint1().getX(),
+    aline.getPoint1().getY(),
+    aline.getPoint2().getX(),
+    aline.getPoint2().getY()
+  );
+  pop();
 }
 
 // A utility function to right rotate subtree theRooted with y
@@ -61,15 +80,21 @@ function getBalance(N) {
   return getHeight(N.left) - getHeight(N.right);
 }
 
-function ainsert(node, theKey) {
+function insertNodeInitialIntersect(node, theKey) {
   /* 1. Perform the normal BST rotation */
+
   if (node == null) return new Node(theKey);
 
-  if (theKey < node.theKey) node.left = ainsert(node.left, theKey);
-  else if (theKey > node.theKey) node.right = ainsert(node.right, theKey);
+  if (theKey.getPosition() < node.theKey.getPosition())
+    node.left = insertNodeInitialIntersect(node.left, theKey);
+  else if (theKey.getPosition() > node.theKey.getPosition())
+    node.right = insertNodeInitialIntersect(node.right, theKey);
   // Equal theKeys not allowed
-  else return node;
-
+  else {
+    console.log(theKey, "duplicate insertion");
+    console.alert();
+    return node;
+  }
   /* 2. Update getHeight of this ancestor node */
   node.getHeight = 1 + getMax(getHeight(node.left), getHeight(node.right));
 
@@ -80,19 +105,80 @@ function ainsert(node, theKey) {
 
   // If this node becomes unbalanced, then
   // there are 4 cases Left Left Case
-  if (balance > 1 && theKey < node.left.theKey) return rightRotate(node);
+  if (balance > 1 && theKey.getPosition() < node.left.theKey.getPosition())
+    return rightRotate(node);
 
   // Right Right Case
-  if (balance < -1 && theKey > node.right.theKey) return leftRotate(node);
+  if (balance < -1 && theKey.getPosition() > node.right.theKey.getPosition())
+    return leftRotate(node);
 
   // Left Right Case
-  if (balance > 1 && theKey > node.left.theKey) {
+  if (balance > 1 && theKey.getPosition() > node.left.theKey.getPosition()) {
     node.left = leftRotate(node.left);
     return rightRotate(node);
   }
 
   // Right Left Case
-  if (balance < -1 && theKey < node.right.theKey) {
+  if (balance < -1 && theKey.getPosition() < node.right.theKey.getPosition()) {
+    node.right = rightRotate(node.right);
+    return leftRotate(node);
+  }
+
+  /* return the (unchanged) node pointer */
+  return node;
+}
+
+function insertNode(node, theKey, v_i, guard, other) {
+  /* 1. Perform the normal BST rotation */
+  if (node == null) return new Node(theKey);
+
+  if (guard.lineSideToInsert(v_i, node.theKey, other) === "toward")
+    node.left = insertNode(node.left, theKey, v_i, guard, other);
+  else if (guard.lineSideToInsert(v_i, node.theKey, other) === "away")
+    node.right = insertNode(node.right, theKey, v_i, guard, other);
+  // Equal theKeys not allowed
+  else {
+    console.log("duplicate insertion");
+    console.alert();
+    return node;
+  }
+  /* 2. Update getHeight of this ancestor node */
+  node.getHeight = 1 + getMax(getHeight(node.left), getHeight(node.right));
+
+  /* 3. Get the balance factor of this ancestor
+    node to check whether this node became
+    Wunbalanced */
+  let balance = getBalance(node);
+
+  // If this node becomes unbalanced, then
+  // there are 4 cases Left Left Case
+  if (
+    balance > 1 &&
+    guard.lineSideToInsert(v_i, node.left.theKey, other) === "toward"
+  )
+    return rightRotate(node);
+
+  // Right Right Case
+  if (
+    balance < -1 &&
+    guard.lineSideToInsert(v_i, node.right.theKey, other) === "away"
+  )
+    return leftRotate(node);
+
+  // Left Right Case
+  if (
+    balance > 1 &&
+    guard.lineSideToInsert(v_i, node.left.theKey, other) === "away"
+  ) {
+    node.left = leftRotate(node.left);
+    return rightRotate(node);
+  }
+
+  // Right Left Case
+  if (
+    balance < -1 &&
+    guard.lineSideToInsert(v_i, node.right.theKey, other) === "toward"
+  ) {
     node.right = rightRotate(node.right);
     return leftRotate(node);
   }
@@ -114,27 +200,37 @@ function minValueNode(node) {
   return current;
 }
 
-function deleteNode(theRoot, theKey) {
+function deleteNode(theRoot, theKey, v_i, guard, other) {
   // STEP 1: PERFORM STANDARD BST DELETE
-  if (theRoot == null) return theRoot;
+  if (theRoot === null) return theRoot;
 
   // If the theKey to be deleted is smaller than
   // the theRoot's theKey, then it lies in left subtree
-  if (theKey < theRoot.theKey) theRoot.left = deleteNode(theRoot.left, theKey);
+  if (guard.lineSideToDelete(v_i, theRoot.theKey, other, theKey) === "toward")
+    theRoot.left = deleteNode(theRoot.left, theKey, v_i, guard, other);
   // If the theKey to be deleted is greater than the
   // theRoot's theKey, then it lies in right subtree
-  else if (theKey > theRoot.theKey) theRoot.right = deleteNode(theRoot.right, theKey);
+  else if (
+    guard.lineSideToDelete(v_i, theRoot.theKey, other, theKey) === "away"
+  )
+    theRoot.right = deleteNode(theRoot.right, theKey, v_i, guard, other);
   // if theKey is same as theRoot's theKey, then this is the node
   // to be deleted
   else {
+    let prev = theKey;
+    theKey = guard.lineSideToDelete(v_i, theRoot.theKey, other, theKey);
+    if (theKey === prev) {
+    } else {
+      deletehelper = true;
+    }
     // node with only one child or no child
-    if (theRoot.left == null || theRoot.right == null) {
+    if (theRoot.left === null || theRoot.right === null) {
       let temp = null;
-      if (temp == theRoot.left) temp = theRoot.right;
+      if (temp === theRoot.left) temp = theRoot.right;
       else temp = theRoot.left;
 
       // No child case
-      if (temp == null) {
+      if (temp === null) {
         temp = theRoot;
         theRoot = null;
       } // One child case
@@ -149,15 +245,16 @@ function deleteNode(theRoot, theKey) {
       theRoot.theKey = temp.theKey;
 
       // Delete the inorder successor
-      theRoot.right = deleteNode(theRoot.right, temp.theKey);
+      theRoot.right = deleteNode(theRoot.right, temp.theKey, v_i, guard, other);
     }
   }
 
   // If the tree had only one node then return
-  if (theRoot == null) return theRoot;
+  if (theRoot === null) return theRoot;
 
   // STEP 2: UPDATE getHeight OF THE CURRENT NODE
-  theRoot.getHeight = getMax(getHeight(theRoot.left), getHeight(theRoot.right)) + 1;
+  theRoot.getHeight =
+    getMax(getHeight(theRoot.left), getHeight(theRoot.right)) + 1;
 
   // STEP 3: GET THE BALANCE FACTOR OF THIS NODE (to check whether
   // this node became unbalanced)
@@ -174,7 +271,8 @@ function deleteNode(theRoot, theKey) {
   }
 
   // Right Right Case
-  if (balance < -1 && getBalance(theRoot.right) <= 0) return leftRotate(theRoot);
+  if (balance < -1 && getBalance(theRoot.right) <= 0)
+    return leftRotate(theRoot);
 
   // Right Left Case
   if (balance < -1 && getBalance(theRoot.right) > 0) {
@@ -190,8 +288,26 @@ function deleteNode(theRoot, theKey) {
 // node
 function preOrder(node) {
   if (node != null) {
-    document.write(node.theKey + " ");
+    console.log(node.theKey.getPoint1(), node.theKey.getPoint2(), " ");
     preOrder(node.left);
     preOrder(node.right);
   }
+}
+
+function searchAVLForNode(root, key, override, v_i, guard) {
+  // Base Cases: root is null
+  // or key is present at root
+  if (root === null || root.theKey === key) {
+    if (root === null && override === false) {
+      console.log("Big error 2!");
+    }
+    return root;
+  }
+
+  // Key is greater than root's key
+  if (guard.lineSideToSearch(v_i, root.theKey) === "away") {
+    return searchAVLForNode(root.right, key, override, v_i, guard);
+  }
+  // Key is smaller than root's key
+  return searchAVLForNode(root.left, key, override, v_i, guard);
 }
