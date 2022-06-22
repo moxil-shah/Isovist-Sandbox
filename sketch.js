@@ -16,7 +16,6 @@ let shapesPointDragged;
 let pointDragged = -1;
 let guardDragged = -1;
 let gameShape;
-let intersectionPointsGlobal = new Map();
 
 function getScrollBarWidth() {
   var $outer = $("<div>")
@@ -564,22 +563,22 @@ class Point {
     return this.secuirtyGuardMap.get(guard);
   }
 
-  getEdgeClosestToSecurityGuard(guard) {
+  getEdgePairOrderedByAngleToSecurityGuard(guard) {
     let vmain = createVector(
-      this.x - guard.getX(),
-      -(this.y - guard.getY()),
+      this.getX() - guard.getX(),
+      -(this.getY() - guard.getY()),
       0
     );
 
     let v1 = createVector(
-      this.pointPrev.getX() - this.x,
-      -(this.pointPrev.getY() - this.y),
+      this.getPointPrev().getX() - this.getX(),
+      -(this.getPointPrev().getY() - this.getY()),
       0
     );
 
     let v2 = createVector(
-      this.pointNext.getX() - this.x,
-      -(this.pointNext.getY() - this.y),
+      this.getPointNext().getX() - this.getX(),
+      -(this.getPointNext().getY() - this.getY()),
       0
     );
 
@@ -588,9 +587,9 @@ class Point {
     if (angleBetween1 >= PI) angleBetween1 = angleBetween1 - PI;
     if (angleBetween2 >= PI) angleBetween2 = angleBetween2 - PI;
 
-    if (angleBetween1 < angleBetween2) {
-      return this.lineToPointPrev;
-    } else return this.lineToPointNext;
+    if (angleBetween1 > angleBetween2)
+      return [this.lineToPointPrev, this.lineToPointNext];
+    else return [this.lineToPointNext, this.lineToPointPrev];
   }
 
   getIncludeInRender() {
@@ -680,56 +679,12 @@ class SecurityGuard {
         toRemove.push(this.sortedVertices[i].getLineNext());
 
       if (toAdd.length === 2) {
-        if (
-          checkIfTwoPointsOverlap(
-            this.sortedVertices[i],
-            toAdd[0].getPoint1()
-          ) === false
-        ) {
-          let temp = toAdd[0].getPoint1();
-          toAdd[0].setPoint1(toAdd[0].getPoint2());
-          toAdd[0].setPoint2(temp);
-        }
-
-        if (
-          checkIfTwoPointsOverlap(
-            this.sortedVertices[i],
-            toAdd[1].getPoint1()
-          ) === false
-        ) {
-          let temp = toAdd[1].getPoint1();
-          toAdd[1].setPoint1(toAdd[1].getPoint2());
-          toAdd[1].setPoint2(temp);
-        }
-
         leftPrev = getLeftmostLeaf(this.root).theKey;
 
-        let vmain = createVector(
-          this.sortedVertices[i].getX() - this.getX(),
-          -(this.sortedVertices[i].getY() - this.getY()),
-          0
-        );
-
-        let v1 = createVector(
-          toAdd[0].getPoint2().getX() - toAdd[0].getPoint1().getX(),
-          -(toAdd[0].getPoint2().getY() - toAdd[0].getPoint1().getY()),
-          0
-        );
-
-        let v2 = createVector(
-          toAdd[1].getPoint2().getX() - toAdd[1].getPoint1().getX(),
-          -(toAdd[1].getPoint2().getY() - toAdd[1].getPoint1().getY()),
-          0
-        );
-
-        let angleBetween1 = Math.abs(vmain.angleBetween(v1));
-        let angleBetween2 = Math.abs(vmain.angleBetween(v2));
-
-        if (angleBetween2 > angleBetween1) {
-          let temp = toAdd[0];
-          toAdd[0] = toAdd[1];
-          toAdd[1] = temp;
-        }
+        let temp =
+          this.sortedVertices[i].getEdgePairOrderedByAngleToSecurityGuard(this);
+        toAdd[0] = temp[0];
+        toAdd[1] = temp[1];
 
         this.root = insertNode(
           this.root,
@@ -786,56 +741,12 @@ class SecurityGuard {
           pop();
         }
       } else if (toRemove.length === 2) {
-        if (
-          checkIfTwoPointsOverlap(
-            this.sortedVertices[i],
-            toRemove[0].getPoint1()
-          ) === false
-        ) {
-          let temp = toRemove[0].getPoint1();
-          toRemove[0].setPoint1(toRemove[0].getPoint2());
-          toRemove[0].setPoint2(temp);
-        }
-
-        if (
-          checkIfTwoPointsOverlap(
-            this.sortedVertices[i],
-            toRemove[1].getPoint1()
-          ) === false
-        ) {
-          let temp = toRemove[1].getPoint1();
-          toRemove[1].setPoint1(toRemove[1].getPoint2());
-          toRemove[1].setPoint2(temp);
-        }
-
-        let vmain = createVector(
-          this.sortedVertices[i].getX() - this.getX(),
-          -(this.sortedVertices[i].getY() - this.getY()),
-          0
-        );
-
-        let v1 = createVector(
-          toRemove[0].getPoint2().getX() - toRemove[0].getPoint1().getX(),
-          -(toRemove[0].getPoint2().getY() - toRemove[0].getPoint1().getY()),
-          0
-        );
-
-        let v2 = createVector(
-          toRemove[1].getPoint2().getX() - toRemove[1].getPoint1().getX(),
-          -(toRemove[1].getPoint2().getY() - toRemove[1].getPoint1().getY()),
-          0
-        );
-
-        let angleBetween1 = Math.abs(vmain.angleBetween(v1));
-        let angleBetween2 = Math.abs(vmain.angleBetween(v2));
-
-        if (angleBetween2 > angleBetween1) {
-          let temp = toRemove[0];
-          toRemove[0] = toRemove[1];
-          toRemove[1] = temp;
-        }
-
         leftPrev = getLeftmostLeaf(this.root).theKey;
+
+        let temp =
+          this.sortedVertices[i].getEdgePairOrderedByAngleToSecurityGuard(this);
+        toRemove[0] = temp[0];
+        toRemove[1] = temp[1];
 
         this.root = deleteNode(
           this.root,
@@ -853,11 +764,10 @@ class SecurityGuard {
           toRemove
         );
 
-        leftNew = getLeftmostLeaf(this.root).theKey;
-
         // console.log("removing", toRemove[0]);
         // console.log("removing", toRemove[1]);
 
+        leftNew = getLeftmostLeaf(this.root).theKey;
         if (leftPrev !== leftNew) {
           push();
           stroke("purple");
@@ -872,7 +782,7 @@ class SecurityGuard {
           toAdd[0],
           this.sortedVertices[i],
           this,
-          [false, false]
+          [null, null]
         );
 
         // console.log("adding", toAdd[0]);
@@ -893,7 +803,7 @@ class SecurityGuard {
           toRemove[0],
           this.sortedVertices[i],
           this,
-          [false, false]
+          [null, null]
         );
 
         leftNew = getLeftmostLeaf(this.root).theKey;
