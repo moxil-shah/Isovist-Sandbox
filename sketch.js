@@ -166,16 +166,12 @@ function renderAllSecurityGuards() {
     guard.visibleVertices();
 
     push();
-    stroke("red");
-    strokeWeight(15);
-    // for (let eachedge of guard.constructedEdges) {
-    //   line(
-    //     eachedge.getPoint1().getX(),
-    //     eachedge.getPoint1().getY(),
-    //     eachedge.getPoint2().getX(),
-    //     eachedge.getPoint2().getY()
-    //   );
-    // }
+    fill(255, 0, 0, 150);
+    beginShape();
+    for (let eachPoint of guard.getConstructedPoints()) {
+      vertex(eachPoint.getX(), eachPoint.getY());
+    }
+    endShape(CLOSE);
     pop();
 
     push();
@@ -755,7 +751,11 @@ class SecurityGuard {
           strokeWeight(20);
           point(this.sortedVertices[i].getX(), this.sortedVertices[i].getY());
           pop();
-          this.constructVisibilityEdge(leftPrev, this.sortedVertices[i]);
+          this.constructVisibilityEdge(
+            leftPrev,
+            this.sortedVertices[i],
+            "add2"
+          );
         }
       } else if (toAdd.length === 1 && toRemove.length === 1) {
         leftPrev = getLeftmostLeaf(this.root).theKey;
@@ -784,6 +784,7 @@ class SecurityGuard {
           strokeWeight(20);
           point(this.sortedVertices[i].getX(), this.sortedVertices[i].getY());
           pop();
+          this.constructedPoints.push(this.sortedVertices[i]);
         }
       } else if (toRemove.length === 2) {
         leftPrev = getLeftmostLeaf(this.root).theKey;
@@ -819,7 +820,11 @@ class SecurityGuard {
           strokeWeight(20);
           point(this.sortedVertices[i].getX(), this.sortedVertices[i].getY());
           pop();
-          this.constructVisibilityEdge(leftNew, this.sortedVertices[i]);
+          this.constructVisibilityEdge(
+            leftNew,
+            this.sortedVertices[i],
+            "remove2"
+          );
         }
       } else if (toAdd.length === 1) {
         leftPrev = getLeftmostLeaf(this.root).theKey;
@@ -1018,12 +1023,9 @@ class SecurityGuard {
         initialIntersectEdges[i]
       );
     }
-    this.constructedPoints.push(
-      findIntersection(this.lineToRightWall, initialIntersectEdges[0])
-    );
   }
 
-  constructVisibilityEdge(edge, v_i) {
+  constructVisibilityEdge(edge, v_i, add2OrRemove2) {
     let vectorTov_i = createVector(
       v_i.getX() - this.x,
       -(v_i.getY() - this.y),
@@ -1042,22 +1044,16 @@ class SecurityGuard {
         null
       )
     );
-    // push();
-    // stroke("red");
-    // line(
-    //   this.x,
-    //   this.y,
-    //   lineFromSecurityGuardTov_iAndMore.getPoint2().getX(),
-    //   lineFromSecurityGuardTov_iAndMore.getPoint2().getY()
-    // );
-    // pop();
 
     if (checkIfIntersect(lineFromSecurityGuardTov_iAndMore, edge) === true) {
       let intersectionPoint = findIntersection(
         lineFromSecurityGuardTov_iAndMore,
         edge
       );
-      this.constructedPoints.push(new Line(v_i, intersectionPoint));
+      if (add2OrRemove2 === "add2")
+        this.constructedPoints.push(intersectionPoint, v_i);
+      else if (add2OrRemove2 === "remove2")
+        this.constructedPoints.push(v_i, intersectionPoint);
     }
   }
 
@@ -1075,6 +1071,10 @@ class SecurityGuard {
 
   getY() {
     return this.y;
+  }
+
+  getConstructedPoints() {
+    return this.constructedPoints;
   }
 
   getName() {
