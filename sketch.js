@@ -1059,10 +1059,12 @@ class SecurityGuard {
 
   setX(x) {
     this.x = x;
+    this.SecurityGuardPoint.setX(x);
   }
 
   setY(y) {
     this.y = y;
+    this.SecurityGuardPoint.setY(y);
   }
 
   getX() {
