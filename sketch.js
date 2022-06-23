@@ -1,3 +1,7 @@
+// asano's algorithm is complete except gimpy edge cases like if the top edge
+// of a rectangle is on the initial intersect line
+
+// code starts //
 let allShapes = new Set(); // global array of all shapes made
 let allguards = new Set(); // global array of all security guards made
 const SecurityGuardNames = [
@@ -59,7 +63,7 @@ function sidesInput() {
 // from the HTML form
 function SecurityGuardInput() {
   if (SecurityGuardNames.length !== 0) {
-    guard = new SecurityGuard(177.5, 150, SecurityGuardNames.pop());
+    guard = new SecurityGuard(27.5, 100, SecurityGuardNames.pop());
     for (let eachShape of allShapes) {
       let currentVertex = eachShape.getVertexHead();
       do {
@@ -96,42 +100,11 @@ function polygon(x, y, radius, npoints) {
     }
   } else {
     newShape = new Shape(npoints, "white");
-
-    if (allShapes.size === 1) {
-      // vertexes.push(new Point(110, 100, newShape));
-      // copyVertexes.push([110, 100]);
-      vertexes.push(new Point(90, 100, newShape));
-      copyVertexes.push([90, 100]);
-      vertexes.push(new Point(70, 100, newShape));
-      copyVertexes.push([70, 100]);
-      vertexes.push(new Point(70, 150, newShape));
-      copyVertexes.push([70, 150]);
-      vertexes.push(new Point(85, 150, newShape));
-      copyVertexes.push([85, 150]);
-      vertexes.push(new Point(100, 150, newShape));
-      copyVertexes.push([100, 150]);
-      vertexes.push(new Point(130, 150, newShape));
-      copyVertexes.push([130, 150]);
-      vertexes.push(new Point(150, 150, newShape));
-      copyVertexes.push([150, 150]);
-      vertexes.push(new Point(150, 100, newShape));
-      copyVertexes.push([150, 100]);
-    } else if (allShapes.size === 2) {
-      vertexes.push(new Point(200, 100, newShape));
-      copyVertexes.push([200, 100]);
-      vertexes.push(new Point(200, 150, newShape));
-      copyVertexes.push([200, 150]);
-      vertexes.push(new Point(280, 150, newShape));
-      copyVertexes.push([280, 150]);
-      vertexes.push(new Point(280, 100, newShape));
-      copyVertexes.push([280, 100]);
-    } else {
-      for (let i = 0; i < TWO_PI - HEXAGON_ROUNDING_ERROR; i += angle) {
-        let sx = x + cos(i) * radius;
-        let sy = y + sin(i) * radius;
-        vertexes.push(new Point(sx, sy, newShape));
-        copyVertexes.push([sx, sy]);
-      }
+    for (let i = 0; i < TWO_PI - HEXAGON_ROUNDING_ERROR; i += angle) {
+      let sx = x + cos(i) * radius;
+      let sy = y + sin(i) * radius;
+      vertexes.push(new Point(sx, sy, newShape));
+      copyVertexes.push([sx, sy]);
     }
   }
 
@@ -166,16 +139,18 @@ function renderAllSecurityGuards() {
     guard.visibleVertices();
 
     push();
-    fill(255, 0, 0, 150);
+    fill(guard.getName()[0], guard.getName()[1], guard.getName()[2], 100);
     beginShape();
     for (let eachPoint of guard.getConstructedPoints()) {
       vertex(eachPoint.getX(), eachPoint.getY());
+      push();
+      stroke("green");
+      strokeWeight(15);
+      point(eachPoint.getX(), eachPoint.getY());
+      pop();
     }
-    endShape(CLOSE);
-    pop();
 
-    push();
-    fill(guard.getName()[0], guard.getName()[1], guard.getName()[2], 100);
+    endShape(CLOSE);
     pop();
 
     if (guardDragged !== -1) break;
@@ -746,11 +721,6 @@ class SecurityGuard {
 
         leftNew = getLeftmostLeaf(this.root).theKey;
         if (leftPrev !== leftNew) {
-          push();
-          stroke("purple");
-          strokeWeight(20);
-          point(this.sortedVertices[i].getX(), this.sortedVertices[i].getY());
-          pop();
           this.constructVisibilityEdge(
             leftPrev,
             this.sortedVertices[i],
@@ -779,11 +749,6 @@ class SecurityGuard {
             console.log("Big error 1!");
             console.alert();
           }
-          push();
-          stroke("purple");
-          strokeWeight(20);
-          point(this.sortedVertices[i].getX(), this.sortedVertices[i].getY());
-          pop();
           this.constructedPoints.push(this.sortedVertices[i]);
         }
       } else if (toRemove.length === 2) {
@@ -815,11 +780,6 @@ class SecurityGuard {
 
         leftNew = getLeftmostLeaf(this.root).theKey;
         if (leftPrev !== leftNew) {
-          push();
-          stroke("purple");
-          strokeWeight(20);
-          point(this.sortedVertices[i].getX(), this.sortedVertices[i].getY());
-          pop();
           this.constructVisibilityEdge(
             leftNew,
             this.sortedVertices[i],
@@ -840,11 +800,6 @@ class SecurityGuard {
 
         leftNew = getLeftmostLeaf(this.root).theKey;
         if (leftPrev !== leftNew) {
-          push();
-          stroke("purple");
-          strokeWeight(20);
-          point(this.sortedVertices[i].getX(), this.sortedVertices[i].getY());
-          pop();
         }
       } else if (toRemove.length === 1) {
         leftPrev = getLeftmostLeaf(this.root).theKey;
@@ -861,11 +816,6 @@ class SecurityGuard {
         // console.log("removing", toRemove[0]);
 
         if (leftPrev !== leftNew) {
-          push();
-          stroke("purple");
-          strokeWeight(20);
-          point(this.sortedVertices[i].getX(), this.sortedVertices[i].getY());
-          pop();
         }
       }
     }
