@@ -100,11 +100,30 @@ function polygon(x, y, radius, npoints) {
     }
   } else {
     newShape = new Shape(npoints, "white");
-    for (let i = 0; i < TWO_PI - HEXAGON_ROUNDING_ERROR; i += angle) {
-      let sx = x + cos(i) * radius;
-      let sy = y + sin(i) * radius;
-      vertexes.push(new Point(sx, sy, newShape));
-      copyVertexes.push([sx, sy]);
+    if (allShapes.size === 1) {
+      // vertexes.push(new Point(110, 100, newShape));
+      // copyVertexes.push([110, 100]);
+
+      vertexes.push(new Point(130, 150, newShape));
+      copyVertexes.push([130, 150]);
+      vertexes.push(new Point(150, 150, newShape));
+      copyVertexes.push([150, 150]);
+      vertexes.push(new Point(150, 100, newShape));
+      copyVertexes.push([150, 100]);
+    } else if (allShapes.size === 2) {
+      vertexes.push(new Point(130, 200, newShape));
+      copyVertexes.push([130, 150]);
+      vertexes.push(new Point(150, 200, newShape));
+      copyVertexes.push([150, 150]);
+      vertexes.push(new Point(150, 150, newShape));
+      copyVertexes.push([150, 100]);
+    } else {
+      for (let i = 0; i < TWO_PI - HEXAGON_ROUNDING_ERROR; i += angle) {
+        let sx = x + cos(i) * radius;
+        let sy = y + sin(i) * radius;
+        vertexes.push(new Point(sx, sy, newShape));
+        copyVertexes.push([sx, sy]);
+      }
     }
   }
 
@@ -349,6 +368,7 @@ function dragPoint() {
   if (pointClicked === true) {
     pointDragged.setX(mouseX);
     pointDragged.setY(mouseY);
+    // console.log(checkIfSelfIntersectingPolygon(shapesPointDragged));
     updateVertexArrayDistancetoMousePress(shapesPointDragged);
 
     for (let eachShape of allShapes) {
@@ -532,6 +552,7 @@ class Point {
     this.includeInRender = true;
     this.lineToPointPrev;
     this.lineToPointNext;
+    this.special;
   }
 
   setIncludeInRender(yesOrNo) {
@@ -666,6 +687,15 @@ class SecurityGuard {
     this.initialIntersect();
 
     for (let i = 0; i < this.sortedVertices.length; i += 1) {
+      if (this.sortedVertices[i].special === true) {
+        console.log("yay");
+        if (this.sortedVertices[i + 1].special === true) {
+          console.log("yay");
+        }
+        if (this.sortedVertices[i + 2].special === true) {
+          console.log("yay");
+        }
+      }
       // console.log(i);
       // preOrder(this.root);
       // console.log("done")
@@ -815,7 +845,7 @@ class SecurityGuard {
             "remove2"
           );
         }
-      } else if (toAdd.length === 1) {
+      } else if (toAdd.length === 1  && toRemove.length === 0) {
         leftPrev = getLeftmostLeaf(this.root).theKey;
         this.root = insertNode(
           this.root,
@@ -830,7 +860,7 @@ class SecurityGuard {
         leftNew = getLeftmostLeaf(this.root).theKey;
         if (leftPrev !== leftNew) {
         }
-      } else if (toRemove.length === 1) {
+      } else if (toRemove.length === 1 && toAdd.length === 0) {
         leftPrev = getLeftmostLeaf(this.root).theKey;
 
         this.root = deleteNode(
@@ -904,9 +934,15 @@ class SecurityGuard {
           distanceBetweenTwoPoints(
             new Point(theGuard.getX(), theGuard.getY(), null),
             b
-          )
+          ) ||
+        theGuard.setSpecial(a, b)
       );
     });
+  }
+
+  setSpecial(a, b) {
+    a.special = b.special = true;
+    return true;
   }
 
   drawSecurityGuard() {
