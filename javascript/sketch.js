@@ -226,6 +226,20 @@ function renderAllShapesPoints() {
   }
 }
 
+function deleteTheSelfIntersect(shape) {
+  let aVertex = shape.getVertexHead();
+  do {
+    if (aVertex.getIncludeInRender() === false) {
+      aVertex.getPointPrev().setPointNext(aVertex.getPointNext());
+      aVertex.getPointNext().setPointPrev(aVertex.getPointPrev());
+      aVertex = aVertex.getPointPrev();
+    }
+    aVertex = aVertex.getPointNext();
+  } while (aVertex !== shape.vertexHead);
+
+  shape.setEdges();
+}
+
 function checkIfClickAVertex() {
   if (pointClicked === true) return false;
 
@@ -366,9 +380,67 @@ function dragPoint() {
     return;
   }
   if (pointClicked === true) {
+    deleteTheSelfIntersect(shapesPointDragged);
     pointDragged.setX(mouseX);
     pointDragged.setY(mouseY);
-    // console.log(checkIfSelfIntersectingPolygon(shapesPointDragged));
+    let thething = checkIfSelfIntersectingPolygon(shapesPointDragged);
+
+    for (const [key, value] of thething) {
+      let referencePoint;
+      let nextPoint;
+      if (key.getPoint1().getPointNext() === key.getPoint2()) {
+        referencePoint = key.getPoint1();
+        nextPoint = key.getPoint2();
+      } else if (key.getPoint2().getPointNext() === key.getPoint1()) {
+        referencePoint = key.getPoint2();
+        nextPoint = key.getPoint1();
+      } else {
+        console.log("Big Error 1!");
+      }
+
+      for (let i = 0; i < value.length; i += 1) {
+        value[i] = [
+          value[i],
+          Math.sqrt(
+            (referencePoint.getX() - value[i].getX()) ** 2 +
+              (referencePoint.getY() - value[i].getY()) ** 2
+          ),
+        ];
+      }
+
+      value.sort(function (a, b) {
+        return a[1] - b[1];
+      });
+
+      for (let i = 0; i < value.length; i += 1) {
+        value[i] = value[i][0];
+
+        value[i].setIncludeInRender(false);
+      }
+
+      if (value.length > 2) {
+        for (let i = 1; i < value.length - 1; i += 1) {
+          value[i].setPointPrev(value[i - 1]);
+          value[i].setPointNext(value[i + 1]);
+        }
+      }
+      if (value.length >= 2) {
+        referencePoint.setPointNext(value[0]);
+        value[0].setPointNext(value[1]);
+        value[value.length - 1].setPointNext(nextPoint);
+        value[0].setPointPrev(referencePoint);
+        value[value.length - 1].setPointPrev(value[value.length - 2]);
+        nextPoint.setPointPrev(value[value.length - 1]);
+      }
+
+      if (value.length === 1) {
+        referencePoint.setPointNext(value[0]);
+        value[0].setPointNext(nextPoint);
+        value[0].setPointPrev(referencePoint);
+        nextPoint.setPointPrev(value[0]);
+      }
+    }
+    shapesPointDragged.setEdges();
     updateVertexArrayDistancetoMousePress(shapesPointDragged);
 
     for (let eachShape of allShapes) {
