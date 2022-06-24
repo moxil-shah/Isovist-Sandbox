@@ -112,7 +112,6 @@ function polygon(x, y, radius, npoints) {
   newShape.setEdges();
   allShapes.add(newShape);
 
-
   for (let eachShape of allShapes) {
     let currentVertex = eachShape.getVertexHead();
     do {
@@ -145,9 +144,9 @@ function renderAllSecurityGuards() {
     for (let eachPoint of guard.getConstructedPoints()) {
       vertex(eachPoint.getX(), eachPoint.getY());
       push();
-      stroke("green");
-      strokeWeight(15);
-      point(eachPoint.getX(), eachPoint.getY());
+      // stroke("green");
+      // strokeWeight(15);
+      // point(eachPoint.getX(), eachPoint.getY());
       pop();
     }
 
@@ -298,6 +297,35 @@ function checkIfClickSecurityGuard() {
       return true;
     }
   }
+}
+
+function checkIfSelfIntersectingPolygon(theShape) {
+  let intersectionPoints = new Map();
+  for (let eachLine of theShape.getEdges()) {
+    for (let shapeLine of theShape.getEdges()) {
+      if (eachLine === shapeLine) continue;
+      if (checkIfIntersect(eachLine, shapeLine) === true) {
+        let intersectionPoint = findIntersection(eachLine, shapeLine);
+        if (
+          checkIfTwoPointsOverlapRounded(
+            eachLine.getPoint1(),
+            intersectionPoint
+          ) === false &&
+          checkIfTwoPointsOverlapRounded(
+            eachLine.getPoint2(),
+            intersectionPoint
+          ) === false
+        ) {
+          if (intersectionPoints.get(eachLine) !== undefined)
+            intersectionPoints.get(eachLine).push(intersectionPoint);
+          else {
+            intersectionPoints.set(eachLine, [intersectionPoint]);
+          }
+        }
+      }
+    }
+  }
+  return intersectionPoints;
 }
 
 function updateVertexArrayDistancetoMousePress(shape) {
