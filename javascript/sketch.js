@@ -552,7 +552,7 @@ class Point {
     this.includeInRender = true;
     this.lineToPointPrev;
     this.lineToPointNext;
-    this.special;
+    this.selfIntersectingPoint = false;
   }
 
   setIncludeInRender(yesOrNo) {
@@ -605,6 +605,14 @@ class Point {
 
   setLineNext(aline) {
     this.lineToPointNext = aline;
+  }
+
+  setselfIntersectingPoint(selfIntersectingPoint) {
+    this.selfIntersectingPoint = selfIntersectingPoint;
+  }
+
+  getSselfIntersectingPoint() {
+    return this.selfIntersectingPoint;
   }
 
   getPointPrev() {
@@ -687,15 +695,6 @@ class SecurityGuard {
     this.initialIntersect();
 
     for (let i = 0; i < this.sortedVertices.length; i += 1) {
-      if (this.sortedVertices[i].special === true) {
-        console.log("yay");
-        if (this.sortedVertices[i + 1].special === true) {
-          console.log("yay");
-        }
-        if (this.sortedVertices[i + 2].special === true) {
-          console.log("yay");
-        }
-      }
       // console.log(i);
       // preOrder(this.root);
       // console.log("done")
@@ -938,15 +937,9 @@ class SecurityGuard {
           distanceBetweenTwoPoints(
             new Point(theGuard.getX(), theGuard.getY(), null),
             b
-          ) ||
-        theGuard.setSpecial(a, b)
+          )
       );
     });
-  }
-
-  setSpecial(a, b) {
-    a.special = b.special = true;
-    return true;
   }
 
   drawSecurityGuard() {
