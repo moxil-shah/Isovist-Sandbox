@@ -752,7 +752,7 @@ class SecurityGuard {
       else if (crossProduct2 < 0)
         toRemove.push(this.sortedVertices[i].getLineNext());
 
-      if (toAdd.length === 2) {
+      if (toAdd.length === 2 && toRemove.length === 0) {
         leftPrev = getLeftmostLeaf(this.root).theKey;
 
         let temp =
@@ -810,7 +810,7 @@ class SecurityGuard {
           }
           this.constructedPoints.push(this.sortedVertices[i]);
         }
-      } else if (toRemove.length === 2) {
+      } else if (toRemove.length === 2 && toAdd.length === 0) {
         leftPrev = getLeftmostLeaf(this.root).theKey;
 
         let temp =
@@ -845,7 +845,7 @@ class SecurityGuard {
             "remove2"
           );
         }
-      } else if (toAdd.length === 1  && toRemove.length === 0) {
+      } else if (toAdd.length === 1 && toRemove.length === 0) {
         leftPrev = getLeftmostLeaf(this.root).theKey;
         this.root = insertNode(
           this.root,
@@ -880,13 +880,15 @@ class SecurityGuard {
     }
   }
 
-  lineSideToInsert(v_i, edge, other) {
+  lineSideToInsert(v_i, edge, other, edgeToInsert) {
     if (edge === null) return "DNE";
     let guardtov_i = new Line(new Point(this.x, this.y, null), v_i);
     if (checkIfIntersect(guardtov_i, edge) === true) {
-      if (edge === other[0]) return "away";
-      else if (edge === other[1]) return "toward";
-      else return "away";
+      if (other.includes(edge)) {
+        if (other.indexOf(edge) < other.indexOf(edgeToInsert)) return "away";
+        else if (other.indexOf(edge) > other.indexOf(edgeToInsert))
+          return "toward";
+      } else return "away";
     }
     return "toward";
   }
@@ -897,9 +899,11 @@ class SecurityGuard {
     }
     let guardtov_i = new Line(new Point(this.x, this.y, null), v_i);
     if (checkIfIntersect(guardtov_i, edge) === true) {
-      if (edge === other[0]) return "away";
-      else if (edge === other[1]) return "toward";
-      else return "away";
+      if (other.includes(edge)) {
+        if (other.indexOf(edge) < other.indexOf(edgeToDelete)) return "away";
+        else if (other.indexOf(edge) > other.indexOf(edgeToDelete))
+          return "toward";
+      } else return "away";
     }
     return "toward";
   }
