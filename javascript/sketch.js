@@ -100,30 +100,12 @@ function polygon(x, y, radius, npoints) {
     }
   } else {
     newShape = new Shape(npoints, "white");
-    if (allShapes.size === 1) {
-      // vertexes.push(new Point(110, 100, newShape));
-      // copyVertexes.push([110, 100]);
 
-      vertexes.push(new Point(130, 150, newShape));
-      copyVertexes.push([130, 150]);
-      vertexes.push(new Point(150, 150, newShape));
-      copyVertexes.push([150, 150]);
-      vertexes.push(new Point(150, 100, newShape));
-      copyVertexes.push([150, 100]);
-    } else if (allShapes.size === 2) {
-      vertexes.push(new Point(130, 200, newShape));
-      copyVertexes.push([130, 150]);
-      vertexes.push(new Point(150, 200, newShape));
-      copyVertexes.push([150, 150]);
-      vertexes.push(new Point(150, 150, newShape));
-      copyVertexes.push([150, 100]);
-    } else {
-      for (let i = 0; i < TWO_PI - HEXAGON_ROUNDING_ERROR; i += angle) {
-        let sx = x + cos(i) * radius;
-        let sy = y + sin(i) * radius;
-        vertexes.push(new Point(sx, sy, newShape));
-        copyVertexes.push([sx, sy]);
-      }
+    for (let i = 0; i < TWO_PI - HEXAGON_ROUNDING_ERROR; i += angle) {
+      let sx = x + cos(i) * radius;
+      let sy = y + sin(i) * radius;
+      vertexes.push(new Point(sx, sy, newShape));
+      copyVertexes.push([sx, sy]);
     }
   }
 
@@ -208,8 +190,21 @@ function renderAllShapes() {
 }
 
 function renderAllShapesPoints() {
+  // let colors = [
+  //   "red",
+  //   "blue",
+  //   "yellow",
+  //   "green",
+  //   "purple",
+  //   "brown",
+  //   "pink",
+  //   "orange",
+  //   "white",
+  //   "gray"
+  // ];
   for (let shape of allShapes) {
     let currentVertex = shape.getVertexHead();
+    let temp = 0;
     do {
       if (currentVertex.getIncludeInRender() === true) {
         push();
@@ -221,6 +216,17 @@ function renderAllShapesPoints() {
         point(currentVertex.getX(), currentVertex.getY());
         pop();
       }
+      // push();
+      // stroke(colors[temp]);
+      // strokeWeight(8);
+      // line(
+      //   currentVertex.getLineNext().getPoint1().getX(),
+      //   currentVertex.getLineNext().getPoint1().getY(),
+      //   currentVertex.getLineNext().getPoint2().getX(),
+      //   currentVertex.getLineNext().getPoint2().getY()
+      // );
+      // pop();
+      // temp += 1;
       currentVertex = currentVertex.getPointNext();
     } while (currentVertex !== shape.vertexHead);
   }
@@ -624,7 +630,6 @@ class Point {
     this.includeInRender = true;
     this.lineToPointPrev;
     this.lineToPointNext;
-    this.selfIntersectingPoint = false;
   }
 
   setIncludeInRender(yesOrNo) {
@@ -679,14 +684,6 @@ class Point {
     this.lineToPointNext = aline;
   }
 
-  setselfIntersectingPoint(selfIntersectingPoint) {
-    this.selfIntersectingPoint = selfIntersectingPoint;
-  }
-
-  getSselfIntersectingPoint() {
-    return this.selfIntersectingPoint;
-  }
-
   getPointPrev() {
     return this.pointPrev;
   }
@@ -730,10 +727,53 @@ class Point {
     let angleBetween2 = Math.abs(vmain.angleBetween(v2));
     if (angleBetween1 >= PI) angleBetween1 = angleBetween1 - PI;
     if (angleBetween2 >= PI) angleBetween2 = angleBetween2 - PI;
-
+    console.log("old", angleBetween1, angleBetween2);
     if (angleBetween1 > angleBetween2)
       return [this.lineToPointPrev, this.lineToPointNext];
     else return [this.lineToPointNext, this.lineToPointPrev];
+  }
+
+  getEdgePairOrderedByAngleToSecurityGuardPointerless(
+    guard,
+    edge1,
+    edge2,
+    state
+  ) {
+    let vmain = createVector(
+      this.getX() - guard.getX(),
+      -(this.getY() - guard.getY()),
+      0
+    );
+
+    let v1 = createVector(
+      edge1.getPoint1().getX() - edge1.getPoint2().getX(),
+      -(edge1.getPoint1().getY() - edge1.getPoint2().getY()),
+      0
+    );
+
+    let v2 = createVector(
+      edge2.getPoint1().getX() - edge2.getPoint2().getX(),
+      -(edge2.getPoint1().getY() - edge2.getPoint2().getY()),
+      0
+    );
+
+    let angleBetween1 = vmain.angleBetween(v1);
+    let angleBetween2 = vmain.angleBetween(v2);
+
+    if (state === "toAdd") {
+      if (angleBetween1 > 0) angleBetween1 -= PI;
+      if (angleBetween2 > 0) angleBetween2 -= PI;
+    }
+
+    if (state === "toRemove") {
+      if (angleBetween1 < 0) angleBetween1 += PI;
+      if (angleBetween2 < 0) angleBetween2 += PI;
+    }
+
+    angleBetween1 = PI - Math.abs(angleBetween1);
+    angleBetween2 = PI - Math.abs(angleBetween2);
+    if (angleBetween1 > angleBetween2) return [edge1, edge2];
+    else return [edge2, edge1];
   }
 
   getIncludeInRender() {
@@ -763,15 +803,16 @@ class SecurityGuard {
     let leftPrev;
     let leftNew;
     this.constructedPoints = [];
+    let toRemove = [];
+    let toAdd = [];
+    let currentlyOnSelfIntersectionPoint = false;
 
     this.initialIntersect();
 
     for (let i = 0; i < this.sortedVertices.length; i += 1) {
       // console.log(i);
       // preOrder(this.root);
-      // console.log("done")
-      let toRemove = [];
-      let toAdd = [];
+      // console.log("done");
       this.lineToRightWall = new Line(
         new Point(this.x, this.y, null),
         new Point(
@@ -823,11 +864,70 @@ class SecurityGuard {
       else if (crossProduct2 < 0)
         toRemove.push(this.sortedVertices[i].getLineNext());
 
-      if (toAdd.length === 2 && toRemove.length === 0) {
-        leftPrev = getLeftmostLeaf(this.root).theKey;
+      if (this.sortedVertices[i].getIncludeInRender() === false) {
+        if (toAdd.length + toRemove.length !== 4) continue;
+        else currentlyOnSelfIntersectionPoint = true;
+      }
 
-        let temp =
-          this.sortedVertices[i].getEdgePairOrderedByAngleToSecurityGuard(this);
+      if (toRemove.length === 2) {
+        leftPrev = getLeftmostLeaf(this.root).theKey;
+        let temp = this.sortedVertices[
+          i
+        ].getEdgePairOrderedByAngleToSecurityGuardPointerless(
+          this,
+          toRemove[0],
+          toRemove[1],
+          "toRemove"
+        );
+
+        toRemove[0] = temp[0];
+        toRemove[1] = temp[1];
+        this.root = deleteNode(
+          this.root,
+          toRemove[1],
+          this.sortedVertices[i],
+          this,
+          toRemove
+        );
+
+        this.root = deleteNode(
+          this.root,
+          toRemove[0],
+          this.sortedVertices[i],
+          this,
+          toRemove
+        );
+
+        // console.log("removing", toRemove[0]);
+        // console.log("removing", toRemove[1]);
+
+        leftNew = getLeftmostLeaf(this.root).theKey;
+        if (
+          leftPrev !== leftNew &&
+          currentlyOnSelfIntersectionPoint === false
+        ) {
+          this.constructVisibilityEdge(
+            leftNew,
+            this.sortedVertices[i],
+            "remove2"
+          );
+        } else if (
+          leftPrev !== leftNew &&
+          currentlyOnSelfIntersectionPoint === true
+        )
+          this.constructedPoints.push(this.sortedVertices[i]);
+      }
+      if (toAdd.length === 2) {
+        leftPrev = getLeftmostLeaf(this.root).theKey;
+        let temp = this.sortedVertices[
+          i
+        ].getEdgePairOrderedByAngleToSecurityGuardPointerless(
+          this,
+          toAdd[0],
+          toAdd[1],
+          "toAdd"
+        );
+
         toAdd[0] = temp[0];
         toAdd[1] = temp[1];
 
@@ -850,14 +950,22 @@ class SecurityGuard {
         // console.log("adding", toAdd[1]);
 
         leftNew = getLeftmostLeaf(this.root).theKey;
-        if (leftPrev !== leftNew) {
+        if (
+          leftPrev !== leftNew &&
+          currentlyOnSelfIntersectionPoint === false
+        ) {
           this.constructVisibilityEdge(
             leftPrev,
             this.sortedVertices[i],
             "add2"
           );
-        }
-      } else if (toAdd.length === 1 && toRemove.length === 1) {
+        } else if (
+          leftPrev !== leftNew &&
+          currentlyOnSelfIntersectionPoint === true
+        )
+          this.constructedPoints.push(this.sortedVertices[i]);
+      }
+      if (toAdd.length === 1 && toRemove.length === 1) {
         leftPrev = getLeftmostLeaf(this.root).theKey;
         // console.log("updating", toRemove[0]);
         let toUpdate = searchAVLForNode(
@@ -870,7 +978,7 @@ class SecurityGuard {
 
         if (toUpdate === null) {
           console.log(i);
-          console.alert();
+        
         } else toUpdate.theKey = toAdd[0];
 
         leftNew = getLeftmostLeaf(this.root).theKey;
@@ -881,42 +989,8 @@ class SecurityGuard {
           }
           this.constructedPoints.push(this.sortedVertices[i]);
         }
-      } else if (toRemove.length === 2 && toAdd.length === 0) {
-        leftPrev = getLeftmostLeaf(this.root).theKey;
-
-        let temp =
-          this.sortedVertices[i].getEdgePairOrderedByAngleToSecurityGuard(this);
-        toRemove[0] = temp[0];
-        toRemove[1] = temp[1];
-
-        this.root = deleteNode(
-          this.root,
-          toRemove[1],
-          this.sortedVertices[i],
-          this,
-          toRemove
-        );
-
-        this.root = deleteNode(
-          this.root,
-          toRemove[0],
-          this.sortedVertices[i],
-          this,
-          toRemove
-        );
-
-        // console.log("removing", toRemove[0]);
-        // console.log("removing", toRemove[1]);
-
-        leftNew = getLeftmostLeaf(this.root).theKey;
-        if (leftPrev !== leftNew) {
-          this.constructVisibilityEdge(
-            leftNew,
-            this.sortedVertices[i],
-            "remove2"
-          );
-        }
-      } else if (toAdd.length === 1 && toRemove.length === 0) {
+      }
+      if (toAdd.length === 1 && toRemove.length === 0) {
         leftPrev = getLeftmostLeaf(this.root).theKey;
         this.root = insertNode(
           this.root,
@@ -931,7 +1005,8 @@ class SecurityGuard {
         leftNew = getLeftmostLeaf(this.root).theKey;
         if (leftPrev !== leftNew) {
         }
-      } else if (toRemove.length === 1 && toAdd.length === 0) {
+      }
+      if (toRemove.length === 1 && toAdd.length === 0) {
         leftPrev = getLeftmostLeaf(this.root).theKey;
 
         this.root = deleteNode(
@@ -947,6 +1022,12 @@ class SecurityGuard {
 
         if (leftPrev !== leftNew) {
         }
+      }
+
+      toRemove = [];
+      toAdd = [];
+      if (currentlyOnSelfIntersectionPoint === true) {
+        currentlyOnSelfIntersectionPoint = false;
       }
     }
   }
@@ -1107,6 +1188,19 @@ class SecurityGuard {
         initialIntersectEdges[i]
       );
     }
+    // let temp = ["red", "blue", "green", "yellow", "pink", "orange", "brown"];
+    // for (let i = 0; i < initialIntersectEdges.length; i += 1) {
+    //   push();
+    //   strokeWeight(14);
+    //   stroke(temp[i]);
+    //   line(
+    //     initialIntersectEdges[i].getPoint1().getX(),
+    //     initialIntersectEdges[i].getPoint1().getY(),
+    //     initialIntersectEdges[i].getPoint2().getX(),
+    //     initialIntersectEdges[i].getPoint2().getY()
+    //   );
+    //   pop();
+    // }
   }
 
   constructVisibilityEdge(edge, v_i, add2OrRemove2) {
