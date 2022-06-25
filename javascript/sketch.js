@@ -978,7 +978,7 @@ class SecurityGuard {
 
         if (toUpdate === null) {
           console.log(i);
-        
+          console.alert();
         } else toUpdate.theKey = toAdd[0];
 
         leftNew = getLeftmostLeaf(this.root).theKey;
