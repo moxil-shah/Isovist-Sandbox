@@ -13,8 +13,6 @@ let pointClicked = false;
 let shapeClicked = false;
 let securityGuardClicked = false;
 let doubleClick = false;
-
-const HEXAGON_ROUNDING_ERROR = 1e-15;
 let shapeDragged = -1;
 let shapesPointDragged;
 let pointDragged = -1;
@@ -57,7 +55,7 @@ function draw() {
 function sidesInput() {
   let nPoints = document.getElementById("name").value;
   if (nPoints > 30) nPoints = 30;
-  polygon(100, 100, 45, nPoints);
+  polygon(100, 100, 45, parseInt(nPoints));
 }
 
 // from the HTML form
@@ -101,7 +99,11 @@ function polygon(x, y, radius, npoints) {
   } else {
     newShape = new Shape(npoints, "white");
 
-    for (let i = 0; i < TWO_PI - HEXAGON_ROUNDING_ERROR; i += angle) {
+    let preventRoundingError = 0;
+    for (let i = 0; i < TWO_PI; i += angle) {
+      preventRoundingError += 1;
+      if (preventRoundingError > npoints) break;
+
       let sx = x + cos(i) * radius;
       let sy = y + sin(i) * radius;
       vertexes.push(new Point(sx, sy, newShape));
@@ -702,35 +704,6 @@ class Point {
 
   getAngleForSecurityGuard(guard) {
     return this.secuirtyGuardMap.get(guard);
-  }
-
-  getEdgePairOrderedByAngleToSecurityGuard(guard) {
-    let vmain = createVector(
-      this.getX() - guard.getX(),
-      -(this.getY() - guard.getY()),
-      0
-    );
-
-    let v1 = createVector(
-      this.getPointPrev().getX() - this.getX(),
-      -(this.getPointPrev().getY() - this.getY()),
-      0
-    );
-
-    let v2 = createVector(
-      this.getPointNext().getX() - this.getX(),
-      -(this.getPointNext().getY() - this.getY()),
-      0
-    );
-
-    let angleBetween1 = Math.abs(vmain.angleBetween(v1));
-    let angleBetween2 = Math.abs(vmain.angleBetween(v2));
-    if (angleBetween1 >= PI) angleBetween1 = angleBetween1 - PI;
-    if (angleBetween2 >= PI) angleBetween2 = angleBetween2 - PI;
-    console.log("old", angleBetween1, angleBetween2);
-    if (angleBetween1 > angleBetween2)
-      return [this.lineToPointPrev, this.lineToPointNext];
-    else return [this.lineToPointNext, this.lineToPointPrev];
   }
 
   getEdgePairOrderedByAngleToSecurityGuardPointerless(
