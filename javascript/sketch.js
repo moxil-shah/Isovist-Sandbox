@@ -1,5 +1,6 @@
 // asano's algorithm is complete except gimpy edge cases like if the top edge
 // of a rectangle is on the initial intersect line
+// self-intersect is done without testing test cases though becuase I am lazy
 
 // code starts //
 let allShapes = new Set(); // global array of all shapes made
@@ -9,6 +10,7 @@ const SecurityGuardNames = [
   [0, 255, 0],
   [255, 0, 0],
 ];
+const ROUND_FACTOR = 10000;
 let pointClicked = false;
 let shapeClicked = false;
 let securityGuardClicked = false;
@@ -350,11 +352,13 @@ function checkIfSelfIntersectingPolygon(theShape) {
         if (
           checkIfTwoPointsOverlapRounded(
             eachLine.getPoint1(),
-            intersectionPoint
+            intersectionPoint,
+            ROUND_FACTOR
           ) === false &&
           checkIfTwoPointsOverlapRounded(
             eachLine.getPoint2(),
-            intersectionPoint
+            intersectionPoint,
+            ROUND_FACTOR
           ) === false
         ) {
           if (intersectionPoints.get(eachLine) !== undefined)
@@ -1133,13 +1137,12 @@ class SecurityGuard {
             if (crossProductPoint2 >= 0) continue;
           }
           let intersectionPoint = findIntersection(this.lineToRightWall, edge);
-          let distanceFromIntersectiontoGuard = distanceBetweenTwoPoints(
+          let distanceFromIntersectiontoGuard = distanceBetweenTwoPointsRounded(
             this.SecurityGuardPoint,
-            intersectionPoint
+            intersectionPoint,
+            ROUND_FACTOR
           );
-          edge.setPositionPrior(
-            Math.round(distanceFromIntersectiontoGuard * 1000) / 1000
-          );
+          edge.setPositionPrior(distanceFromIntersectiontoGuard);
           initialIntersectEdges.push(edge);
         }
       }

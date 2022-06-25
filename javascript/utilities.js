@@ -52,6 +52,15 @@ function distanceBetweenTwoPoints(p1, p2) {
   return Math.sqrt((p1.getX() - p2.getX()) ** 2 + (p1.getY() - p2.getY()) ** 2);
 }
 
+function distanceBetweenTwoPointsRounded(p1, p2, roundFactor) {
+  return (
+    Math.round(
+      Math.sqrt((p1.getX() - p2.getX()) ** 2 + (p1.getY() - p2.getY()) ** 2) *
+        roundFactor
+    ) / roundFactor
+  );
+}
+
 function checkIfIntersect(line1, line2) {
   let p1 = line1.getPoint1();
   let q1 = line1.getPoint2();
@@ -80,10 +89,12 @@ function checkIfTwoPointsOverlap(p1, p2) {
   return p1.getX() === p2.getX() && p1.getY() === p2.getY();
 }
 
-function checkIfTwoPointsOverlapRounded(p1, p2) {
+function checkIfTwoPointsOverlapRounded(p1, p2, roundFactor) {
   return (
-    Math.round(p1.getX() * 100) / 100 === Math.round(p2.getX() * 100) / 100 &&
-    Math.round(p1.getY() * 100) / 100 === Math.round(p2.getY() * 100) / 100
+    Math.round(p1.getX() * roundFactor) / roundFactor ===
+      Math.round(p2.getX() * roundFactor) / roundFactor &&
+    Math.round(p1.getY() * roundFactor) / roundFactor ===
+      Math.round(p2.getY() * roundFactor) / roundFactor
   );
 }
 
