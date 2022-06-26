@@ -4,8 +4,8 @@
 
 // code starts //
 let allShapes = new Set(); // global array of all shapes made
-let allguards = new Set(); // global array of all security guards made
-const SecurityGuardNames = [
+let allGuards = new Set(); // global array of all security guards made
+const securityGuardNames = [
   [0, 0, 255],
   [0, 255, 0],
   [255, 0, 0],
@@ -55,31 +55,6 @@ function draw() {
   renderVertexClicked();
 }
 
-// from the HTML form
-function sidesInput() {
-  let nPoints = document.getElementById("sideNumInput").value;
-  if (nPoints > 30) nPoints = 30;
-  polygon(100, 100, 45, parseInt(nPoints));
-}
-
-// from the HTML form
-function SecurityGuardInput() {
-  if (SecurityGuardNames.length !== 0) {
-    guard = new SecurityGuard(27.5, 100, SecurityGuardNames.pop());
-    for (let eachShape of allShapes) {
-      let currentVertex = eachShape.getVertexHead();
-      do {
-        currentVertex.setSecurityGuardAngle(guard);
-
-        currentVertex = currentVertex.getPointNext();
-      } while (currentVertex !== eachShape.getVertexHead());
-    }
-    guard.addAllVertices();
-    guard.sortVertices();
-    allguards.add(guard);
-  }
-}
-
 // gets parameters ready to make the new polygon
 function polygon(x, y, radius, npoints) {
   let angle = TWO_PI / npoints;
@@ -122,25 +97,25 @@ function polygon(x, y, radius, npoints) {
   for (let eachShape of allShapes) {
     let currentVertex = eachShape.getVertexHead();
     do {
-      for (let guard of allguards) {
+      for (let guard of allGuards) {
         currentVertex.setSecurityGuardAngle(guard);
       }
       currentVertex = currentVertex.getPointNext();
     } while (currentVertex !== eachShape.getVertexHead());
   }
 
-  for (let guard of allguards) {
+  for (let guard of allGuards) {
     guard.addAllVertices();
     guard.sortVertices();
   }
 }
 
 function renderAllSecurityGuards() {
-  for (let guard of allguards) {
+  for (let guard of allGuards) {
     guard.drawSecurityGuard();
   }
 
-  for (let guard of allguards) {
+  for (let guard of allGuards) {
     if (guardDragged !== -1) guard = guardDragged;
 
     guard.visibleVertices();
@@ -333,7 +308,7 @@ function checkIfClickInsideShape() {
 function checkIfClickSecurityGuard() {
   if (securityGuardClicked === true) return false;
 
-  for (let guard of allguards) {
+  for (let guard of allGuards) {
     if (
       between(mouseX, guard.getX() - 10, guard.getX() + 10) &&
       between(mouseY, guard.getY() - 10, guard.getY() + 10)
@@ -460,14 +435,14 @@ function dragPoint() {
     for (let eachShape of allShapes) {
       let currentVertex = eachShape.getVertexHead();
       do {
-        for (let guard of allguards) {
+        for (let guard of allGuards) {
           currentVertex.setSecurityGuardAngle(guard);
         }
         currentVertex = currentVertex.getPointNext();
       } while (currentVertex !== eachShape.getVertexHead());
     }
 
-    for (let guard of allguards) {
+    for (let guard of allGuards) {
       guard.addAllVertices();
       guard.sortVertices();
     }
@@ -514,14 +489,14 @@ function dragShape() {
     for (let eachShape of allShapes) {
       let currentVertex = eachShape.getVertexHead();
       do {
-        for (let guard of allguards) {
+        for (let guard of allGuards) {
           currentVertex.setSecurityGuardAngle(guard);
         }
         currentVertex = currentVertex.getPointNext();
       } while (currentVertex !== eachShape.getVertexHead());
     }
 
-    for (let guard of allguards) {
+    for (let guard of allGuards) {
       guard.sortVertices();
     }
   }

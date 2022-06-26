@@ -1,3 +1,45 @@
+function clearAll() {
+  allShapes.clear();
+  polygon(null, null, null, 4);
+  for (let guard of allGuards) securityGuardNames.push(guard.getName());
+  allGuards.clear();
+}
+
+function clearGuards() {
+  for (let guard of allGuards) securityGuardNames.push(guard.getName());
+  allGuards.clear();
+}
+
+function clearShapes() {
+  allShapes.clear();
+  polygon(null, null, null, 4);
+}
+
+// from the HTML form
+function sidesInput() {
+  let nPoints = document.getElementById("sideNumInput").value;
+  if (nPoints > 30) nPoints = 30;
+  polygon(100, 100, 45, parseInt(nPoints));
+}
+
+// from the HTML form
+function SecurityGuardInput() {
+  if (securityGuardNames.length !== 0) {
+    guard = new SecurityGuard(27.5, 100, securityGuardNames.pop());
+    for (let eachShape of allShapes) {
+      let currentVertex = eachShape.getVertexHead();
+      do {
+        currentVertex.setSecurityGuardAngle(guard);
+
+        currentVertex = currentVertex.getPointNext();
+      } while (currentVertex !== eachShape.getVertexHead());
+    }
+    guard.addAllVertices();
+    guard.sortVertices();
+    allGuards.add(guard);
+  }
+}
+
 function findIntersection(line1, line2) {
   let px =
     ((line1.getPoint1().getX() * line1.getPoint2().getY() -
