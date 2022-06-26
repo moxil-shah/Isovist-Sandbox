@@ -13,3 +13,16 @@ h1 {
 #mainMenu {
   background-color: #eeeeee;
 }
+
+#mainMenuNavBar {
+  background-color: #eeeeee;
+}
+
+.btn {
+  font-weight: 500;
+}
+
+#navBarBrand {
+  font-size: larger;
+  font-weight: 650;
+}
