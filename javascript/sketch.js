@@ -22,7 +22,6 @@ let shapeDragged = -1;
 let shapesPointDragged = -1;
 let pointDragged = -1;
 let guardDragged = -1;
-let guardDoubleClicked = -1;
 let visualizeGuard = -1;
 let gameShape;
 
@@ -55,12 +54,12 @@ function draw() {
   dragPoint();
   dragShape();
   renderAllShapes();
-  if (guardDoubleClicked === -1) renderAllSecurityGuards();
-  else guardDoubleClicked.drawSecurityGuard();
+  if (visualizeGuard === -1) renderAllSecurityGuards();
+  else visualizeGuard.getSecurityGuard().drawSecurityGuard();
   renderAllShapesPoints();
   renderVertexClicked();
   if (visualizeGuard !== -1) {
-    visualizeGuard.initLineAnimation();
+    visualizeGuard.animateMasterMethod();
   }
 }
 
@@ -270,7 +269,7 @@ function doubleClicked() {
   if (mouseY < 0) return;
   doubleClick = true;
   if (checkIfClickSecurityGuard()) {
-    guardDoubleClicked = guardDragged;
+    visualizeGuard = new AsanoVisualization(guardDragged);
     const controlPanel = document.getElementById("controlPanel");
     controlPanel.style.display = "block";
     const h6 = controlPanel.querySelector("h6");
@@ -284,7 +283,6 @@ function mouseClicked() {
   controlPanel.style.display = "none";
   if (doubleClick) {
     doubleClick = shapeClicked = securityGuardClicked = false;
-    guardDoubleClicked = -1;
     visualizeGuard = -1;
     return;
   }
@@ -1249,10 +1247,16 @@ class SecurityGuard {
 class AsanoVisualization {
   constructor(guard) {
     this.visualizngGuard = guard;
-    this.state = "drawing";
+    this.state = "not started";
     this.widthOfInitLine = guard.getX();
     this.initlineAnimationHelper = true;
     this.speed = 5;
+  }
+
+  animateMasterMethod() {
+    if (this.state === "drawing") {
+      this.initLineAnimation();
+    }
   }
 
   initLineAnimation() {
@@ -1267,7 +1271,7 @@ class AsanoVisualization {
             null
           )
         ),
-        "red",
+        "white",
         5
       );
     else
@@ -1276,8 +1280,16 @@ class AsanoVisualization {
           this.visualizngGuard.getSecurityGuardPoint(),
           new Point(width, this.visualizngGuard.getY(), null)
         ),
-        "red",
+        "white",
         5
       );
+  }
+
+  setState(state) {
+    this.state = state;
+  }
+
+  getSecurityGuard() {
+    return this.visualizngGuard;
   }
 }

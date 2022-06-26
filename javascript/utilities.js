@@ -18,7 +18,7 @@ function clearShapes() {
 }
 
 function visualizeAsanoPrelude() {
-  visualizeGuard = new AsanoVisualization(guardDoubleClicked);
+  visualizeGuard.setState("drawing");
 }
 
 function drawLine(theLine, color, weight) {
