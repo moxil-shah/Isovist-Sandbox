@@ -33,7 +33,7 @@ h6 {
 }
 
 #controlPanel {
-  display: block;
+  display: none;
 }
 
 #speed-group {

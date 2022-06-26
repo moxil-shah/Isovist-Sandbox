@@ -19,9 +19,11 @@ let shapeClicked = false;
 let securityGuardClicked = false;
 let doubleClick = false;
 let shapeDragged = -1;
-let shapesPointDragged;
+let shapesPointDragged = -1;
 let pointDragged = -1;
 let guardDragged = -1;
+let guardDoubleClicked = -1;
+let visualizeGuard = -1;
 let gameShape;
 
 function getScrollBarWidth() {
@@ -53,9 +55,13 @@ function draw() {
   dragPoint();
   dragShape();
   renderAllShapes();
-  renderAllSecurityGuards();
+  if (guardDoubleClicked === -1) renderAllSecurityGuards();
+  else guardDoubleClicked.drawSecurityGuard();
   renderAllShapesPoints();
   renderVertexClicked();
+  if (visualizeGuard !== -1) {
+    visualizeGuard.initLineAnimation();
+  }
 }
 
 // gets parameters ready to make the new polygon
@@ -261,8 +267,10 @@ function checkIfClickAVertex() {
 }
 
 function doubleClicked() {
+  if (mouseY < 0) return;
   doubleClick = true;
   if (checkIfClickSecurityGuard()) {
+    guardDoubleClicked = guardDragged;
     const controlPanel = document.getElementById("controlPanel");
     controlPanel.style.display = "block";
     const h6 = controlPanel.querySelector("h6");
@@ -271,7 +279,15 @@ function doubleClicked() {
 }
 
 function mouseClicked() {
-  if (doubleClick) doubleClick = shapeClicked = securityGuardClicked = false;
+  if (mouseY < 0) return;
+  const controlPanel = document.getElementById("controlPanel");
+  controlPanel.style.display = "none";
+  if (doubleClick) {
+    doubleClick = shapeClicked = securityGuardClicked = false;
+    guardDoubleClicked = -1;
+    visualizeGuard = -1;
+    return;
+  }
   if (securityGuardClicked) {
     securityGuardClicked = false;
     guardDragged = -1;
@@ -279,6 +295,7 @@ function mouseClicked() {
   else if (pointClicked) {
     pointClicked = false;
     pointDragged = -1;
+    shapesPointDragged = -1;
   } else if (checkIfClickAVertex()) pointClicked = true;
   else if (shapeClicked) {
     shapeClicked = false;
@@ -1216,11 +1233,51 @@ class SecurityGuard {
     return this.y;
   }
 
+  getSecurityGuardPoint() {
+    return this.SecurityGuardPoint;
+  }
+
   getConstructedPoints() {
     return this.constructedPoints;
   }
 
   getName() {
     return this.name;
+  }
+}
+
+class AsanoVisualization {
+  constructor(guard) {
+    this.visualizngGuard = guard;
+    this.state = "drawing";
+    this.widthOfInitLine = guard.getX();
+    this.initlineAnimationHelper = true;
+    this.speed = 5;
+  }
+
+  initLineAnimation() {
+    if (this.initlineAnimationHelper === false) return;
+    if (this.widthOfInitLine < width)
+      drawLine(
+        new Line(
+          this.visualizngGuard.getSecurityGuardPoint(),
+          new Point(
+            (this.widthOfInitLine += this.speed),
+            this.visualizngGuard.getY(),
+            null
+          )
+        ),
+        "red",
+        5
+      );
+    else
+      drawLine(
+        new Line(
+          this.visualizngGuard.getSecurityGuardPoint(),
+          new Point(width, this.visualizngGuard.getY(), null)
+        ),
+        "red",
+        5
+      );
   }
 }

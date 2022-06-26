@@ -17,10 +17,28 @@ function clearShapes() {
   polygon(null, null, null, 4);
 }
 
+function visualizeAsanoPrelude() {
+  visualizeGuard = new AsanoVisualization(guardDoubleClicked);
+}
+
+function drawLine(theLine, color, weight) {
+  push();
+  stroke(color);
+  strokeWeight(weight);
+  line(
+    theLine.getPoint1().getX(),
+    theLine.getPoint1().getY(),
+    theLine.getPoint2().getX(),
+    theLine.getPoint2().getY()
+  );
+  pop();
+}
+
 // from the HTML form
 function sidesInput() {
   let nPoints = document.getElementById("sideNumInput").value;
   if (nPoints > 30) nPoints = 30;
+  if (nPoints < 3) nPoints = 3;
   polygon(100, 100, 45, parseInt(nPoints));
 }
 
