@@ -26,3 +26,7 @@ h1 {
   font-size: larger;
   font-weight: 650;
 }
+
+#shapeInputForm {
+  width: 15rem;
+}

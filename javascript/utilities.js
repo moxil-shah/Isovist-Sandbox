@@ -8,6 +8,8 @@ function clearAll() {
 function clearGuards() {
   for (let guard of allGuards) securityGuardNames.push(guard.getName());
   allGuards.clear();
+  document.getElementById("addBtn").disabled = false;
+  document.getElementById("addBtn").innerText = "Add Guard";
 }
 
 function clearShapes() {
@@ -37,6 +39,9 @@ function SecurityGuardInput() {
     guard.addAllVertices();
     guard.sortVertices();
     allGuards.add(guard);
+  } else {
+    document.getElementById("addBtn").disabled = true;
+    document.getElementById("addBtn").innerText = "Add Guard (Disabled)";
   }
 }
 
