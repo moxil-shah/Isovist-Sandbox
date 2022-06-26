@@ -770,12 +770,16 @@ class SecurityGuard {
     this.sortedVertices = [];
     this.constructedPoints = [];
     this.root;
-    this.lineToRightWall;
+    this.sweepLine;
+    this.lineToRightWall = new Line(
+      new Point(this.x, this.y, null),
+      new Point(width, this.y, null)
+    );
   }
 
   visibleVertices() {
     this.root = null;
-    this.lineToRightWall = new Line(
+    this.sweepLine = new Line(
       new Point(this.x, this.y, null),
       new Point(width, this.y, null)
     );
@@ -792,7 +796,7 @@ class SecurityGuard {
       // console.log(i);
       // preOrder(this.root);
       // console.log("done");
-      this.lineToRightWall = new Line(
+      this.sweepLine = new Line(
         new Point(this.x, this.y, null),
         new Point(
           this.sortedVertices[i].getX(),
@@ -1166,19 +1170,6 @@ class SecurityGuard {
         initialIntersectEdges[i]
       );
     }
-    // let temp = ["red", "blue", "green", "yellow", "pink", "orange", "brown"];
-    // for (let i = 0; i < initialIntersectEdges.length; i += 1) {
-    //   push();
-    //   strokeWeight(14);
-    //   stroke(temp[i]);
-    //   line(
-    //     initialIntersectEdges[i].getPoint1().getX(),
-    //     initialIntersectEdges[i].getPoint1().getY(),
-    //     initialIntersectEdges[i].getPoint2().getX(),
-    //     initialIntersectEdges[i].getPoint2().getY()
-    //   );
-    //   pop();
-    // }
   }
 
   constructVisibilityEdge(edge, v_i, add2OrRemove2) {
@@ -1216,11 +1207,14 @@ class SecurityGuard {
   setX(x) {
     this.x = x;
     this.SecurityGuardPoint.setX(x);
+    this.lineToRightWall.getPoint1().setX(x);
   }
 
   setY(y) {
     this.y = y;
     this.SecurityGuardPoint.setY(y);
+    this.lineToRightWall.getPoint1().setY(y);
+    this.lineToRightWall.getPoint2().setY(y);
   }
 
   getX() {
