@@ -34,10 +34,12 @@ function getScrollBarWidth() {
 }
 
 function setup() {
-  createCanvas(
+  let canvas = createCanvas(
     document.documentElement.clientWidth - getScrollBarWidth(),
     document.documentElement.clientHeight
   );
+  canvas.parent("canvasDiv");
+  canvas.style("margin-bottom", "-5px");
   frameRate(60);
   polygon(null, null, null, 4);
 }
@@ -55,7 +57,7 @@ function draw() {
 
 // from the HTML form
 function sidesInput() {
-  let nPoints = document.getElementById("name").value;
+  let nPoints = document.getElementById("sideNumInput").value;
   if (nPoints > 30) nPoints = 30;
   polygon(100, 100, 45, parseInt(nPoints));
 }
@@ -87,7 +89,7 @@ function polygon(x, y, radius, npoints) {
   // gets the vertexes ready and puts them into temp array
 
   if (allShapes.size === 0) {
-    newShape = new Shape(npoints, "black");
+    newShape = new Shape(npoints, [0, 0, 0]);
     gameShape = newShape;
     let stage = [
       new Point(0, 0, newShape),
@@ -99,7 +101,7 @@ function polygon(x, y, radius, npoints) {
       vertexes.push(stage[i]);
     }
   } else {
-    newShape = new Shape(npoints, "white");
+    newShape = new Shape(npoints, [209, 209, 209]);
 
     let preventRoundingError = 0;
     for (let i = 0; i < TWO_PI; i += angle) {
@@ -177,7 +179,7 @@ function renderAllShapes() {
     push();
     if (shapeDragged === shape) {
       fill([255, 233, 0]);
-    } else fill(shape.getColor());
+    } else fill(shape.getColor()[0], shape.getColor()[1], shape.getColor()[2]);
     beginShape();
 
     let aVertex = shape.getVertexHead();
