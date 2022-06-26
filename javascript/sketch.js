@@ -6,9 +6,12 @@
 let allShapes = new Set(); // global array of all shapes made
 let allGuards = new Set(); // global array of all security guards made
 const securityGuardNames = [
+  [255, 165, 0],
+  [28, 197, 220],
   [0, 0, 255],
   [0, 255, 0],
   [255, 0, 0],
+  [255, 255, 0],
 ];
 const ROUND_FACTOR = 10000;
 let pointClicked = false;
@@ -112,10 +115,6 @@ function polygon(x, y, radius, npoints) {
 
 function renderAllSecurityGuards() {
   for (let guard of allGuards) {
-    guard.drawSecurityGuard();
-  }
-
-  for (let guard of allGuards) {
     if (guardDragged !== -1) guard = guardDragged;
 
     guard.visibleVertices();
@@ -137,13 +136,16 @@ function renderAllSecurityGuards() {
 
     if (guardDragged !== -1) break;
   }
+  for (let guard of allGuards) {
+    guard.drawSecurityGuard();
+  }
 }
 
 function renderVertexClicked() {
   if (pointDragged != -1) {
     push();
     strokeWeight(15);
-    stroke([255, 233, 0]);
+    stroke([115, 119, 123]);
     point(pointDragged.getX(), pointDragged.getY());
     pop();
   }
@@ -153,14 +155,14 @@ function renderAllShapes() {
   for (let shape of allShapes) {
     push();
     if (shapeDragged === shape) {
-      fill([255, 233, 0]);
+      fill([115, 119, 123]);
     } else fill(shape.getColor()[0], shape.getColor()[1], shape.getColor()[2]);
     beginShape();
 
     let aVertex = shape.getVertexHead();
     do {
       push();
-      if (aVertex.getIncludeInRender() === true)
+      if (aVertex.getNotSelfIntersect() === true)
         vertex(aVertex.getX(), aVertex.getY());
       pop();
       aVertex = aVertex.getPointNext();
@@ -187,7 +189,15 @@ function renderAllShapesPoints() {
     let currentVertex = shape.getVertexHead();
     let temp = 0;
     do {
-      if (currentVertex.getIncludeInRender() === true) {
+      if (
+        currentVertex.getNotSelfIntersect() === true &&
+        currentVertex
+          .getParentShape()
+          .getColor()
+          .reduce(
+            (previousValue, currentValue) => previousValue + currentValue
+          ) !== 0
+      ) {
         push();
         strokeWeight(10);
         stroke("white");
@@ -216,7 +226,7 @@ function renderAllShapesPoints() {
 function deleteTheSelfIntersect(shape) {
   let aVertex = shape.getVertexHead();
   do {
-    if (aVertex.getIncludeInRender() === false) {
+    if (aVertex.getNotSelfIntersect() === false) {
       aVertex.getPointPrev().setPointNext(aVertex.getPointNext());
       aVertex.getPointNext().setPointPrev(aVertex.getPointPrev());
       aVertex = aVertex.getPointPrev();
@@ -238,7 +248,7 @@ function checkIfClickAVertex() {
       if (
         between(mouseX, currentVertex.getX() - 10, currentVertex.getX() + 10) &&
         between(mouseY, currentVertex.getY() - 10, currentVertex.getY() + 10) &&
-        currentVertex.getIncludeInRender() === true
+        currentVertex.getNotSelfIntersect() === true
       ) {
         pointDragged = currentVertex;
         shapesPointDragged = eachShape;
@@ -404,7 +414,7 @@ function dragPoint() {
       for (let i = 0; i < value.length; i += 1) {
         value[i] = value[i][0];
 
-        value[i].setIncludeInRender(false);
+        value[i].setNotSelfIntersect(false);
       }
 
       if (value.length > 2) {
@@ -610,13 +620,13 @@ class Point {
     this.pointNext = null;
     this.parentShape = parentShape;
     this.secuirtyGuardMap = new Map();
-    this.includeInRender = true;
+    this.notSelfIntersect = true;
     this.lineToPointPrev;
     this.lineToPointNext;
   }
 
-  setIncludeInRender(yesOrNo) {
-    this.includeInRender = yesOrNo;
+  setNotSelfIntersect(yesOrNo) {
+    this.notSelfIntersect = yesOrNo;
   }
 
   setSecurityGuardAngle(guard) {
@@ -730,8 +740,8 @@ class Point {
     else return [edge2, edge1];
   }
 
-  getIncludeInRender() {
-    return this.includeInRender;
+  getNotSelfIntersect() {
+    return this.notSelfIntersect;
   }
 }
 
@@ -818,7 +828,7 @@ class SecurityGuard {
       else if (crossProduct2 < 0)
         toRemove.push(this.sortedVertices[i].getLineNext());
 
-      if (this.sortedVertices[i].getIncludeInRender() === false) {
+      if (this.sortedVertices[i].getNotSelfIntersect() === false) {
         if (toAdd.length + toRemove.length !== 4) continue;
         else currentlyOnSelfIntersectionPoint = true;
       }
