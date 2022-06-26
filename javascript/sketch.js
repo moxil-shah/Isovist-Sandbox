@@ -262,15 +262,16 @@ function checkIfClickAVertex() {
 
 function doubleClicked() {
   doubleClick = true;
+  if (checkIfClickSecurityGuard()) {
+    const controlPanel = document.getElementById("controlPanel");
+    controlPanel.style.display = "block";
+    const h6 = controlPanel.querySelector("h6");
+    h6.innerText = "Guard Control Panel";
+  }
 }
 
 function mouseClicked() {
-  if (doubleClick) {
-    doubleClick = shapeClicked = securityGuardClicked = false;
-
-    return;
-  }
-
+  if (doubleClick) doubleClick = shapeClicked = securityGuardClicked = false;
   if (securityGuardClicked) {
     securityGuardClicked = false;
     guardDragged = -1;
@@ -316,8 +317,6 @@ function checkIfClickInsideShape() {
 }
 
 function checkIfClickSecurityGuard() {
-  if (securityGuardClicked === true) return false;
-
   for (let guard of allGuards) {
     if (
       between(mouseX, guard.getX() - 10, guard.getX() + 10) &&
@@ -327,6 +326,7 @@ function checkIfClickSecurityGuard() {
       return true;
     }
   }
+  return false;
 }
 
 function checkIfSelfIntersectingPolygon(theShape) {

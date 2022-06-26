@@ -25,12 +25,9 @@
 
   <body>
     <div id="mainMenuNavBar">
-      <nav
-        class="navbar navbar-expand-lg navbar-light bg-light"
-        id="mainNavBar"
-      >
+      <nav class="navbar navbar-expand-lg navbar-light" id="mainNavBar">
         <div class="container-fluid">
-          <a class="navbar-brand" id="navBarBrand">Isovist Sandbox</a>
+          <a class="navbar-brand noSelect" id="navBarBrand">Isovist Sandbox</a>
           <button
             class="navbar-toggler"
             type="button"
@@ -82,9 +79,9 @@
                 </button>
               </li>
             </ul>
-            <form class="d-flex" id="shapeInputForm">
+            <form class="d-flex noSelect" id="shapeInputForm">
               <input
-                class="form-control form-control-sm me-2"
+                class="form-control form-control-sm me-2 noSelect"
                 id="sideNumInput"
                 type="search"
                 placeholder="How many sides?"
@@ -101,6 +98,9 @@
           </div>
         </div>
       </nav>
+    </div>
+    <div class="container-fluid" id="controlPanel">
+      <h6>Control Panel</h6>
     </div>
     <div id="canvasDiv"></div>
   </body>
