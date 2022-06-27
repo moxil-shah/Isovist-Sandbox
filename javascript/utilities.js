@@ -18,12 +18,14 @@ function clearShapes() {
 }
 
 function visualizeAsanoPrelude() {
+  visualizeGuard.resetAll();
   visualizeGuard.setState("drawing");
 }
 
 function drawLine(theLine, color, weight) {
   push();
-  stroke(color);
+  if (typeof color === "string") stroke(color);
+  else stroke(color[0], color[1], color[2]);
   strokeWeight(weight);
   line(
     theLine.getPoint1().getX(),
@@ -111,6 +113,15 @@ function orientOrder(p, q, r) {
   if (val == 0) return 0;
 
   return val > 0 ? 1 : 2;
+}
+
+function zigZag(x, frequency) {
+  return (
+    (frequency * x - Math.floor(frequency * x)) *
+      (-1 + 2 * (Math.floor(frequency * x) % 2)) -
+    (Math.floor(frequency * x) % 2) +
+    1
+  );
 }
 
 function distanceBetweenTwoPoints(p1, p2) {

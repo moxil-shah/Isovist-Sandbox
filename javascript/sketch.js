@@ -178,21 +178,8 @@ function renderAllShapes() {
 }
 
 function renderAllShapesPoints() {
-  // let colors = [
-  //   "red",
-  //   "blue",
-  //   "yellow",
-  //   "green",
-  //   "purple",
-  //   "brown",
-  //   "pink",
-  //   "orange",
-  //   "white",
-  //   "gray"
-  // ];
   for (let shape of allShapes) {
     let currentVertex = shape.getVertexHead();
-    let temp = 0;
     do {
       if (
         currentVertex.getNotSelfIntersect() === true &&
@@ -212,17 +199,6 @@ function renderAllShapesPoints() {
         point(currentVertex.getX(), currentVertex.getY());
         pop();
       }
-      // push();
-      // stroke(colors[temp]);
-      // strokeWeight(8);
-      // line(
-      //   currentVertex.getLineNext().getPoint1().getX(),
-      //   currentVertex.getLineNext().getPoint1().getY(),
-      //   currentVertex.getLineNext().getPoint2().getX(),
-      //   currentVertex.getLineNext().getPoint2().getY()
-      // );
-      // pop();
-      // temp += 1;
       currentVertex = currentVertex.getPointNext();
     } while (currentVertex !== shape.vertexHead);
   }
@@ -598,6 +574,7 @@ class Line {
   setPosition(position) {
     this.position = position;
   }
+
   setPositionPrior(positionPrior) {
     this.positionPrior = positionPrior;
   }
@@ -624,6 +601,10 @@ class Line {
 
   getPositionPrior() {
     return this.positionPrior;
+  }
+
+  getLength() {
+    return distanceBetweenTwoPoints(this.point1, this.point2);
   }
 }
 
@@ -776,9 +757,81 @@ class SecurityGuard {
       new Point(width, this.y, null)
     );
   }
+  initialIntersect() {
+    // Add all edges intersecting lineToRightWall to the AVL Tree in order
+    // of intersection, first being closest edge to security guard. Intersection
+    // does not mean colinear edges with the lineToRightWall. Intersection does
+    // not count endpoints, except when the edge goes below the lineToRightWall.
+    // If it goes above then does not count.
+    let initialIntersectEdges = [];
+    this.root = null;
+    for (let shape of allShapes) {
+      for (let edge of shape.getEdges()) {
+        if (checkIfIntersect(this.lineToRightWall, edge)) {
+          if (edge.getPoint1().getAngleForSecurityGuard(this.name) === 0) {
+            let crossProductPoint1 = p5.Vector.cross(
+              createVector(
+                edge.getPoint1().getX() - this.getX(),
+                -(edge.getPoint1().getY() - this.getY()),
+                0
+              ),
+              createVector(
+                edge.getPoint2().getX() - edge.getPoint1().getX(),
+                -(edge.getPoint2().getY() - edge.getPoint1().getY()),
+                0
+              )
+            ).dot(createVector(1, 1, 1));
+
+            if (crossProductPoint1 >= 0) continue;
+          }
+          if (edge.getPoint2().getAngleForSecurityGuard(this.name) === 0) {
+            let crossProductPoint2 = p5.Vector.cross(
+              createVector(
+                edge.getPoint2().getX() - this.getX(),
+                -(edge.getPoint2().getY() - this.getY()),
+                0
+              ),
+              createVector(
+                edge.getPoint1().getX() - edge.getPoint2().getX(),
+                -(edge.getPoint1().getY() - edge.getPoint2().getY()),
+                0
+              )
+            ).dot(createVector(1, 1, 1));
+
+            if (crossProductPoint2 >= 0) continue;
+          }
+          let intersectionPoint = findIntersection(this.lineToRightWall, edge);
+          let distanceFromIntersectiontoGuard = distanceBetweenTwoPointsRounded(
+            this.SecurityGuardPoint,
+            intersectionPoint,
+            ROUND_FACTOR
+          );
+          edge.setPositionPrior(distanceFromIntersectiontoGuard);
+          initialIntersectEdges.push(edge);
+        }
+      }
+    }
+    // sort edges closest intersection to farthest intersection. If tie, use angle to figure
+    // out which edge is intersected first
+    let guard = this;
+    initialIntersectEdges.sort(function (a, b) {
+      return (
+        a.getPositionPrior() - b.getPositionPrior() ||
+        guard.getAngleFromLinetoRightWall(b) -
+          guard.getAngleFromLinetoRightWall(a)
+      );
+    });
+    for (let i = 0; i < initialIntersectEdges.length; i += 1) {
+      initialIntersectEdges[i].setPosition(i);
+      this.root = insertNodeInitialIntersect(
+        this.root,
+        initialIntersectEdges[i]
+      );
+    }
+    return initialIntersectEdges;
+  }
 
   visibleVertices() {
-    this.root = null;
     this.sweepLine = new Line(
       new Point(this.x, this.y, null),
       new Point(width, this.y, null)
@@ -1100,78 +1153,6 @@ class SecurityGuard {
     return angle;
   }
 
-  initialIntersect() {
-    // Add all edges intersecting lineToRightWall to the AVL Tree in order
-    // of intersection, first being closest edge to security guard. Intersection
-    // does not mean colinear edges with the lineToRightWall. Intersection does
-    // not count endpoints, except when the edge goes below the lineToRightWall.
-    // If it goes above then does not count.
-    let initialIntersectEdges = [];
-    for (let shape of allShapes) {
-      for (let edge of shape.getEdges()) {
-        if (checkIfIntersect(this.lineToRightWall, edge)) {
-          if (edge.getPoint1().getAngleForSecurityGuard(this.name) === 0) {
-            let crossProductPoint1 = p5.Vector.cross(
-              createVector(
-                edge.getPoint1().getX() - this.getX(),
-                -(edge.getPoint1().getY() - this.getY()),
-                0
-              ),
-              createVector(
-                edge.getPoint2().getX() - edge.getPoint1().getX(),
-                -(edge.getPoint2().getY() - edge.getPoint1().getY()),
-                0
-              )
-            ).dot(createVector(1, 1, 1));
-
-            if (crossProductPoint1 >= 0) continue;
-          }
-          if (edge.getPoint2().getAngleForSecurityGuard(this.name) === 0) {
-            let crossProductPoint2 = p5.Vector.cross(
-              createVector(
-                edge.getPoint2().getX() - this.getX(),
-                -(edge.getPoint2().getY() - this.getY()),
-                0
-              ),
-              createVector(
-                edge.getPoint1().getX() - edge.getPoint2().getX(),
-                -(edge.getPoint1().getY() - edge.getPoint2().getY()),
-                0
-              )
-            ).dot(createVector(1, 1, 1));
-
-            if (crossProductPoint2 >= 0) continue;
-          }
-          let intersectionPoint = findIntersection(this.lineToRightWall, edge);
-          let distanceFromIntersectiontoGuard = distanceBetweenTwoPointsRounded(
-            this.SecurityGuardPoint,
-            intersectionPoint,
-            ROUND_FACTOR
-          );
-          edge.setPositionPrior(distanceFromIntersectiontoGuard);
-          initialIntersectEdges.push(edge);
-        }
-      }
-    }
-    // sort edges closest intersection to farthest intersection. If tie, use angle to figure
-    // out which edge is intersected first
-    let guard = this;
-    initialIntersectEdges.sort(function (a, b) {
-      return (
-        a.getPositionPrior() - b.getPositionPrior() ||
-        guard.getAngleFromLinetoRightWall(b) -
-          guard.getAngleFromLinetoRightWall(a)
-      );
-    });
-    for (let i = 0; i < initialIntersectEdges.length; i += 1) {
-      initialIntersectEdges[i].setPosition(i);
-      this.root = insertNodeInitialIntersect(
-        this.root,
-        initialIntersectEdges[i]
-      );
-    }
-  }
-
   constructVisibilityEdge(edge, v_i, add2OrRemove2) {
     let vectorTov_i = createVector(
       v_i.getX() - this.x,
@@ -1244,7 +1225,10 @@ class AsanoVisualization {
     this.state = "not started";
     this.widthOfInitLine = guard.getX();
     this.initlineAnimationHelper = true;
-    this.speed = 5;
+    this.speed = 3;
+    this.initialIntersectEdges = this.visualizngGuard.initialIntersect();
+    this.lineThickness = 7;
+    this.flicks = 0;
   }
 
   animateMasterMethod() {
@@ -1255,7 +1239,21 @@ class AsanoVisualization {
 
   initLineAnimation() {
     if (this.initlineAnimationHelper === false) return;
-    if (this.widthOfInitLine < width)
+
+    if (this.widthOfInitLine < width) {
+      for (let eachLine of this.initialIntersectEdges) {
+        if (
+          eachLine.getPositionPrior() -
+            (this.widthOfInitLine - this.visualizngGuard.getX()) <=
+          0
+        ) {
+          drawLine(
+            eachLine,
+            this.visualizngGuard.getName(),
+            this.lineThickness
+          );
+        }
+      }
       drawLine(
         new Line(
           this.visualizngGuard.getSecurityGuardPoint(),
@@ -1266,17 +1264,37 @@ class AsanoVisualization {
           )
         ),
         "white",
-        5
+        2
       );
-    else
+    } else {
+      for (let eachLine of this.initialIntersectEdges) {
+        drawLine(
+          eachLine,
+          this.visualizngGuard.getName(),
+          zigZag(this.flicks, 0.5) * this.lineThickness
+        );
+      }
+
+      this.flicks += 0.05;
       drawLine(
         new Line(
           this.visualizngGuard.getSecurityGuardPoint(),
           new Point(width, this.visualizngGuard.getY(), null)
         ),
         "white",
-        5
+        2
       );
+      if (this.flicks >= 22) {
+        this.initlineAnimationHelper = false;
+      }
+    }
+  }
+
+  resetAll() {
+    this.state = "not started";
+    this.flicks = 0;
+    this.widthOfInitLine = this.visualizngGuard.getX();
+    this.initlineAnimationHelper = true;
   }
 
   setState(state) {
