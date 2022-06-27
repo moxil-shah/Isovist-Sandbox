@@ -1240,20 +1240,9 @@ class AsanoVisualization {
   initLineAnimation() {
     if (this.initlineAnimationHelper === false) return;
 
-    if (this.widthOfInitLine < width) {
-      for (let eachLine of this.initialIntersectEdges) {
-        if (
-          eachLine.getPositionPrior() -
-            (this.widthOfInitLine - this.visualizngGuard.getX()) <=
-          0
-        ) {
-          drawLine(
-            eachLine,
-            this.visualizngGuard.getName(),
-            this.lineThickness
-          );
-        }
-      }
+    if (
+      this.widthOfInitLine <= this.initialIntersectEdges[0].getPositionPrior()
+    ) {
       drawLine(
         new Line(
           this.visualizngGuard.getSecurityGuardPoint(),
@@ -1267,23 +1256,26 @@ class AsanoVisualization {
         2
       );
     } else {
-      for (let eachLine of this.initialIntersectEdges) {
-        drawLine(
-          eachLine,
-          this.visualizngGuard.getName(),
-          zigZag(this.flicks, 0.5) * this.lineThickness
-        );
-      }
+      drawLine(
+        this.initialIntersectEdges[0],
+        this.visualizngGuard.getName(),
+        zigZag(this.flicks, 0.5) * this.lineThickness
+      );
 
-      this.flicks += 0.05;
       drawLine(
         new Line(
           this.visualizngGuard.getSecurityGuardPoint(),
-          new Point(width, this.visualizngGuard.getY(), null)
+          new Point(
+            this.visualizngGuard.getX() +
+              this.initialIntersectEdges[0].getPositionPrior(),
+            this.visualizngGuard.getY(),
+            null
+          )
         ),
         "white",
         2
       );
+      this.flicks += 0.05;
       if (this.flicks >= 22) {
         this.initlineAnimationHelper = false;
       }
