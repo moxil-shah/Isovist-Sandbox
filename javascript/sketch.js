@@ -1223,7 +1223,8 @@ class AsanoVisualization {
   constructor(guard) {
     this.visualizngGuard = guard;
     this.state = "not started";
-    this.widthOfInitLine = guard.getX();
+    this.initLineP2 = new Point(guard.getX(), guard.getY(), null);
+    this.initLine = new Line(guard.getSecurityGuardPoint(), this.initLineP2);
     this.initlineAnimationHelper = true;
     this.speed = 3;
     this.initialIntersectEdges = this.visualizngGuard.initialIntersect();
@@ -1241,20 +1242,15 @@ class AsanoVisualization {
     if (this.initlineAnimationHelper === false) return;
 
     if (
-      this.widthOfInitLine <= this.initialIntersectEdges[0].getPositionPrior()
+      this.initLine.getLength() <=
+      this.initialIntersectEdges[0].getPositionPrior()
     ) {
       drawLine(
-        new Line(
-          this.visualizngGuard.getSecurityGuardPoint(),
-          new Point(
-            (this.widthOfInitLine += this.speed),
-            this.visualizngGuard.getY(),
-            null
-          )
-        ),
+        new Line(this.visualizngGuard.getSecurityGuardPoint(), this.initLineP2),
         "white",
         2
       );
+      this.initLineP2.setX(this.initLineP2.getX() + this.speed);
     } else {
       drawLine(
         this.initialIntersectEdges[0],
@@ -1285,8 +1281,10 @@ class AsanoVisualization {
   resetAll() {
     this.state = "not started";
     this.flicks = 0;
-    this.widthOfInitLine = this.visualizngGuard.getX();
+    this.initLineP2 = new Point(guard.getX(), guard.getY(), null);
+    this.initLine = new Line(guard.getSecurityGuardPoint(), this.initLineP2);
     this.initlineAnimationHelper = true;
+    this.initialIntersectEdges = this.visualizngGuard.initialIntersect();
   }
 
   setState(state) {
