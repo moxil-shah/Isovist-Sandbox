@@ -259,116 +259,6 @@ function updateVertexArrayDistancetoMousePress(shape) {
   } while (currentVertex !== shape.getVertexHead());
 }
 
-class Shape {
-  constructor(color) {
-    this.vertexHead;
-    this.orignalVertexHead;
-    this.verticesDistancetoMousePress = new Map();
-    this.edges = new Set();
-    this.color = color;
-  }
-
-  setVerticesLinkedList(vertexArray) {
-    vertexArray[0].setPointPrev(vertexArray[vertexArray.length - 1]);
-    vertexArray[0].setPointNext(vertexArray[1]);
-    this.vertexHead = vertexArray[0];
-
-    vertexArray[vertexArray.length - 1].setPointPrev(
-      vertexArray[vertexArray.length - 2]
-    );
-    vertexArray[vertexArray.length - 1].setPointNext(vertexArray[0]);
-
-    for (let i = 1; i < vertexArray.length - 1; i += 1) {
-      vertexArray[i].setPointPrev(vertexArray[i - 1]);
-      vertexArray[i].setPointNext(vertexArray[i + 1]);
-    }
-  }
-
-  setEdges() {
-    this.edges = new Set();
-
-    let currentVertex = this.vertexHead;
-    do {
-      let aLine = new Line(currentVertex, currentVertex.getPointNext());
-      currentVertex.setLineNext(aLine);
-      currentVertex.getPointNext().setLinePrev(aLine);
-      this.edges.add(aLine);
-      currentVertex = currentVertex.getPointNext();
-    } while (currentVertex !== this.vertexHead);
-  }
-
-  getEdges() {
-    return this.edges;
-  }
-
-  getColor() {
-    return this.color;
-  }
-
-  getVertexHead() {
-    return this.vertexHead;
-  }
-}
-
-class Obstacle extends Shape {
-  constructor(color) {
-    super(color);
-  }
-
-  setVerticesDistancetoMousePress(theVertex, coordinate) {
-    this.verticesDistancetoMousePress.set(theVertex, coordinate);
-  }
-
-  getVerticesDistancetoMousePress(theVertex) {
-    return this.verticesDistancetoMousePress.get(theVertex);
-  }
-}
-
-class Line {
-  constructor(p1, p2) {
-    this.point1 = p1;
-    this.point2 = p2;
-    this.position = null;
-    this.positionPrior = null;
-  }
-
-  setPosition(position) {
-    this.position = position;
-  }
-
-  setPositionPrior(positionPrior) {
-    this.positionPrior = positionPrior;
-  }
-
-  setPoint1(p1) {
-    this.point1 = p1;
-  }
-
-  setPoint2(p2) {
-    this.point2 = p2;
-  }
-
-  getPoint1() {
-    return this.point1;
-  }
-
-  getPoint2() {
-    return this.point2;
-  }
-
-  getPosition() {
-    return this.position;
-  }
-
-  getPositionPrior() {
-    return this.positionPrior;
-  }
-
-  getLength() {
-    return distanceBetweenTwoPoints(this.point1, this.point2);
-  }
-}
-
 class Point {
   constructor(x, y) {
     this.x = x;
@@ -389,6 +279,10 @@ class Point {
 
   getY() {
     return this.y;
+  }
+
+  getPoint() {
+    return this;
   }
 }
 
@@ -439,96 +333,16 @@ class ShapePoint extends Point {
   }
 }
 
-class ObstaclePoint extends ShapePoint {
-  constructor(x, y, parentShape) {
-    super(x, y, parentShape);
-    this.secuirtyGuardMap = new Map();
-    this.notSelfIntersect = true;
-  }
-
-  setNotSelfIntersect(yesOrNo) {
-    this.notSelfIntersect = yesOrNo;
-  }
-
-  setSecurityGuardAngle(guard) {
-    let a = this.x - guard.getX();
-    let o = -this.y + guard.getY();
-    let angle = Math.atan2(o, a);
-
-    if (angle < 0) {
-      angle += TWO_PI;
-    }
-
-    this.secuirtyGuardMap.set(guard.getName(), angle);
-  }
-
-  getAngleForSecurityGuard(guard) {
-    return this.secuirtyGuardMap.get(guard);
-  }
-
-  getEdgePairOrderedByAngleToSecurityGuardPointerless(
-    guard,
-    edge1,
-    edge2,
-    state
-  ) {
-    let vmain = createVector(
-      this.getX() - guard.getX(),
-      -(this.getY() - guard.getY()),
-      0
-    );
-
-    let v1 = createVector(
-      edge1.getPoint1().getX() - edge1.getPoint2().getX(),
-      -(edge1.getPoint1().getY() - edge1.getPoint2().getY()),
-      0
-    );
-
-    let v2 = createVector(
-      edge2.getPoint1().getX() - edge2.getPoint2().getX(),
-      -(edge2.getPoint1().getY() - edge2.getPoint2().getY()),
-      0
-    );
-
-    let angleBetween1 = vmain.angleBetween(v1);
-    let angleBetween2 = vmain.angleBetween(v2);
-
-    if (state === "toAdd") {
-      if (angleBetween1 > 0) angleBetween1 -= PI;
-      if (angleBetween2 > 0) angleBetween2 -= PI;
-    }
-
-    if (state === "toRemove") {
-      if (angleBetween1 < 0) angleBetween1 += PI;
-      if (angleBetween2 < 0) angleBetween2 += PI;
-    }
-
-    angleBetween1 = PI - Math.abs(angleBetween1);
-    angleBetween2 = PI - Math.abs(angleBetween2);
-    if (angleBetween1 > angleBetween2) return [edge1, edge2];
-    else return [edge2, edge1];
-  }
-
-  getNotSelfIntersect() {
-    return this.notSelfIntersect;
-  }
-}
-
-class SecurityGuard {
+class SecurityGuard extends Point {
   constructor(x, y, name) {
-    this.x = x;
-    this.y = y;
-    this.SecurityGuardPoint = new Point(this.x, this.y);
+    super(x, y);
     this.name = name;
     this.size = 15;
     this.sortedVertices = [];
     this.constructedPoints = [];
     this.root;
     this.sweepLine;
-    this.lineToRightWall = new Line(
-      new Point(this.x, this.y),
-      new Point(width, this.y)
-    );
+    this.lineToRightWall = new Line(this.getPoint(), new Point(width, this.y));
   }
   initialIntersect() {
     // Add all edges intersecting lineToRightWall to the AVL Tree in order
@@ -575,7 +389,7 @@ class SecurityGuard {
           }
           let intersectionPoint = findIntersection(this.lineToRightWall, edge);
           let distanceFromIntersectiontoGuard = distanceBetweenTwoPointsRounded(
-            this.SecurityGuardPoint,
+            this.getPoint(),
             intersectionPoint,
             ROUND_FACTOR
           );
@@ -953,29 +767,10 @@ class SecurityGuard {
     }
   }
 
-  setX(x) {
-    this.x = x;
-    this.SecurityGuardPoint.setX(x);
-    this.lineToRightWall.getPoint1().setX(x);
-  }
-
   setY(y) {
     this.y = y;
-    this.SecurityGuardPoint.setY(y);
-    this.lineToRightWall.getPoint1().setY(y);
+    // since this must be updated, the parent class's method is overidden
     this.lineToRightWall.getPoint2().setY(y);
-  }
-
-  getX() {
-    return this.x;
-  }
-
-  getY() {
-    return this.y;
-  }
-
-  getSecurityGuardPoint() {
-    return this.SecurityGuardPoint;
   }
 
   getConstructedPoints() {
@@ -987,12 +782,197 @@ class SecurityGuard {
   }
 }
 
+class ObstaclePoint extends ShapePoint {
+  constructor(x, y, parentShape) {
+    super(x, y, parentShape);
+    this.secuirtyGuardMap = new Map();
+    this.notSelfIntersect = true;
+  }
+
+  setNotSelfIntersect(yesOrNo) {
+    this.notSelfIntersect = yesOrNo;
+  }
+
+  setSecurityGuardAngle(guard) {
+    let a = this.x - guard.getX();
+    let o = -this.y + guard.getY();
+    let angle = Math.atan2(o, a);
+
+    if (angle < 0) {
+      angle += TWO_PI;
+    }
+
+    this.secuirtyGuardMap.set(guard.getName(), angle);
+  }
+
+  getAngleForSecurityGuard(guard) {
+    return this.secuirtyGuardMap.get(guard);
+  }
+
+  getEdgePairOrderedByAngleToSecurityGuardPointerless(
+    guard,
+    edge1,
+    edge2,
+    state
+  ) {
+    let vmain = createVector(
+      this.getX() - guard.getX(),
+      -(this.getY() - guard.getY()),
+      0
+    );
+
+    let v1 = createVector(
+      edge1.getPoint1().getX() - edge1.getPoint2().getX(),
+      -(edge1.getPoint1().getY() - edge1.getPoint2().getY()),
+      0
+    );
+
+    let v2 = createVector(
+      edge2.getPoint1().getX() - edge2.getPoint2().getX(),
+      -(edge2.getPoint1().getY() - edge2.getPoint2().getY()),
+      0
+    );
+
+    let angleBetween1 = vmain.angleBetween(v1);
+    let angleBetween2 = vmain.angleBetween(v2);
+
+    if (state === "toAdd") {
+      if (angleBetween1 > 0) angleBetween1 -= PI;
+      if (angleBetween2 > 0) angleBetween2 -= PI;
+    }
+
+    if (state === "toRemove") {
+      if (angleBetween1 < 0) angleBetween1 += PI;
+      if (angleBetween2 < 0) angleBetween2 += PI;
+    }
+
+    angleBetween1 = PI - Math.abs(angleBetween1);
+    angleBetween2 = PI - Math.abs(angleBetween2);
+    if (angleBetween1 > angleBetween2) return [edge1, edge2];
+    else return [edge2, edge1];
+  }
+
+  getNotSelfIntersect() {
+    return this.notSelfIntersect;
+  }
+}
+
+class Line {
+  constructor(p1, p2) {
+    this.point1 = p1;
+    this.point2 = p2;
+    this.position = null;
+    this.positionPrior = null;
+  }
+
+  setPosition(position) {
+    this.position = position;
+  }
+
+  setPositionPrior(positionPrior) {
+    this.positionPrior = positionPrior;
+  }
+
+  setPoint1(p1) {
+    this.point1 = p1;
+  }
+
+  setPoint2(p2) {
+    this.point2 = p2;
+  }
+
+  getPoint1() {
+    return this.point1;
+  }
+
+  getPoint2() {
+    return this.point2;
+  }
+
+  getPosition() {
+    return this.position;
+  }
+
+  getPositionPrior() {
+    return this.positionPrior;
+  }
+
+  getLength() {
+    return distanceBetweenTwoPoints(this.point1, this.point2);
+  }
+}
+
+class Shape {
+  constructor(color) {
+    this.vertexHead;
+    this.orignalVertexHead;
+    this.verticesDistancetoMousePress = new Map();
+    this.edges = new Set();
+    this.color = color;
+  }
+
+  setVerticesLinkedList(vertexArray) {
+    vertexArray[0].setPointPrev(vertexArray[vertexArray.length - 1]);
+    vertexArray[0].setPointNext(vertexArray[1]);
+    this.vertexHead = vertexArray[0];
+
+    vertexArray[vertexArray.length - 1].setPointPrev(
+      vertexArray[vertexArray.length - 2]
+    );
+    vertexArray[vertexArray.length - 1].setPointNext(vertexArray[0]);
+
+    for (let i = 1; i < vertexArray.length - 1; i += 1) {
+      vertexArray[i].setPointPrev(vertexArray[i - 1]);
+      vertexArray[i].setPointNext(vertexArray[i + 1]);
+    }
+  }
+
+  setEdges() {
+    this.edges = new Set();
+
+    let currentVertex = this.vertexHead;
+    do {
+      let aLine = new Line(currentVertex, currentVertex.getPointNext());
+      currentVertex.setLineNext(aLine);
+      currentVertex.getPointNext().setLinePrev(aLine);
+      this.edges.add(aLine);
+      currentVertex = currentVertex.getPointNext();
+    } while (currentVertex !== this.vertexHead);
+  }
+
+  getEdges() {
+    return this.edges;
+  }
+
+  getColor() {
+    return this.color;
+  }
+
+  getVertexHead() {
+    return this.vertexHead;
+  }
+}
+
+class Obstacle extends Shape {
+  constructor(color) {
+    super(color);
+  }
+
+  setVerticesDistancetoMousePress(theVertex, coordinate) {
+    this.verticesDistancetoMousePress.set(theVertex, coordinate);
+  }
+
+  getVerticesDistancetoMousePress(theVertex) {
+    return this.verticesDistancetoMousePress.get(theVertex);
+  }
+}
+
 class AsanoVisualization {
   constructor(guard) {
     this.visualizngGuard = guard;
     this.state = "not started";
     this.initLineP2 = new Point(guard.getX(), guard.getY());
-    this.initLine = new Line(guard.getSecurityGuardPoint(), this.initLineP2);
+    this.initLine = new Line(guard.getPoint(), this.initLineP2);
     this.sweepLine;
     this.initlineAnimationHelper = true;
     this.sweepAnimationHelper = false;
@@ -1036,7 +1016,7 @@ class AsanoVisualization {
         this.initlineAnimationHelper = false;
         this.sweepAnimationHelper = true;
         this.sweepLine = new Line(
-          this.visualizngGuard.getSecurityGuardPoint(),
+          this.visualizngGuard.getPoint(),
           new Point(this.initLineP2.getX(), this.initLineP2.getY())
         );
       }
@@ -1067,10 +1047,7 @@ class AsanoVisualization {
       this.visualizngGuard.getX(),
       this.visualizngGuard.getY()
     );
-    this.initLine = new Line(
-      this.visualizngGuard.getSecurityGuardPoint(),
-      this.initLineP2
-    );
+    this.initLine = new Line(this.visualizngGuard.getPoint(), this.initLineP2);
     this.sweepLine;
     this.initlineAnimationHelper = true;
     this.sweepAnimationHelper = false;
