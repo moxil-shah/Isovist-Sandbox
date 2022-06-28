@@ -983,7 +983,7 @@ class AsanoVisualization {
     this.initialIntersectEdges = this.visualizngGuard.initialIntersect();
     this.lineThickness = 7;
     this.flicks = 0;
-    this.rotationHelper = 0;
+    this.angle = 0;
     this.visualizngGuard.visibleVertices();
   }
 
@@ -1015,7 +1015,7 @@ class AsanoVisualization {
       );
       drawLine(this.initLine, "white", 2);
       this.flicks += 0.05;
-      if (this.flicks >= 22) {
+      if (this.flicks >= 4) {
         this.initlineAnimationHelper = false;
         this.sweepAnimationHelper = true;
         this.sweepLine = new Line(
@@ -1028,18 +1028,18 @@ class AsanoVisualization {
 
   sweepAnimation() {
     if (this.sweepAnimationHelper === false) return;
-    this.rotationHelper += 0.05;
+    this.angle += 0.01;
     this.sweepLine
       .getPoint2()
       .setX(
         this.visualizngGuard.getX() +
-          cos(this.rotationHelper) * this.initLine.getLength()
+          cos(this.angle) * this.initLine.getLength()
       );
     this.sweepLine
       .getPoint2()
       .setY(
         this.visualizngGuard.getY() -
-          sin(this.rotationHelper) * this.initLine.getLength()
+          sin(this.angle) * this.initLine.getLength()
       );
     drawLine(this.sweepLine, "white", 2);
   }
@@ -1062,7 +1062,7 @@ class AsanoVisualization {
     this.initialIntersectEdges = this.visualizngGuard.initialIntersect();
     this.lineThickness = 7;
     this.flicks = 0;
-    this.rotationHelper = 0;
+    this.angle = 0;
     this.visualizngGuard.visibleVertices();
   }
 
