@@ -73,10 +73,10 @@ function polygon(x, y, radius, npoints) {
     newObstacle = new Obstacle([0, 0, 0]);
     gameShape = newObstacle;
     let stage = [
-      new Point(0, 0, newObstacle),
-      new Point(width, 0, newObstacle),
-      new Point(width, height, newObstacle),
-      new Point(0, height, newObstacle),
+      new ObstaclePoint(0, 0, newObstacle),
+      new ObstaclePoint(width, 0, newObstacle),
+      new ObstaclePoint(width, height, newObstacle),
+      new ObstaclePoint(0, height, newObstacle),
     ];
     for (let i = 0; i < stage.length; i += 1) {
       vertexes.push(stage[i]);
@@ -91,7 +91,7 @@ function polygon(x, y, radius, npoints) {
 
       let sx = x + cos(i) * radius;
       let sy = y + sin(i) * radius;
-      vertexes.push(new Point(sx, sy, newObstacle));
+      vertexes.push(new ObstaclePoint(sx, sy, newObstacle));
       copyVertexes.push([sx, sy]);
     }
   }
@@ -217,6 +217,11 @@ function checkIfSelfIntersectingPolygon(theShape) {
       if (eachLine === shapeLine) continue;
       if (checkIfIntersect(eachLine, shapeLine) === true) {
         let intersectionPoint = findIntersection(eachLine, shapeLine);
+        intersectionPoint = new ObstaclePoint(
+          intersectionPoint.getX(),
+          intersectionPoint.getY(),
+          theShape
+        );
         if (
           checkIfTwoPointsOverlapRounded(
             eachLine.getPoint1(),
@@ -365,32 +370,9 @@ class Line {
 }
 
 class Point {
-  constructor(x, y, parentShape) {
+  constructor(x, y) {
     this.x = x;
     this.y = y;
-    this.pointPrev = null;
-    this.pointNext = null;
-    this.parentShape = parentShape;
-    this.secuirtyGuardMap = new Map();
-    this.notSelfIntersect = true;
-    this.lineToPointPrev;
-    this.lineToPointNext;
-  }
-
-  setNotSelfIntersect(yesOrNo) {
-    this.notSelfIntersect = yesOrNo;
-  }
-
-  setSecurityGuardAngle(guard) {
-    let a = this.x - guard.getX();
-    let o = -this.y + guard.getY();
-    let angle = Math.atan2(o, a);
-
-    if (angle < 0) {
-      angle += TWO_PI;
-    }
-
-    this.secuirtyGuardMap.set(guard.getName(), angle);
   }
 
   setX(x) {
@@ -407,6 +389,17 @@ class Point {
 
   getY() {
     return this.y;
+  }
+}
+
+class ShapePoint extends Point {
+  constructor(x, y, parentShape) {
+    super(x, y);
+    this.pointPrev = null;
+    this.pointNext = null;
+    this.parentShape = parentShape;
+    this.lineToPointPrev;
+    this.lineToPointNext;
   }
 
   getParentShape() {
@@ -443,6 +436,30 @@ class Point {
 
   getLineNext() {
     return this.lineToPointNext;
+  }
+}
+
+class ObstaclePoint extends ShapePoint {
+  constructor(x, y, parentShape) {
+    super(x, y, parentShape);
+    this.secuirtyGuardMap = new Map();
+    this.notSelfIntersect = true;
+  }
+
+  setNotSelfIntersect(yesOrNo) {
+    this.notSelfIntersect = yesOrNo;
+  }
+
+  setSecurityGuardAngle(guard) {
+    let a = this.x - guard.getX();
+    let o = -this.y + guard.getY();
+    let angle = Math.atan2(o, a);
+
+    if (angle < 0) {
+      angle += TWO_PI;
+    }
+
+    this.secuirtyGuardMap.set(guard.getName(), angle);
   }
 
   getAngleForSecurityGuard(guard) {
@@ -501,7 +518,7 @@ class SecurityGuard {
   constructor(x, y, name) {
     this.x = x;
     this.y = y;
-    this.SecurityGuardPoint = new Point(this.x, this.y, null);
+    this.SecurityGuardPoint = new Point(this.x, this.y);
     this.name = name;
     this.size = 15;
     this.sortedVertices = [];
@@ -509,8 +526,8 @@ class SecurityGuard {
     this.root;
     this.sweepLine;
     this.lineToRightWall = new Line(
-      new Point(this.x, this.y, null),
-      new Point(width, this.y, null)
+      new Point(this.x, this.y),
+      new Point(width, this.y)
     );
   }
   initialIntersect() {
@@ -589,8 +606,8 @@ class SecurityGuard {
 
   visibleVertices() {
     this.sweepLine = new Line(
-      new Point(this.x, this.y, null),
-      new Point(width, this.y, null)
+      new Point(this.x, this.y),
+      new Point(width, this.y)
     );
     let leftPrev;
     let leftNew;
@@ -606,12 +623,8 @@ class SecurityGuard {
       // preOrder(this.root);
       // console.log("done");
       this.sweepLine = new Line(
-        new Point(this.x, this.y, null),
-        new Point(
-          this.sortedVertices[i].getX(),
-          this.sortedVertices[i].getY(),
-          null
-        )
+        new Point(this.x, this.y),
+        new Point(this.sortedVertices[i].getX(), this.sortedVertices[i].getY())
       );
 
       let crossProduct1 = p5.Vector.cross(
@@ -826,7 +839,7 @@ class SecurityGuard {
 
   lineSideToInsert(v_i, edge, other, edgeToInsert) {
     if (edge === null) return "DNE";
-    let guardtov_i = new Line(new Point(this.x, this.y, null), v_i);
+    let guardtov_i = new Line(new Point(this.x, this.y), v_i);
     if (checkIfIntersect(guardtov_i, edge) === true) {
       if (other.includes(edge)) {
         if (other.indexOf(edge) < other.indexOf(edgeToInsert)) return "away";
@@ -841,7 +854,7 @@ class SecurityGuard {
     if (edge === edgeToDelete) {
       return "found";
     }
-    let guardtov_i = new Line(new Point(this.x, this.y, null), v_i);
+    let guardtov_i = new Line(new Point(this.x, this.y), v_i);
     if (checkIfIntersect(guardtov_i, edge) === true) {
       if (other.includes(edge)) {
         if (other.indexOf(edge) < other.indexOf(edgeToDelete)) return "away";
@@ -853,7 +866,7 @@ class SecurityGuard {
   }
 
   lineSideToSearch(v_i, edge) {
-    let guardtov_i = new Line(new Point(this.x, this.y, null), v_i);
+    let guardtov_i = new Line(new Point(this.x, this.y), v_i);
     if (checkIfIntersect(guardtov_i, edge) === true) return "away";
     return "toward";
   }
@@ -876,11 +889,11 @@ class SecurityGuard {
       return (
         a.getAngleForSecurityGuard(name) - b.getAngleForSecurityGuard(name) ||
         distanceBetweenTwoPoints(
-          new Point(theGuard.getX(), theGuard.getY(), null),
+          new Point(theGuard.getX(), theGuard.getY()),
           a
         ) -
           distanceBetweenTwoPoints(
-            new Point(theGuard.getX(), theGuard.getY(), null),
+            new Point(theGuard.getX(), theGuard.getY()),
             b
           )
       );
@@ -921,11 +934,10 @@ class SecurityGuard {
     let canvasHeight = document.documentElement.clientHeight;
     let maxDistance = ceil(Math.sqrt(canvasWidth ** 2 + canvasHeight ** 2));
     let lineFromSecurityGuardTov_iAndMore = new Line(
-      new Point(this.x, this.y, null),
+      new Point(this.x, this.y),
       new Point(
         v_i.getX() + vectorTov_iNormalized.x * maxDistance,
-        v_i.getY() - vectorTov_iNormalized.y * maxDistance,
-        null
+        v_i.getY() - vectorTov_iNormalized.y * maxDistance
       )
     );
 
@@ -979,7 +991,7 @@ class AsanoVisualization {
   constructor(guard) {
     this.visualizngGuard = guard;
     this.state = "not started";
-    this.initLineP2 = new Point(guard.getX(), guard.getY(), null);
+    this.initLineP2 = new Point(guard.getX(), guard.getY());
     this.initLine = new Line(guard.getSecurityGuardPoint(), this.initLineP2);
     this.sweepLine;
     this.initlineAnimationHelper = true;
@@ -1025,7 +1037,7 @@ class AsanoVisualization {
         this.sweepAnimationHelper = true;
         this.sweepLine = new Line(
           this.visualizngGuard.getSecurityGuardPoint(),
-          new Point(this.initLineP2.getX(), this.initLineP2.getY(), null)
+          new Point(this.initLineP2.getX(), this.initLineP2.getY())
         );
       }
     }
@@ -1053,8 +1065,7 @@ class AsanoVisualization {
     this.state = "not started";
     this.initLineP2 = new Point(
       this.visualizngGuard.getX(),
-      this.visualizngGuard.getY(),
-      null
+      this.visualizngGuard.getY()
     );
     this.initLine = new Line(
       this.visualizngGuard.getSecurityGuardPoint(),

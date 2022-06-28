@@ -88,7 +88,7 @@ function findIntersection(line1, line2) {
       (line2.getPoint1().getY() - line2.getPoint2().getY()) -
       (line1.getPoint1().getY() - line1.getPoint2().getY()) *
         (line2.getPoint1().getX() - line2.getPoint2().getX()));
-  return new Point(px, py, null);
+  return new Point(px, py);
 }
 
 function between(theThing, min, max) {

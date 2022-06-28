@@ -48,8 +48,8 @@ function doubleClicked() {
         if (
           checkIfIntersect(
             new Line(
-              new Point(mouseX, mouseY, null),
-              new Point(width, mouseY, null)
+              new Point(mouseX, mouseY),
+              new Point(width, mouseY)
             ),
             edge
           )
