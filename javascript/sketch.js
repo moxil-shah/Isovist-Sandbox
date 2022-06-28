@@ -66,23 +66,23 @@ function polygon(x, y, radius, npoints) {
   let angle = TWO_PI / npoints;
   let vertexes = []; // temp vertexes array to be passed into Shape constructor
   let copyVertexes = [];
-  let newShape = null;
+  let newObstacle = null;
   // gets the vertexes ready and puts them into temp array
 
   if (allShapes.size === 0) {
-    newShape = new Shape(npoints, [0, 0, 0]);
-    gameShape = newShape;
+    newObstacle = new Obstacle([0, 0, 0]);
+    gameShape = newObstacle;
     let stage = [
-      new Point(0, 0, newShape),
-      new Point(width, 0, newShape),
-      new Point(width, height, newShape),
-      new Point(0, height, newShape),
+      new Point(0, 0, newObstacle),
+      new Point(width, 0, newObstacle),
+      new Point(width, height, newObstacle),
+      new Point(0, height, newObstacle),
     ];
     for (let i = 0; i < stage.length; i += 1) {
       vertexes.push(stage[i]);
     }
   } else {
-    newShape = new Shape(npoints, [209, 209, 209]);
+    newObstacle = new Obstacle([209, 209, 209]);
 
     let preventRoundingError = 0;
     for (let i = 0; i < TWO_PI; i += angle) {
@@ -91,14 +91,14 @@ function polygon(x, y, radius, npoints) {
 
       let sx = x + cos(i) * radius;
       let sy = y + sin(i) * radius;
-      vertexes.push(new Point(sx, sy, newShape));
+      vertexes.push(new Point(sx, sy, newObstacle));
       copyVertexes.push([sx, sy]);
     }
   }
 
-  newShape.setVerticesLinkedList(vertexes);
-  newShape.setEdges();
-  allShapes.add(newShape);
+  newObstacle.setVerticesLinkedList(vertexes);
+  newObstacle.setEdges();
+  allShapes.add(newObstacle);
 
   for (let eachShape of allShapes) {
     let currentVertex = eachShape.getVertexHead();
@@ -255,8 +255,7 @@ function updateVertexArrayDistancetoMousePress(shape) {
 }
 
 class Shape {
-  constructor(nPoints, color) {
-    this.nPoints = nPoints;
+  constructor(color) {
     this.vertexHead;
     this.orignalVertexHead;
     this.verticesDistancetoMousePress = new Map();
@@ -293,16 +292,8 @@ class Shape {
     } while (currentVertex !== this.vertexHead);
   }
 
-  setVerticesDistancetoMousePress(theVertex, coordinate) {
-    this.verticesDistancetoMousePress.set(theVertex, coordinate);
-  }
-
   getEdges() {
     return this.edges;
-  }
-
-  getVerticesDistancetoMousePress(theVertex) {
-    return this.verticesDistancetoMousePress.get(theVertex);
   }
 
   getColor() {
@@ -311,6 +302,20 @@ class Shape {
 
   getVertexHead() {
     return this.vertexHead;
+  }
+}
+
+class Obstacle extends Shape {
+  constructor(color) {
+    super(color);
+  }
+
+  setVerticesDistancetoMousePress(theVertex, coordinate) {
+    this.verticesDistancetoMousePress.set(theVertex, coordinate);
+  }
+
+  getVerticesDistancetoMousePress(theVertex) {
+    return this.verticesDistancetoMousePress.get(theVertex);
   }
 }
 
