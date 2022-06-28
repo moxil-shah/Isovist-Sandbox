@@ -258,23 +258,35 @@ function mouseClicked() {
   const controlPanel = document.getElementById("controlPanel");
   controlPanel.style.display = "none";
   if (doubleClick) {
-    doubleClick = shapeClicked = securityGuardClicked = false;
+    doubleClick = shapeClicked = securityGuardClicked = pointClicked = false;
     visualizeGuard = -1;
     return;
   }
   if (securityGuardClicked) {
     securityGuardClicked = false;
     guardDragged = -1;
-  } else if (checkIfClickSecurityGuard()) securityGuardClicked = true;
+  } else if (
+    checkIfClickSecurityGuard() &&
+    !(doubleClick || shapeClicked || pointClicked)
+  )
+    securityGuardClicked = true;
   else if (pointClicked) {
     pointClicked = false;
     pointDragged = -1;
     shapesPointDragged = -1;
-  } else if (checkIfClickAVertex()) pointClicked = true;
+  } else if (
+    checkIfClickAVertex() &&
+    !(doubleClick || shapeClicked || securityGuardClicked)
+  )
+    pointClicked = true;
   else if (shapeClicked) {
     shapeClicked = false;
     shapeDragged = -1;
-  } else if (checkIfClickInsideShape()) shapeClicked = true;
+  } else if (
+    checkIfClickInsideShape() &&
+    !(doubleClick || pointClicked || securityGuardClicked)
+  )
+    shapeClicked = true;
 }
 
 function checkIfClickInsideShape() {
