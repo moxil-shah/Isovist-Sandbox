@@ -14,16 +14,13 @@ const securityGuardNames = [
   [255, 255, 0],
 ];
 const ROUND_FACTOR = 10000;
-let pointClicked = false;
-let shapeClicked = false;
-let securityGuardClicked = false;
-let doubleClick = false;
 let shapeDragged = -1;
 let shapesPointDragged = -1;
 let pointDragged = -1;
 let guardDragged = -1;
 let visualizeGuard = -1;
 let gameShape;
+let controlPanel;
 
 function getScrollBarWidth() {
   var $outer = $("<div>")
@@ -46,6 +43,7 @@ function setup() {
   canvas.style("margin-bottom", "-5px");
   frameRate(60);
   polygon(null, null, null, 4);
+  controlPanel = document.getElementById("controlPanel");
 }
 
 function draw() {
@@ -219,8 +217,6 @@ function deleteTheSelfIntersect(shape) {
 }
 
 function checkIfClickAVertex() {
-  if (pointClicked === true) return false;
-
   for (let eachShape of allShapes) {
     if (eachShape === gameShape) continue;
 
@@ -231,67 +227,57 @@ function checkIfClickAVertex() {
         between(mouseY, currentVertex.getY() - 10, currentVertex.getY() + 10) &&
         currentVertex.getNotSelfIntersect() === true
       ) {
-        pointDragged = currentVertex;
-        shapesPointDragged = eachShape;
-        return true;
+        return [currentVertex, eachShape];
       }
       currentVertex = currentVertex.getPointNext();
     } while (currentVertex !== eachShape.getVertexHead());
   }
-  return false;
+  return [-1, -1];
 }
 
 function doubleClicked() {
   if (mouseY < 0) return;
-  doubleClick = true;
-  if (checkIfClickSecurityGuard()) {
-    visualizeGuard = new AsanoVisualization(guardDragged);
-    const controlPanel = document.getElementById("controlPanel");
-    controlPanel.style.display = "block";
-    const h6 = controlPanel.querySelector("h6");
-    h6.innerText = "Guard Control Panel";
+  guardDragged = checkIfClickSecurityGuard();
+  if (guardDragged === -1) {
+    return;
   }
+  visualizeGuard = new AsanoVisualization(guardDragged);
+  controlPanel.style.display = "block";
+  const h6 = controlPanel.querySelector("h6");
+  h6.innerText = "Guard Control Panel";
 }
 
 function mouseClicked() {
   if (mouseY < 0) return;
-  const controlPanel = document.getElementById("controlPanel");
   controlPanel.style.display = "none";
-  if (doubleClick) {
-    doubleClick = shapeClicked = securityGuardClicked = pointClicked = false;
+  if (visualizeGuard !== -1) {
     visualizeGuard = -1;
     return;
   }
-  if (securityGuardClicked) {
-    securityGuardClicked = false;
+  if (guardDragged !== -1) {
     guardDragged = -1;
-  } else if (
-    checkIfClickSecurityGuard() &&
-    !(doubleClick || shapeClicked || pointClicked)
-  )
-    securityGuardClicked = true;
-  else if (pointClicked) {
-    pointClicked = false;
-    pointDragged = -1;
-    shapesPointDragged = -1;
-  } else if (
-    checkIfClickAVertex() &&
-    !(doubleClick || shapeClicked || securityGuardClicked)
-  )
-    pointClicked = true;
-  else if (shapeClicked) {
-    shapeClicked = false;
+    return;
+  } else if (shapeDragged === -1 && pointDragged === -1) {
+    guardDragged = checkIfClickSecurityGuard();
+    if (guardDragged !== -1) return;
+  }
+  if (pointDragged !== -1) {
+    pointDragged = shapesPointDragged = -1;
+    return;
+  } else if (shapeDragged === -1 && guardDragged === -1) {
+    [pointDragged, shapesPointDragged] = checkIfClickAVertex();
+    if (pointDragged !== -1 && shapesPointDragged !== -1) return;
+  }
+  if (shapeDragged !== -1) {
     shapeDragged = -1;
-  } else if (
-    checkIfClickInsideShape() &&
-    !(doubleClick || pointClicked || securityGuardClicked)
-  )
-    shapeClicked = true;
+    return;
+  } else if (pointDragged === -1 && guardDragged === -1) {
+    shapeDragged = checkIfClickInsideShape();
+    if (shapeDragged !== -1) return;
+  }
 }
 
 function checkIfClickInsideShape() {
-  if (shapeClicked === true) return false;
-
   for (let shape of allShapes) {
     if (shape === gameShape) continue;
     let lineSegmentCrossesCounter = 0; // for ray trace algorithm
@@ -308,15 +294,13 @@ function checkIfClickInsideShape() {
         lineSegmentCrossesCounter += 1;
       }
     }
-
     // ray tracing algorithm says if line segment crosses === odd num, then click is inside the shape
     if (lineSegmentCrossesCounter % 2 === 1) {
-      shapeDragged = shape;
-
       updateVertexArrayDistancetoMousePress(shape);
-      return true;
+      return shape;
     }
   }
+  return -1;
 }
 
 function checkIfClickSecurityGuard() {
@@ -325,11 +309,10 @@ function checkIfClickSecurityGuard() {
       between(mouseX, guard.getX() - 10, guard.getX() + 10) &&
       between(mouseY, guard.getY() - 10, guard.getY() + 10)
     ) {
-      guardDragged = guard;
-      return true;
+      return guard;
     }
   }
-  return false;
+  return -1;
 }
 
 function checkIfSelfIntersectingPolygon(theShape) {
@@ -377,11 +360,11 @@ function updateVertexArrayDistancetoMousePress(shape) {
 }
 
 function dragPoint() {
-  if (doubleClick === true || pointDragged === -1) {
+  if (visualizeGuard !== -1 || pointDragged === -1) {
     pointDragged = -1;
     return;
   }
-  if (pointClicked === true) {
+  if (pointDragged !== -1) {
     deleteTheSelfIntersect(shapesPointDragged);
     pointDragged.setX(mouseX);
     pointDragged.setY(mouseY);
@@ -463,11 +446,11 @@ function dragPoint() {
 }
 
 function dragSecurityGuard() {
-  if (doubleClick === true || guardDragged === -1) {
+  if (visualizeGuard !== -1 || guardDragged === -1) {
     guardDragged = -1;
     return;
   }
-  if (securityGuardClicked === true) {
+  if (guardDragged !== -1) {
     guardDragged.setX(mouseX);
     guardDragged.setY(mouseY);
 
@@ -483,11 +466,11 @@ function dragSecurityGuard() {
 }
 
 function dragShape() {
-  if (doubleClick === true || shapeDragged === -1) {
+  if (visualizeGuard !== -1 || shapeDragged === -1) {
     shapeDragged = -1;
     return;
   }
-  if (shapeClicked === true) {
+  if (shapeDragged !== -1) {
     let currentVertex = shapeDragged.getVertexHead();
     do {
       deltaXCurrent = mouseX - currentVertex.getX();
