@@ -25,19 +25,6 @@ function getMax(a, b) {
   return a > b ? a : b;
 }
 
-function drawline(aline, c) {
-  push();
-  strokeWeight(14);
-  stroke(c);
-  line(
-    aline.getPoint1().getX(),
-    aline.getPoint1().getY(),
-    aline.getPoint2().getX(),
-    aline.getPoint2().getY()
-  );
-  pop();
-}
-
 // A utility function to right rotate subtree theRooted with y
 // See the diagram given above.
 function rightRotate(y) {
