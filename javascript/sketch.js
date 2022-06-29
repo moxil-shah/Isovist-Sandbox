@@ -119,23 +119,11 @@ function polygon(x, y, radius, npoints) {
 function renderAllSecurityGuards() {
   for (let guard of allGuards) {
     if (guardDragged !== -1) guard = guardDragged;
-
     guard.visibleVertices();
-
-    push();
-    fill(guard.getName()[0], guard.getName()[1], guard.getName()[2], 100);
-    beginShape();
-    for (let eachPoint of guard.getConstructedPoints()) {
-      vertex(eachPoint.getX(), eachPoint.getY());
-    }
-    endShape(CLOSE);
-    pop();
-
+    guard.getIsovist().drawIsovist(guard);
     if (guardDragged !== -1) break;
   }
-  for (let guard of allGuards) {
-    guard.drawSecurityGuard();
-  }
+  for (let guard of allGuards) guard.drawSecurityGuard();
 }
 
 function renderVertexClicked() {
@@ -258,4 +246,3 @@ function updateVertexArrayDistancetoMousePress(shape) {
     currentVertex = currentVertex.getPointNext();
   } while (currentVertex !== shape.getVertexHead());
 }
-
