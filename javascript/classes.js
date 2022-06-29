@@ -856,11 +856,11 @@ class AsanoVisualization {
 
   sweepAnimation() {
     if (this.sweepAnimationHelper === false) return;
-    if (this.current.getPointNext().getAngle() <= this.angle) {
+    if (this.current.getPointNext().getAngle() <= this.angle && this.current.getPointNext() !== this.isovist.getVertexHead()) {
       this.current = this.current.getPointNext();
       this.eachAngle = 0;
-      console.log("fdg")
     }
+
     let A = this.angleBetweenEdge1Edge2(
       new Line(this.visualizngGuard.getPoint(), this.current),
       new Line(this.current, this.current.getPointNext())
@@ -880,9 +880,9 @@ class AsanoVisualization {
       .getPoint2()
       .setY(this.visualizngGuard.getY() - sin(this.angle) * a);
 
-    this.angle += 0.01;
-    this.eachAngle += 0.01;
-    if (this.angle > TWO_PI) this.angle = 0;
+    this.angle += 0.003;
+    this.eachAngle += 0.003;
+    if (this.angle > TWO_PI) this.sweepAnimationHelper = false;
     drawLine(this.sweepLine, "white", 2);
   }
 
@@ -924,6 +924,8 @@ class AsanoVisualization {
     this.angle = 0;
     this.eachAngle = 0;
     this.sweepAnimationPrelude();
+    this.sweepAnimationPrelude();
+    this.current = this.isovist.getVertexHead();
   }
 
   angleBetweenEdge1Edge2(edge1, edge2) {
