@@ -753,6 +753,10 @@ class Shape {
     return this.color;
   }
 
+  setVertexHead(head) {
+    this.vertexHead = head;
+  }
+
   getVertexHead() {
     return this.vertexHead;
   }
@@ -799,6 +803,7 @@ class AsanoVisualization {
     this.initLineP2 = new Point(guard.getX(), guard.getY());
     this.initLine = new Line(guard.getPoint(), this.initLineP2);
     this.sweepLine = new Line(this.visualizngGuard.getPoint(), new Point(0, 0));
+    this.sweepLine2;
     this.initlineAnimationHelper = true;
     this.sweepAnimationHelper = false;
     this.speed = 3;
@@ -808,6 +813,10 @@ class AsanoVisualization {
     this.visualizngGuard.visibleVertices();
     this.isovist = guard.getIsovist();
     this.angle = 0;
+    this.eachAngle = 0;
+    
+    this.sweepAnimationPrelude();
+    this.current = this.isovist.getVertexHead();
   }
 
   animateMasterMethod() {
@@ -847,20 +856,49 @@ class AsanoVisualization {
 
   sweepAnimation() {
     if (this.sweepAnimationHelper === false) return;
+    let A = this.angleBetweenEdge1Edge2(
+      new Line(this.visualizngGuard.getPoint(), this.isovist.getVertexHead()),
+      new Line(
+        this.isovist.getVertexHead(),
+        this.isovist.getVertexHead().getPointNext()
+      )
+    );
+    let B = this.angle;
+    let C = PI - A - B;
+    let c = distanceBetweenTwoPoints(
+      this.visualizngGuard.getPoint(),
+      this.isovist.getVertexHead()
+    );
+    let a = (sin(A) * c) / sin(C);
+
+    this.sweepLine
+      .getPoint2()
+      .setX(this.visualizngGuard.getX() + cos(this.angle) * a);
+    this.sweepLine
+      .getPoint2()
+      .setY(this.visualizngGuard.getY() - sin(this.angle) * a);
+
     this.angle += 0.005;
-    this.sweepLine
-      .getPoint2()
-      .setX(
-        this.visualizngGuard.getX() +
-          cos(this.angle) * this.initLine.getLength()
-      );
-    this.sweepLine
-      .getPoint2()
-      .setY(
-        this.visualizngGuard.getY() -
-          sin(this.angle) * this.initLine.getLength()
-      );
     drawLine(this.sweepLine, "white", 2);
+  }
+
+  sweepAnimationPrelude() {
+    if (this.isovist.getVertexHead().getAngle() === 0) return;
+    let newIsovistPoint = new IsovistPoint(
+      this.visualizngGuard.getX() +
+        this.initialIntersectEdges[0].getPositionPrior(),
+      this.visualizngGuard.getY(),
+      null,
+      0
+    );
+
+    newIsovistPoint.setPointNext(this.isovist.getVertexHead());
+    newIsovistPoint.setPointPrev(this.isovist.getVertexHead().getPointPrev());
+    this.isovist.getVertexHead().getPointPrev().setPointNext(newIsovistPoint);
+    this.isovist.getVertexHead().setPointPrev(newIsovistPoint);
+
+    this.isovist.setVertexHead(newIsovistPoint);
+    this.isovist.setEdges();
   }
 
   resetAll() {
@@ -880,6 +918,23 @@ class AsanoVisualization {
     this.visualizngGuard.visibleVertices();
     this.isovist = guard.getIsovist();
     this.angle = 0;
+    this.eachAngle = 0;
+    this.sweepAnimationPrelude();
+  }
+
+  angleBetweenEdge1Edge2(edge1, edge2) {
+    let vmain = createVector(
+      edge1.getPoint2().getX() - edge1.getPoint1().getX(),
+      -(edge1.getPoint2().getY() - edge1.getPoint1().getY()),
+      0
+    );
+
+    let v1 = createVector(
+      edge2.getPoint2().getX() - edge2.getPoint1().getX(),
+      -(edge2.getPoint2().getY() - edge2.getPoint1().getY()),
+      0
+    );
+    return PI - vmain.angleBetween(v1);
   }
 
   setState(state) {
