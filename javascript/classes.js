@@ -274,15 +274,15 @@ class SecurityGuard extends Point {
         } else if (
           leftPrev !== leftNew &&
           currentlyOnSelfIntersectionPoint === true
-        ) {
-          let p = new ObstaclePoint(
-            this.sortedVertices[i].getX(),
-            this.sortedVertices[i].getY(),
-            this.sortedVertices[i].getParentShape()
+        )
+          this.constructedPoints.push(
+            new IsovistPoint(
+              this.sortedVertices[i].getX(),
+              this.sortedVertices[i].getY(),
+              this.sortedVertices[i].getParentShape(),
+              this.sortedVertices[i].getAngleForSecurityGuard(this.name)
+            )
           );
-          p.setSecurityGuardAngle(this);
-          this.constructedPoints.push(p);
-        }
       }
       if (toAdd.length === 2) {
         leftPrev = getLeftmostLeaf(this.root).theKey;
@@ -329,15 +329,15 @@ class SecurityGuard extends Point {
         } else if (
           leftPrev !== leftNew &&
           currentlyOnSelfIntersectionPoint === true
-        ) {
-          let p = new ObstaclePoint(
-            this.sortedVertices[i].getX(),
-            this.sortedVertices[i].getY(),
-            this.sortedVertices[i].getParentShape()
+        )
+          this.constructedPoints.push(
+            new IsovistPoint(
+              this.sortedVertices[i].getX(),
+              this.sortedVertices[i].getY(),
+              this.sortedVertices[i].getParentShape(),
+              this.sortedVertices[i].getAngleForSecurityGuard(this.name)
+            )
           );
-          p.setSecurityGuardAngle(this);
-          this.constructedPoints.push(p);
-        }
       }
       if (toAdd.length === 1 && toRemove.length === 1) {
         leftPrev = getLeftmostLeaf(this.root).theKey;
@@ -361,14 +361,14 @@ class SecurityGuard extends Point {
             console.log("Big error 1!");
             console.alert();
           }
-
-          let p = new ObstaclePoint(
-            this.sortedVertices[i].getX(),
-            this.sortedVertices[i].getY(),
-            this.sortedVertices[i].getParentShape()
+          this.constructedPoints.push(
+            new IsovistPoint(
+              this.sortedVertices[i].getX(),
+              this.sortedVertices[i].getY(),
+              this.sortedVertices[i].getParentShape(),
+              this.sortedVertices[i].getAngleForSecurityGuard(this.name)
+            )
           );
-          p.setSecurityGuardAngle(this);
-          this.constructedPoints.push(p);
         }
       }
       if (toAdd.length === 1 && toRemove.length === 0) {
@@ -525,39 +525,36 @@ class SecurityGuard extends Point {
         lineFromSecurityGuardTov_iAndMore,
         edge
       );
-      if (add2OrRemove2 === "add2") {
-        let p = new ObstaclePoint(
-          intersectionPoint.getX(),
-          intersectionPoint.getY(),
-          null
+      if (add2OrRemove2 === "add2")
+        this.constructedPoints.push(
+          new IsovistPoint(
+            intersectionPoint.getX(),
+            intersectionPoint.getY(),
+            null,
+            v_i.getAngleForSecurityGuard(this.name)
+          ),
+          new IsovistPoint(
+            v_i.getX(),
+            v_i.getY(),
+            v_i.getParentShape(),
+            v_i.getAngleForSecurityGuard(this.name)
+          )
         );
-        p.setSecurityGuardAngle(this);
-
-        let p2 = new ObstaclePoint(
-          v_i.getX(),
-          v_i.getY(),
-          v_i.getParentShape()
+      else if (add2OrRemove2 === "remove2")
+        this.constructedPoints.push(
+          new IsovistPoint(
+            v_i.getX(),
+            v_i.getY(),
+            v_i.getParentShape(),
+            v_i.getAngleForSecurityGuard(this.name)
+          ),
+          new IsovistPoint(
+            intersectionPoint.getX(),
+            intersectionPoint.getY(),
+            null,
+            v_i.getAngleForSecurityGuard(this.name)
+          )
         );
-        p2.setSecurityGuardAngle(this);
-
-        this.constructedPoints.push(p, p2);
-      } else if (add2OrRemove2 === "remove2") {
-        let p = new ObstaclePoint(
-          intersectionPoint.getX(),
-          intersectionPoint.getY(),
-          null
-        );
-        p.setSecurityGuardAngle(this);
-
-        let p2 = new ObstaclePoint(
-          v_i.getX(),
-          v_i.getY(),
-          v_i.getParentShape()
-        );
-        p2.setSecurityGuardAngle(this);
-
-        this.constructedPoints.push(p2, p);
-      }
     }
   }
 
@@ -652,6 +649,18 @@ class ObstaclePoint extends ShapePoint {
 
   getNotSelfIntersect() {
     return this.notSelfIntersect;
+  }
+}
+
+class IsovistPoint extends ShapePoint {
+  constructor(x, y, parentShape, angle) {
+    super(x, y, parentShape);
+    this.secuirtyGuardMap = new Map();
+    this.angle = angle;
+  }
+
+  getAngle() {
+    return this.angle;
   }
 }
 
@@ -798,9 +807,8 @@ class AsanoVisualization {
     this.flicks = 0;
     this.visualizngGuard.visibleVertices();
     this.isovist = guard.getIsovist();
-    this.angle = this.isovist
-      .getVertexHead()
-      .getAngleForSecurityGuard(guard.getName());
+    this.angle = this.isovist.getVertexHead().getAngle();
+    console.log(this.angle);
   }
 
   animateMasterMethod() {
@@ -844,8 +852,7 @@ class AsanoVisualization {
 
   sweepAnimation() {
     if (this.sweepAnimationHelper === false) return;
-    console.log(this.angle);
-    this.angle += 0.01;
+    this.angle += 0.005;
     this.sweepLine
       .getPoint2()
       .setX(
@@ -877,9 +884,7 @@ class AsanoVisualization {
     this.flicks = 0;
     this.visualizngGuard.visibleVertices();
     this.isovist = guard.getIsovist();
-    this.angle = this.isovist
-      .getVertexHead()
-      .getAngleForSecurityGuard(guard.getName());
+    this.angle = this.isovist.getVertexHead().getAngle();
   }
 
   setState(state) {
