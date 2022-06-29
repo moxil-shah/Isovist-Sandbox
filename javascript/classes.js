@@ -798,7 +798,7 @@ class AsanoVisualization {
     this.state = "not started";
     this.initLineP2 = new Point(guard.getX(), guard.getY());
     this.initLine = new Line(guard.getPoint(), this.initLineP2);
-    this.sweepLine;
+    this.sweepLine = new Line(this.visualizngGuard.getPoint(), new Point(0, 0));
     this.initlineAnimationHelper = true;
     this.sweepAnimationHelper = false;
     this.speed = 3;
@@ -807,8 +807,7 @@ class AsanoVisualization {
     this.flicks = 0;
     this.visualizngGuard.visibleVertices();
     this.isovist = guard.getIsovist();
-    this.angle = this.isovist.getVertexHead().getAngle();
-    console.log(this.angle);
+    this.angle = 0;
   }
 
   animateMasterMethod() {
@@ -842,10 +841,6 @@ class AsanoVisualization {
       if (this.flicks >= 4) {
         this.initlineAnimationHelper = false;
         this.sweepAnimationHelper = true;
-        this.sweepLine = new Line(
-          this.visualizngGuard.getPoint(),
-          new Point(this.initLineP2.getX(), this.initLineP2.getY())
-        );
       }
     }
   }
@@ -875,7 +870,7 @@ class AsanoVisualization {
       this.visualizngGuard.getY()
     );
     this.initLine = new Line(this.visualizngGuard.getPoint(), this.initLineP2);
-    this.sweepLine;
+    this.sweepLine = new Line(this.visualizngGuard.getPoint(), new Point(0, 0));
     this.initlineAnimationHelper = true;
     this.sweepAnimationHelper = false;
     this.speed = 3;
@@ -884,7 +879,7 @@ class AsanoVisualization {
     this.flicks = 0;
     this.visualizngGuard.visibleVertices();
     this.isovist = guard.getIsovist();
-    this.angle = this.isovist.getVertexHead().getAngle();
+    this.angle = 0;
   }
 
   setState(state) {
