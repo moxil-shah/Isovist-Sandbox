@@ -826,6 +826,7 @@ class AsanoVisualization {
     this.sweepAnimationPrelude();
     this.current = this.isovist.getVertexHead(); // make sure this is after this.sweepAnimationPrelude()
     this.preventFlicksRoundingError = false;
+    this.isovistDrawingPoints = [this.guard.getPoint(), this.current];
   }
 
   animateMasterMethod() {
@@ -875,6 +876,12 @@ class AsanoVisualization {
       this.current.specialCase === null
     ) {
       this.current = this.current.getPointNext();
+      if (
+        this.isovistDrawingPoints[this.isovistDrawingPoints.length - 1] ===
+        this.sweepLine.getPoint2()
+      )
+        this.isovistDrawingPoints.pop();
+      this.isovistDrawingPoints.push(this.current);
       this.eachAngle = 0;
     }
 
@@ -889,6 +896,8 @@ class AsanoVisualization {
       let a = this.sweepLine.getLength() + 4;
       this.sweepLine.getPoint2().setX(this.guard.getX() + cos(this.angle) * a);
       this.sweepLine.getPoint2().setY(this.guard.getY() - sin(this.angle) * a);
+
+      this.drawPartialIsovist();
       drawLine(this.sweepLine, "white", 2);
       return;
     } else if (
@@ -902,10 +911,13 @@ class AsanoVisualization {
       let a = this.sweepLine.getLength() - 4;
       this.sweepLine.getPoint2().setX(this.guard.getX() + cos(this.angle) * a);
       this.sweepLine.getPoint2().setY(this.guard.getY() - sin(this.angle) * a);
+
+      this.drawPartialIsovist();
       drawLine(this.sweepLine, "white", 2);
       return;
     } else if (this.current.specialCase !== null) {
       this.current = this.current.getPointNext();
+      this.isovistDrawingPoints.push(this.current);
       this.eachAngle = 0;
     }
 
@@ -921,9 +933,18 @@ class AsanoVisualization {
     this.sweepLine.getPoint2().setX(this.guard.getX() + cos(this.angle) * a);
     this.sweepLine.getPoint2().setY(this.guard.getY() - sin(this.angle) * a);
 
-    this.angle += 0.005;
-    this.eachAngle += 0.005;
+    if (
+      this.isovistDrawingPoints[this.isovistDrawingPoints.length - 1] !==
+      this.sweepLine.getPoint2()
+    ) {
+      this.isovistDrawingPoints.push(this.sweepLine.getPoint2());
+    }
+
+    this.angle += 0.03;
+    this.eachAngle += 0.03;
     if (this.angle > TWO_PI) this.sweepLineAnimationGo = false;
+
+    this.drawPartialIsovist();
     drawLine(this.sweepLine, "white", 2);
   }
 
@@ -966,6 +987,7 @@ class AsanoVisualization {
     this.sweepAnimationPrelude();
     this.current = this.isovist.getVertexHead(); // make sure this is after this.sweepAnimationPrelude()
     this.preventFlicksRoundingError = false;
+    this.isovistDrawingPoints = [this.guard.getPoint(), this.current];
   }
 
   angleBetweenEdge1Edge2(edge1, edge2) {
@@ -989,5 +1011,20 @@ class AsanoVisualization {
 
   getSecurityGuard() {
     return this.guard;
+  }
+
+  drawPartialIsovist() {
+    push();
+    fill(
+      this.guard.getName()[0],
+      this.guard.getName()[1],
+      this.guard.getName()[2],
+      100
+    );
+    beginShape();
+    for (let eachPoint of this.isovistDrawingPoints)
+      vertex(eachPoint.getX(), eachPoint.getY());
+    endShape(CLOSE);
+    pop();
   }
 }
