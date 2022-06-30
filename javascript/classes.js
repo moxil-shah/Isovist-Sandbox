@@ -865,10 +865,13 @@ class AsanoVisualization {
       this.current.getPointNext().getAngle() < this.angle &&
       this.current.getPointNext() !== this.isovist.getVertexHead()
     ) {
+
       this.current = this.current.getPointNext();
       this.eachAngle = 0;
     }
-
+    console.log(
+      this.current.getAngle() === this.current.getPointNext().getAngle()
+    );
     let A = this.angleBetweenEdge1Edge2(
       new Line(this.guard.getPoint(), this.current),
       new Line(this.current, this.current.getPointNext())
@@ -881,8 +884,8 @@ class AsanoVisualization {
     this.sweepLine.getPoint2().setX(this.guard.getX() + cos(this.angle) * a);
     this.sweepLine.getPoint2().setY(this.guard.getY() - sin(this.angle) * a);
 
-    this.angle += 0.01;
-    this.eachAngle += 0.01;
+    this.angle += 0.001;
+    this.eachAngle += 0.001;
     if (this.angle > TWO_PI) this.sweepLineAnimationGo = false;
     drawLine(this.sweepLine, "white", 2);
   }
