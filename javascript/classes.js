@@ -280,7 +280,8 @@ class SecurityGuard extends Point {
               this.sortedVertices[i].getX(),
               this.sortedVertices[i].getY(),
               this.sortedVertices[i].getParentShape(),
-              this.sortedVertices[i].getAngleForSecurityGuard(this.name)
+              this.sortedVertices[i].getAngleForSecurityGuard(this.name),
+              null
             )
           );
       }
@@ -335,7 +336,8 @@ class SecurityGuard extends Point {
               this.sortedVertices[i].getX(),
               this.sortedVertices[i].getY(),
               this.sortedVertices[i].getParentShape(),
-              this.sortedVertices[i].getAngleForSecurityGuard(this.name)
+              this.sortedVertices[i].getAngleForSecurityGuard(this.name),
+              null
             )
           );
       }
@@ -366,7 +368,8 @@ class SecurityGuard extends Point {
               this.sortedVertices[i].getX(),
               this.sortedVertices[i].getY(),
               this.sortedVertices[i].getParentShape(),
-              this.sortedVertices[i].getAngleForSecurityGuard(this.name)
+              this.sortedVertices[i].getAngleForSecurityGuard(this.name),
+              null
             )
           );
         }
@@ -531,13 +534,15 @@ class SecurityGuard extends Point {
             intersectionPoint.getX(),
             intersectionPoint.getY(),
             null,
-            v_i.getAngleForSecurityGuard(this.name)
+            v_i.getAngleForSecurityGuard(this.name),
+            "shrink into next"
           ),
           new IsovistPoint(
             v_i.getX(),
             v_i.getY(),
             v_i.getParentShape(),
-            v_i.getAngleForSecurityGuard(this.name)
+            v_i.getAngleForSecurityGuard(this.name),
+            null
           )
         );
       else if (add2OrRemove2 === "remove2")
@@ -546,13 +551,15 @@ class SecurityGuard extends Point {
             v_i.getX(),
             v_i.getY(),
             v_i.getParentShape(),
-            v_i.getAngleForSecurityGuard(this.name)
+            v_i.getAngleForSecurityGuard(this.name),
+            "grow into next"
           ),
           new IsovistPoint(
             intersectionPoint.getX(),
             intersectionPoint.getY(),
             null,
-            v_i.getAngleForSecurityGuard(this.name)
+            v_i.getAngleForSecurityGuard(this.name),
+            null
           )
         );
     }
@@ -653,10 +660,11 @@ class ObstaclePoint extends ShapePoint {
 }
 
 class IsovistPoint extends ShapePoint {
-  constructor(x, y, parentShape, angle) {
+  constructor(x, y, parentShape, angle, specialCase) {
     super(x, y, parentShape);
     this.secuirtyGuardMap = new Map();
     this.angle = angle;
+    this.specialCase = specialCase;
   }
 
   getAngle() {
@@ -863,15 +871,44 @@ class AsanoVisualization {
     if (!this.sweepLineAnimationGo) return;
     if (
       this.current.getPointNext().getAngle() < this.angle &&
-      this.current.getPointNext() !== this.isovist.getVertexHead()
+      this.current.getPointNext() !== this.isovist.getVertexHead() &&
+      this.current.specialCase === null
     ) {
-
       this.current = this.current.getPointNext();
       this.eachAngle = 0;
     }
-    console.log(
-      this.current.getAngle() === this.current.getPointNext().getAngle()
-    );
+
+    if (
+      this.current.specialCase === "grow into next" &&
+      this.sweepLine.getLength() <
+        distanceBetweenTwoPoints(
+          this.guard.getPoint(),
+          this.current.getPointNext()
+        )
+    ) {
+      let a = this.sweepLine.getLength() + 4;
+      this.sweepLine.getPoint2().setX(this.guard.getX() + cos(this.angle) * a);
+      this.sweepLine.getPoint2().setY(this.guard.getY() - sin(this.angle) * a);
+      drawLine(this.sweepLine, "white", 2);
+      return;
+    } else if (
+      this.current.specialCase === "shrink into next" &&
+      this.sweepLine.getLength() >
+        distanceBetweenTwoPoints(
+          this.guard.getPoint(),
+          this.current.getPointNext()
+        )
+    ) {
+      let a = this.sweepLine.getLength() - 4;
+      this.sweepLine.getPoint2().setX(this.guard.getX() + cos(this.angle) * a);
+      this.sweepLine.getPoint2().setY(this.guard.getY() - sin(this.angle) * a);
+      drawLine(this.sweepLine, "white", 2);
+      return;
+    } else if (this.current.specialCase !== null) {
+      this.current = this.current.getPointNext();
+      this.eachAngle = 0;
+    }
+
     let A = this.angleBetweenEdge1Edge2(
       new Line(this.guard.getPoint(), this.current),
       new Line(this.current, this.current.getPointNext())
@@ -884,8 +921,8 @@ class AsanoVisualization {
     this.sweepLine.getPoint2().setX(this.guard.getX() + cos(this.angle) * a);
     this.sweepLine.getPoint2().setY(this.guard.getY() - sin(this.angle) * a);
 
-    this.angle += 0.001;
-    this.eachAngle += 0.001;
+    this.angle += 0.005;
+    this.eachAngle += 0.005;
     if (this.angle > TWO_PI) this.sweepLineAnimationGo = false;
     drawLine(this.sweepLine, "white", 2);
   }
@@ -896,7 +933,8 @@ class AsanoVisualization {
       this.guard.getX() + this.initialIntersectEdges[0].getPositionPrior(),
       this.guard.getY(),
       null,
-      0
+      0,
+      null
     );
 
     newIsovistPoint.setPointNext(this.isovist.getVertexHead());
