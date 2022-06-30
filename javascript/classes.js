@@ -798,25 +798,26 @@ class Isovist extends Shape {
 
 class AsanoVisualization {
   constructor(guard) {
-    this.visualizngGuard = guard;
+    this.guard = guard;
     this.state = "not started";
-    this.initLineP2 = new Point(guard.getX(), guard.getY());
-    this.initLine = new Line(guard.getPoint(), this.initLineP2);
-    this.sweepLine = new Line(this.visualizngGuard.getPoint(), new Point(0, 0));
-    this.sweepLine2;
-    this.initlineAnimationHelper = true;
-    this.sweepAnimationHelper = false;
+    this.initLine = new Line(
+      this.guard.getPoint(),
+      new Point(this.guard.getX(), this.guard.getY())
+    );
+    this.sweepLine = new Line(this.guard.getPoint(), new Point(0, 0));
+    this.initLineAnimationGo = true;
+    this.sweepLineAnimationGo = false;
     this.speed = 3;
-    this.initialIntersectEdges = this.visualizngGuard.initialIntersect();
     this.lineThickness = 7;
     this.flicks = 0;
-    this.visualizngGuard.visibleVertices();
-    this.isovist = guard.getIsovist();
     this.angle = 0;
     this.eachAngle = 0;
-
+    this.initialIntersectEdges = this.guard.initialIntersect();
+    this.guard.visibleVertices();
+    this.isovist = this.guard.getIsovist();
     this.sweepAnimationPrelude();
-    this.current = this.isovist.getVertexHead();
+    this.current = this.isovist.getVertexHead(); // make sure this is after this.sweepAnimationPrelude()
+    this.preventFlicksRoundingError = false;
   }
 
   animateMasterMethod() {
@@ -827,71 +828,70 @@ class AsanoVisualization {
   }
 
   initLineAnimation() {
-    if (this.initlineAnimationHelper === false) return;
+    if (!this.initLineAnimationGo) return;
 
     if (
       this.initLine.getLength() <
-      this.initialIntersectEdges[0].getPositionPrior()
+        this.initialIntersectEdges[0].getPositionPrior() &&
+      this.preventFlicksRoundingError === false
     ) {
       drawLine(this.initLine, "white", 2);
-      this.initLineP2.setX(this.initLineP2.getX() + this.speed);
+      this.initLine
+        .getPoint2()
+        .setX(this.initLine.getPoint2().getX() + this.speed);
     } else {
+      this.preventFlicksRoundingError = true;
       drawLine(
         this.initialIntersectEdges[0],
-        this.visualizngGuard.getName(),
-        zigZag(this.flicks, 0.5) * this.lineThickness
+        this.guard.getName(),
+        zigZag((this.flicks += 0.05), 0.5) * this.lineThickness
       );
-      this.initLineP2.setX(
-        this.visualizngGuard.getX() +
-          this.initialIntersectEdges[0].getPositionPrior()
-      );
+      this.initLine
+        .getPoint2()
+        .setX(
+          this.guard.getX() + this.initialIntersectEdges[0].getPositionPrior()
+        );
       drawLine(this.initLine, "white", 2);
-      this.flicks += 0.05;
       if (this.flicks >= 4) {
-        this.initlineAnimationHelper = false;
-        this.sweepAnimationHelper = true;
+        this.initLineAnimationGo = false;
+        this.sweepLineAnimationGo = true;
       }
     }
   }
 
   sweepAnimation() {
-    if (this.sweepAnimationHelper === false) return;
-    if (this.current.getPointNext().getAngle() < this.angle && this.current.getPointNext() !== this.isovist.getVertexHead()) {
+    if (!this.sweepLineAnimationGo) return;
+    if (
+      this.current.getPointNext().getAngle() < this.angle &&
+      this.current.getPointNext() !== this.isovist.getVertexHead()
+    ) {
       this.current = this.current.getPointNext();
       this.eachAngle = 0;
     }
 
     let A = this.angleBetweenEdge1Edge2(
-      new Line(this.visualizngGuard.getPoint(), this.current),
+      new Line(this.guard.getPoint(), this.current),
       new Line(this.current, this.current.getPointNext())
     );
     let B = this.eachAngle;
     let C = PI - A - B;
-    let c = distanceBetweenTwoPoints(
-      this.visualizngGuard.getPoint(),
-      this.current
-    );
+    let c = distanceBetweenTwoPoints(this.guard.getPoint(), this.current);
     let a = (sin(A) * c) / sin(C);
 
-    this.sweepLine
-      .getPoint2()
-      .setX(this.visualizngGuard.getX() + cos(this.angle) * a);
-    this.sweepLine
-      .getPoint2()
-      .setY(this.visualizngGuard.getY() - sin(this.angle) * a);
+    this.sweepLine.getPoint2().setX(this.guard.getX() + cos(this.angle) * a);
+    this.sweepLine.getPoint2().setY(this.guard.getY() - sin(this.angle) * a);
 
     this.angle += 0.01;
     this.eachAngle += 0.01;
-    if (this.angle > TWO_PI) this.sweepAnimationHelper = false;
+    if (this.angle > TWO_PI) this.sweepLineAnimationGo = false;
     drawLine(this.sweepLine, "white", 2);
   }
 
   sweepAnimationPrelude() {
     if (this.isovist.getVertexHead().getAngle() === 0) return;
     let newIsovistPoint = new IsovistPoint(
-      this.visualizngGuard.getX() +
-        this.initialIntersectEdges[0].getPositionPrior(),
-      this.visualizngGuard.getY(),
+      this.guard.getX() + this.initialIntersectEdges[0].getPositionPrior(),
+      this.guard.getY(),
       null,
       0
     );
@@ -907,40 +907,39 @@ class AsanoVisualization {
 
   resetAll() {
     this.state = "not started";
-    this.initLineP2 = new Point(
-      this.visualizngGuard.getX(),
-      this.visualizngGuard.getY()
+    this.initLine = new Line(
+      this.guard.getPoint(),
+      new Point(this.guard.getX(), this.guard.getY())
     );
-    this.initLine = new Line(this.visualizngGuard.getPoint(), this.initLineP2);
-    this.sweepLine = new Line(this.visualizngGuard.getPoint(), new Point(0, 0));
-    this.initlineAnimationHelper = true;
-    this.sweepAnimationHelper = false;
+    this.sweepLine = new Line(this.guard.getPoint(), new Point(0, 0));
+    this.initLineAnimationGo = true;
+    this.sweepLineAnimationGo = false;
     this.speed = 3;
-    this.initialIntersectEdges = this.visualizngGuard.initialIntersect();
     this.lineThickness = 7;
     this.flicks = 0;
-    this.visualizngGuard.visibleVertices();
-    this.isovist = guard.getIsovist();
     this.angle = 0;
     this.eachAngle = 0;
+    this.initialIntersectEdges = this.guard.initialIntersect();
+    this.guard.visibleVertices();
+    this.isovist = this.guard.getIsovist();
     this.sweepAnimationPrelude();
-    this.sweepAnimationPrelude();
-    this.current = this.isovist.getVertexHead();
+    this.current = this.isovist.getVertexHead(); // make sure this is after this.sweepAnimationPrelude()
+    this.preventFlicksRoundingError = false;
   }
 
   angleBetweenEdge1Edge2(edge1, edge2) {
-    let vmain = createVector(
+    let vEdge1 = createVector(
       edge1.getPoint2().getX() - edge1.getPoint1().getX(),
       -(edge1.getPoint2().getY() - edge1.getPoint1().getY()),
       0
     );
 
-    let v1 = createVector(
+    let vEdge2 = createVector(
       edge2.getPoint2().getX() - edge2.getPoint1().getX(),
       -(edge2.getPoint2().getY() - edge2.getPoint1().getY()),
       0
     );
-    return PI - vmain.angleBetween(v1);
+    return PI - vEdge1.angleBetween(vEdge2);
   }
 
   setState(state) {
@@ -948,6 +947,6 @@ class AsanoVisualization {
   }
 
   getSecurityGuard() {
-    return this.visualizngGuard;
+    return this.guard;
   }
 }
