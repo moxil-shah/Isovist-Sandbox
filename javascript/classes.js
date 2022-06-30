@@ -856,7 +856,7 @@ class AsanoVisualization {
 
   sweepAnimation() {
     if (this.sweepAnimationHelper === false) return;
-    if (this.current.getPointNext().getAngle() <= this.angle && this.current.getPointNext() !== this.isovist.getVertexHead()) {
+    if (this.current.getPointNext().getAngle() < this.angle && this.current.getPointNext() !== this.isovist.getVertexHead()) {
       this.current = this.current.getPointNext();
       this.eachAngle = 0;
     }
@@ -880,8 +880,8 @@ class AsanoVisualization {
       .getPoint2()
       .setY(this.visualizngGuard.getY() - sin(this.angle) * a);
 
-    this.angle += 0.003;
-    this.eachAngle += 0.003;
+    this.angle += 0.01;
+    this.eachAngle += 0.01;
     if (this.angle > TWO_PI) this.sweepAnimationHelper = false;
     drawLine(this.sweepLine, "white", 2);
   }
