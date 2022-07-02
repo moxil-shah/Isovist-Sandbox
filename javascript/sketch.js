@@ -53,12 +53,12 @@ function draw() {
   dragShape();
   renderAllShapes();
   if (visualizeGuard === -1) renderAllSecurityGuards();
-  else visualizeGuard.getSecurityGuard().drawSecurityGuard();
-  renderAllShapesPoints();
   renderVertexClicked();
   if (visualizeGuard !== -1) {
     visualizeGuard.animateMasterMethod();
+    visualizeGuard.getSecurityGuard().drawSecurityGuard();
   }
+  renderAllShapesPoints();
 }
 
 // gets parameters ready to make the new polygon
