@@ -958,6 +958,7 @@ class AsanoVisualization {
     }
 
     this.angle += 0.01;
+ 
     if (this.angle > TWO_PI) {
       this.sweepLineAnimationGo = false;
       console.log(this.isovistDrawingPoints);
