@@ -834,8 +834,6 @@ class AsanoVisualization {
     this.speed = 3;
     this.lineThickness = 7;
     this.flicks = 0;
-    this.angle = 0;
-    this.eachAngle = 0;
     this.initialIntersectEdges = this.guard.initialIntersect();
     this.guard.visibleVertices();
     this.isovist = this.guard.getIsovist();
@@ -900,7 +898,6 @@ class AsanoVisualization {
       )
         this.isovistDrawingPoints.pop();
       this.isovistDrawingPoints.push(this.current);
-      this.eachAngle = 0;
     }
 
     if (
@@ -918,6 +915,7 @@ class AsanoVisualization {
 
       this.drawPartialIsovist();
       drawLine(this.sweepLine, "white", 2);
+
       return;
     } else if (
       this.current.specialCase === "shrink into next" &&
@@ -938,14 +936,13 @@ class AsanoVisualization {
     } else if (this.current.specialCase !== null) {
       this.current = this.current.getPointNext();
       this.isovistDrawingPoints.push(this.current);
-      this.eachAngle = 0;
     }
 
     let A = this.angleBetweenEdge1Edge2(
       new Line(this.guard.getPoint(), this.current),
       new Line(this.current, this.current.getPointNext())
     );
-    let B = this.eachAngle;
+    let B = this.angle - this.current.getAngle();
     let C = PI - A - B;
     let c = distanceBetweenTwoPoints(this.guard.getPoint(), this.current);
     let a = (sin(A) * c) / sin(C);
@@ -960,8 +957,7 @@ class AsanoVisualization {
       this.isovistDrawingPoints.push(this.sweepLine.getPoint2());
     }
 
-    this.angle += 0.001;
-    this.eachAngle += 0.001;
+    this.angle += 0.01;
     if (this.angle > TWO_PI) {
       this.sweepLineAnimationGo = false;
       console.log(this.isovistDrawingPoints);
@@ -1003,7 +999,6 @@ class AsanoVisualization {
     this.lineThickness = 7;
     this.flicks = 0;
     this.angle = 0;
-    this.eachAngle = 0;
     this.initialIntersectEdges = this.guard.initialIntersect();
     this.guard.visibleVertices();
     this.isovist = this.guard.getIsovist();
