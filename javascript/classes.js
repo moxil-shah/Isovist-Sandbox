@@ -272,8 +272,16 @@ class SecurityGuard extends Point {
             "remove2"
           );
         } else if (
-          leftPrev !== leftNew &&
-          currentlyOnSelfIntersectionPoint === true
+          (leftPrev !== leftNew &&
+            currentlyOnSelfIntersectionPoint === true &&
+            this.constructedPoints.length > 0 &&
+            checkIfTwoPointsOverlap(
+              this.constructedPoints[this.constructedPoints.length - 1],
+              this.sortedVertices[i]
+            ) === false) ||
+          (leftPrev !== leftNew &&
+            currentlyOnSelfIntersectionPoint === true &&
+            this.constructedPoints.length === 0)
         )
           this.constructedPoints.push(
             new IsovistPoint(
@@ -328,8 +336,16 @@ class SecurityGuard extends Point {
             "add2"
           );
         } else if (
-          leftPrev !== leftNew &&
-          currentlyOnSelfIntersectionPoint === true
+          (leftPrev !== leftNew &&
+            currentlyOnSelfIntersectionPoint === true &&
+            this.constructedPoints.length > 0 &&
+            checkIfTwoPointsOverlap(
+              this.constructedPoints[this.constructedPoints.length - 1],
+              this.sortedVertices[i]
+            ) === false) ||
+          (leftPrev !== leftNew &&
+            currentlyOnSelfIntersectionPoint === true &&
+            this.constructedPoints.length === 0)
         )
           this.constructedPoints.push(
             new IsovistPoint(
@@ -869,7 +885,9 @@ class AsanoVisualization {
   }
 
   sweepAnimation() {
-    if (!this.sweepLineAnimationGo) return;
+    if (!this.sweepLineAnimationGo) {
+      return;
+    }
     if (
       this.current.getPointNext().getAngle() < this.angle &&
       this.current.getPointNext() !== this.isovist.getVertexHead() &&
@@ -893,6 +911,7 @@ class AsanoVisualization {
           this.current.getPointNext()
         )
     ) {
+      this.angle = this.current.getAngle();
       let a = this.sweepLine.getLength() + 4;
       this.sweepLine.getPoint2().setX(this.guard.getX() + cos(this.angle) * a);
       this.sweepLine.getPoint2().setY(this.guard.getY() - sin(this.angle) * a);
@@ -908,6 +927,7 @@ class AsanoVisualization {
           this.current.getPointNext()
         )
     ) {
+      this.angle = this.current.getAngle();
       let a = this.sweepLine.getLength() - 4;
       this.sweepLine.getPoint2().setX(this.guard.getX() + cos(this.angle) * a);
       this.sweepLine.getPoint2().setY(this.guard.getY() - sin(this.angle) * a);
@@ -940,9 +960,12 @@ class AsanoVisualization {
       this.isovistDrawingPoints.push(this.sweepLine.getPoint2());
     }
 
-    this.angle += 0.03;
-    this.eachAngle += 0.03;
-    if (this.angle > TWO_PI) this.sweepLineAnimationGo = false;
+    this.angle += 0.001;
+    this.eachAngle += 0.001;
+    if (this.angle > TWO_PI) {
+      this.sweepLineAnimationGo = false;
+      console.log(this.isovistDrawingPoints);
+    }
 
     this.drawPartialIsovist();
     drawLine(this.sweepLine, "white", 2);
