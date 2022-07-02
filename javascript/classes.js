@@ -957,8 +957,14 @@ class AsanoVisualization {
       this.isovistDrawingPoints.push(this.sweepLine.getPoint2());
     }
 
-    this.angle += 0.01;
- 
+    // this.angle += 0.01;
+    let velocity = 2;
+    this.angle +=
+      velocity /
+      distanceBetweenTwoPoints(
+        this.guard.getPoint(),
+        this.isovistDrawingPoints[this.isovistDrawingPoints.length - 1]
+      );
     if (this.angle > TWO_PI) {
       this.sweepLineAnimationGo = false;
       console.log(this.isovistDrawingPoints);
