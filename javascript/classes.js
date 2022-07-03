@@ -841,12 +841,15 @@ class AsanoVisualization {
     this.current = this.isovist.getVertexHead(); // make sure this is after this.sweepAnimationPrelude()
     this.preventFlicksRoundingError = false;
     this.isovistDrawingPoints = [this.guard.getPoint(), this.current];
+    this.endAnimationGo = false;
+    this.isovistFlicks = false;
   }
 
   animateMasterMethod() {
     if (this.state === "drawing") {
       this.initLineAnimation();
       this.sweepAnimation();
+      this.endAnimation();
     }
   }
 
@@ -958,7 +961,7 @@ class AsanoVisualization {
     }
 
     // this.angle += 0.01;
-    let velocity = 2;
+    let velocity = 7;
     this.angle +=
       velocity /
       distanceBetweenTwoPoints(
@@ -967,11 +970,23 @@ class AsanoVisualization {
       );
     if (this.angle > TWO_PI) {
       this.sweepLineAnimationGo = false;
-      console.log(this.isovistDrawingPoints);
+      this.endAnimationGo = true;
+    } else {
+      this.drawPartialIsovist();
+      drawLine(this.sweepLine, "white", 2);
     }
+  }
 
-    this.drawPartialIsovist();
-    drawLine(this.sweepLine, "white", 2);
+  endAnimation() {
+    if (!this.endAnimationGo) return;
+
+    if (this.initLine.getPoint2().getX() > this.guard.getPoint().getX()) {
+      drawLine(this.initLine, "white", 2);
+      this.initLine
+        .getPoint2()
+        .setX(this.initLine.getPoint2().getX() - this.speed);
+    }
+    this.guard.getIsovist().drawIsovist(this.guard);
   }
 
   sweepAnimationPrelude() {
@@ -1013,6 +1028,8 @@ class AsanoVisualization {
     this.current = this.isovist.getVertexHead(); // make sure this is after this.sweepAnimationPrelude()
     this.preventFlicksRoundingError = false;
     this.isovistDrawingPoints = [this.guard.getPoint(), this.current];
+    this.endAnimationGo = false;
+    this.isovistFlicks = false;
   }
 
   angleBetweenEdge1Edge2(edge1, edge2) {
