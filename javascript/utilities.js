@@ -20,6 +20,7 @@ function clearShapes() {
 function visualizeAsanoPrelude() {
   visualizeGuard.resetAll();
   visualizeGuard.setState("drawing");
+  visualizeGuard.setSpeed($("input[type='radio'][class='btn-check']:checked").attr("id"));
   window.scrollTo(0, windowHeight);
 }
 

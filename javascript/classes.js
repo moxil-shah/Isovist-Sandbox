@@ -842,6 +842,12 @@ class AsanoVisualization {
     this.isovistDrawingPoints = [this.guard.getPoint(), this.current];
     this.endAnimationGo = false;
     this.isovistFlicks = 100;
+    this.initPointFlick = 1;
+    this.speeds = new Map([
+      ["btnradio1", [1, 125]],
+      ["btnradio2", [4, 115]],
+      ["btnradio3", [7, 110]],
+    ]);
   }
 
   animateMasterMethod() {
@@ -866,20 +872,31 @@ class AsanoVisualization {
         .setX(this.initLine.getPoint2().getX() + this.speed);
     } else {
       this.preventFlicksRoundingError = true;
-      drawLine(
-        this.initialIntersectEdges[0],
-        this.guard.getName(),
-        zigZag((this.flicks += 0.05), 0.5) * this.lineThickness
-      );
+
       this.initLine
         .getPoint2()
         .setX(
           this.guard.getX() + this.initialIntersectEdges[0].getPositionPrior()
         );
       drawLine(this.initLine, "white", 2);
-      if (this.flicks >= 4) {
+      push();
+
+      strokeWeight(zigZag((this.initPointFlick += deltaTime * 0.0025), 1) * 15);
+      stroke(
+        this.guard.getName()[0],
+        this.guard.getName()[1],
+        this.guard.getName()[2]
+      );
+      point(
+        this.isovist.getVertexHead().getX(),
+        this.isovist.getVertexHead().getY()
+      );
+
+      pop();
+      if (this.initPointFlick >= 15) {
         this.initLineAnimationGo = false;
         this.sweepLineAnimationGo = true;
+        this.isovistFlicks = 100;
       }
     }
   }
@@ -911,7 +928,7 @@ class AsanoVisualization {
         )
     ) {
       this.angle = this.current.getAngle();
-      let a = this.sweepLine.getLength() + 4;
+      let a = this.sweepLine.getLength() + this.speed;
       this.sweepLine.getPoint2().setX(this.guard.getX() + cos(this.angle) * a);
       this.sweepLine.getPoint2().setY(this.guard.getY() - sin(this.angle) * a);
 
@@ -928,7 +945,7 @@ class AsanoVisualization {
         )
     ) {
       this.angle = this.current.getAngle();
-      let a = this.sweepLine.getLength() - 4;
+      let a = this.sweepLine.getLength() - this.speed;
       this.sweepLine.getPoint2().setX(this.guard.getX() + cos(this.angle) * a);
       this.sweepLine.getPoint2().setY(this.guard.getY() - sin(this.angle) * a);
 
@@ -960,7 +977,7 @@ class AsanoVisualization {
     }
 
     // this.angle += 0.01;
-    let velocity = 17;
+    let velocity = this.speed;
     this.angle +=
       velocity /
       distanceBetweenTwoPoints(
@@ -990,7 +1007,7 @@ class AsanoVisualization {
         .getIsovist()
         .drawIsovist(
           this.guard,
-          zigZag((this.isovistFlicks += deltaTime * 0.003), 0.5) * 100
+          zigZag((this.isovistFlicks += deltaTime * 0.0025), 0.5) * 100
         );
     }
   }
@@ -1036,6 +1053,7 @@ class AsanoVisualization {
     this.isovistDrawingPoints = [this.guard.getPoint(), this.current];
     this.endAnimationGo = false;
     this.isovistFlicks = 100;
+    this.initPointFlick = 1;
   }
 
   angleBetweenEdge1Edge2(edge1, edge2) {
@@ -1055,6 +1073,12 @@ class AsanoVisualization {
 
   setState(state) {
     this.state = state;
+  }
+
+  setSpeed(speed) {
+    this.speeds.get(speed);
+    this.speed = this.speeds.get(speed)[0];
+    this.isovistFlicksMax = this.speeds.get(speed)[1];
   }
 
   getSecurityGuard() {
