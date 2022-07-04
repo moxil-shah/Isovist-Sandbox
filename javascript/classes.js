@@ -597,6 +597,10 @@ class SecurityGuard extends Point {
   getIsovist() {
     return this.isovist;
   }
+
+  getSize() {
+    return this.size;
+  }
 }
 
 class ObstaclePoint extends ShapePoint {
@@ -822,33 +826,6 @@ class Isovist extends Shape {
 class AsanoVisualization {
   constructor(guard) {
     this.guard = guard;
-    this.state = "not started";
-    this.initLine = new Line(
-      this.guard.getPoint(),
-      new Point(this.guard.getX(), this.guard.getY())
-    );
-    this.sweepLine = new Line(this.guard.getPoint(), new Point(0, 0));
-    this.initLineAnimationGo = true;
-    this.sweepLineAnimationGo = false;
-    this.speed = 3;
-    this.lineThickness = 7;
-    this.initialIntersectEdges = this.guard.initialIntersect();
-    this.guard.visibleVertices();
-    this.isovist = this.guard.getIsovist();
-    this.sweepAnimationPrelude();
-    this.current = this.isovist.getVertexHead(); // make sure this is after this.sweepAnimationPrelude()
-    this.preventFlicksRoundingError = false;
-    this.isovistDrawingPoints = [this.guard.getPoint(), this.current];
-    this.endAnimationGo = false;
-    this.isovistFlicks = 0;
-    this.initPointFlicks = 1;
-    this.speeds = new Map([
-      ["btnradio1", [1, 15, 16]],
-      ["btnradio2", [4, 11, 12]],
-      ["btnradio3", [7, 5, 6]],
-    ]);
-    this.initPointFlicksMax;
-    this.isovistFlicksMax;
   }
 
   animateMasterMethod() {
@@ -865,25 +842,25 @@ class AsanoVisualization {
     if (
       this.initLine.getLength() <
         this.initialIntersectEdges[0].getPositionPrior() &&
-      this.preventFlicksRoundingError === false
+      !this.initPointFlicksRoundingError
     ) {
-      drawLine(this.initLine, "white", 2);
+      drawLine(this.initLine, "white", this.lineThickness);
       this.initLine
         .getPoint2()
-        .setX(this.initLine.getPoint2().getX() + this.speed);
+        .setX(this.initLine.getPoint2().getX() + this.speed * deltaTime);
     } else {
-      this.preventFlicksRoundingError = true;
-
+      this.initPointFlicksRoundingError = true;
       this.initLine
         .getPoint2()
         .setX(
           this.guard.getX() + this.initialIntersectEdges[0].getPositionPrior()
         );
-      drawLine(this.initLine, "white", 2);
-      push();
+      drawLine(this.initLine, "white", this.lineThickness);
 
+      push();
       strokeWeight(
-        zigZag((this.initPointFlicks += deltaTime * 0.0025), 1) * 15
+        zigZag((this.initPointFlicks += deltaTime * 0.0025), 1) *
+          this.guard.getSize()
       );
       stroke(
         this.guard.getName()[0],
@@ -894,7 +871,6 @@ class AsanoVisualization {
         this.isovist.getVertexHead().getX(),
         this.isovist.getVertexHead().getY()
       );
-
       pop();
       if (this.initPointFlicks >= this.initPointFlicksMax) {
         this.initLineAnimationGo = false;
@@ -904,9 +880,8 @@ class AsanoVisualization {
   }
 
   sweepAnimation() {
-    if (!this.sweepLineAnimationGo) {
-      return;
-    }
+    if (!this.sweepLineAnimationGo) return;
+
     if (
       this.current.getPointNext().getAngle() < this.angle &&
       this.current.getPointNext() !== this.isovist.getVertexHead() &&
@@ -930,12 +905,12 @@ class AsanoVisualization {
         )
     ) {
       this.angle = this.current.getAngle();
-      let a = this.sweepLine.getLength() + this.speed;
+      let a = this.sweepLine.getLength() + this.speed * deltaTime;
       this.sweepLine.getPoint2().setX(this.guard.getX() + cos(this.angle) * a);
       this.sweepLine.getPoint2().setY(this.guard.getY() - sin(this.angle) * a);
 
       this.drawPartialIsovist();
-      drawLine(this.sweepLine, "white", 2);
+      drawLine(this.sweepLine, "white", this.lineThickness);
 
       return;
     } else if (
@@ -947,12 +922,12 @@ class AsanoVisualization {
         )
     ) {
       this.angle = this.current.getAngle();
-      let a = this.sweepLine.getLength() - this.speed;
+      let a = this.sweepLine.getLength() - this.speed * deltaTime;
       this.sweepLine.getPoint2().setX(this.guard.getX() + cos(this.angle) * a);
       this.sweepLine.getPoint2().setY(this.guard.getY() - sin(this.angle) * a);
 
       this.drawPartialIsovist();
-      drawLine(this.sweepLine, "white", 2);
+      drawLine(this.sweepLine, "white", this.lineThickness);
       return;
     } else if (this.current.specialCase !== null) {
       this.current = this.current.getPointNext();
@@ -979,7 +954,7 @@ class AsanoVisualization {
     }
 
     // this.angle += 0.01;
-    let velocity = this.speed;
+    let velocity = this.speed * deltaTime;
     this.angle +=
       velocity /
       distanceBetweenTwoPoints(
@@ -989,9 +964,10 @@ class AsanoVisualization {
     if (this.angle > TWO_PI) {
       this.sweepLineAnimationGo = false;
       this.endAnimationGo = true;
+      this.isovistDrawingPoints.pop(); // to get rid of last Point object in the array
     } else {
       this.drawPartialIsovist();
-      drawLine(this.sweepLine, "white", 2);
+      drawLine(this.sweepLine, "white", this.lineThickness);
     }
   }
 
@@ -999,10 +975,10 @@ class AsanoVisualization {
     if (!this.endAnimationGo) return;
     if (this.initLine.getPoint2().getX() > this.guard.getPoint().getX()) {
       this.guard.getIsovist().drawIsovist(this.guard, 100);
-      drawLine(this.initLine, "white", 2);
+      drawLine(this.initLine, "white", this.lineThickness);
       this.initLine
         .getPoint2()
-        .setX(this.initLine.getPoint2().getX() - this.speed);
+        .setX(this.initLine.getPoint2().getX() - this.speed * deltaTime);
     } else if (this.isovistFlicks < this.isovistFlicksMax) {
       this.guard
         .getIsovist()
@@ -1044,18 +1020,25 @@ class AsanoVisualization {
     this.initLineAnimationGo = true;
     this.sweepLineAnimationGo = false;
     this.speed = 3;
-    this.lineThickness = 7;
+    this.lineThickness = 3;
     this.angle = 0;
     this.initialIntersectEdges = this.guard.initialIntersect();
     this.guard.visibleVertices();
     this.isovist = this.guard.getIsovist();
     this.sweepAnimationPrelude();
     this.current = this.isovist.getVertexHead(); // make sure this is after this.sweepAnimationPrelude()
-    this.preventFlicksRoundingError = false;
+    this.initPointFlicksRoundingError = false;
     this.isovistDrawingPoints = [this.guard.getPoint(), this.current];
     this.endAnimationGo = false;
     this.isovistFlicks = 0;
     this.initPointFlicks = 1;
+    this.speeds = new Map([
+      ["btnradio1", [0.1, 15, 16]],
+      ["btnradio2", [0.2, 11, 12]],
+      ["btnradio3", [0.4, 5, 6]],
+    ]);
+    this.initPointFlicksMax;
+    this.isovistFlicksMax;
   }
 
   angleBetweenEdge1Edge2(edge1, edge2) {
