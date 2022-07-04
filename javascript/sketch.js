@@ -22,6 +22,28 @@ let visualizeGuard = -1;
 let gameShape;
 let controlPanel;
 
+function setup() {
+  // let canvas = createCanvas($(window).width(), $(window).height());
+  let canvas = createCanvas(windowWidth - getScrollBarWidth(), windowHeight);
+  canvas.parent("canvasDiv");
+  canvas.style("margin-bottom", "-5px");
+  frameRate(60);
+  polygon(null, null, null, 4);
+  controlPanel = document.getElementById("controlPanel");
+}
+
+function windowResized() {
+  clearAll();
+  resizeCanvas(windowWidth - getScrollBarWidth(), windowHeight);
+  let currentVertex = gameShape.getVertexHead().getPointNext();
+  currentVertex.setX(width);
+  currentVertex = currentVertex.getPointNext();
+  currentVertex.setX(width);
+  currentVertex.setY(height);
+  currentVertex = currentVertex.getPointNext();
+  currentVertex.setY(height);
+}
+
 function getScrollBarWidth() {
   var $outer = $("<div>")
       .css({ visibility: "hidden", width: 100, overflow: "scroll" })
@@ -32,18 +54,6 @@ function getScrollBarWidth() {
       .outerWidth();
   $outer.remove();
   return 100 - widthWithScroll;
-}
-
-function setup() {
-  let canvas = createCanvas(
-    document.documentElement.clientWidth - getScrollBarWidth(),
-    document.documentElement.clientHeight
-  );
-  canvas.parent("canvasDiv");
-  canvas.style("margin-bottom", "-5px");
-  frameRate(60);
-  polygon(null, null, null, 4);
-  controlPanel = document.getElementById("controlPanel");
 }
 
 function draw() {

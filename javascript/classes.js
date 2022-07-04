@@ -527,9 +527,8 @@ class SecurityGuard extends Point {
       0
     );
     let vectorTov_iNormalized = p5.Vector.normalize(vectorTov_i);
-    let canvasWidth =
-      document.documentElement.clientWidth - getScrollBarWidth();
-    let canvasHeight = document.documentElement.clientHeight;
+    let canvasWidth = $(window).width();
+    let canvasHeight = $(window).height();
     let maxDistance = ceil(Math.sqrt(canvasWidth ** 2 + canvasHeight ** 2));
     let lineFromSecurityGuardTov_iAndMore = new Line(
       new Point(this.x, this.y),
@@ -981,12 +980,14 @@ class AsanoVisualization {
     if (!this.endAnimationGo) return;
 
     if (this.initLine.getPoint2().getX() > this.guard.getPoint().getX()) {
+      this.guard.getIsovist().drawIsovist(this.guard);
       drawLine(this.initLine, "white", 2);
       this.initLine
         .getPoint2()
         .setX(this.initLine.getPoint2().getX() - this.speed);
+    } else if (millis() % 2000 < 1000) {
+      this.guard.getIsovist().drawIsovist(this.guard);
     }
-    this.guard.getIsovist().drawIsovist(this.guard);
   }
 
   sweepAnimationPrelude() {
