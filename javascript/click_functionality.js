@@ -4,6 +4,7 @@ function doubleClicked() {
   if (guardDragged === -1) {
     return;
   }
+  window.scrollTo(0, 0);
   visualizeGuard = new AsanoVisualization(guardDragged);
   controlPanel.style.display = "block";
   const h6 = controlPanel.querySelector("h6");
@@ -14,6 +15,7 @@ function mouseClicked() {
   if (mouseY < 0) return;
   controlPanel.style.display = "none";
   if (visualizeGuard !== -1) {
+    window.scrollTo(0, 0);
     visualizeGuard = -1;
     return;
   }

@@ -130,7 +130,7 @@ function renderAllSecurityGuards() {
   for (let guard of allGuards) {
     if (guardDragged !== -1) guard = guardDragged;
     guard.visibleVertices();
-    guard.getIsovist().drawIsovist(guard);
+    guard.getIsovist().drawIsovist(guard, 100);
     if (guardDragged !== -1) break;
   }
   for (let guard of allGuards) guard.drawSecurityGuard();

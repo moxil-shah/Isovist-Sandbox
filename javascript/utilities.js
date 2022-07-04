@@ -20,6 +20,7 @@ function clearShapes() {
 function visualizeAsanoPrelude() {
   visualizeGuard.resetAll();
   visualizeGuard.setState("drawing");
+  window.scrollTo(0, windowHeight);
 }
 
 function drawLine(theLine, color, weight) {

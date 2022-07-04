@@ -805,9 +805,9 @@ class Isovist extends Shape {
     super();
   }
 
-  drawIsovist(guard) {
+  drawIsovist(guard, opacity) {
     push();
-    fill(guard.getName()[0], guard.getName()[1], guard.getName()[2], 100);
+    fill(guard.getName()[0], guard.getName()[1], guard.getName()[2], opacity);
     beginShape();
     let aVertex = this.vertexHead;
     do {
@@ -841,7 +841,7 @@ class AsanoVisualization {
     this.preventFlicksRoundingError = false;
     this.isovistDrawingPoints = [this.guard.getPoint(), this.current];
     this.endAnimationGo = false;
-    this.isovistFlicks = false;
+    this.isovistFlicks = 100;
   }
 
   animateMasterMethod() {
@@ -960,7 +960,7 @@ class AsanoVisualization {
     }
 
     // this.angle += 0.01;
-    let velocity = 7;
+    let velocity = 17;
     this.angle +=
       velocity /
       distanceBetweenTwoPoints(
@@ -980,13 +980,18 @@ class AsanoVisualization {
     if (!this.endAnimationGo) return;
 
     if (this.initLine.getPoint2().getX() > this.guard.getPoint().getX()) {
-      this.guard.getIsovist().drawIsovist(this.guard);
+      this.guard.getIsovist().drawIsovist(this.guard, 100);
       drawLine(this.initLine, "white", 2);
       this.initLine
         .getPoint2()
         .setX(this.initLine.getPoint2().getX() - this.speed);
-    } else if (millis() % 2000 < 1000) {
-      this.guard.getIsovist().drawIsovist(this.guard);
+    } else {
+      this.guard
+        .getIsovist()
+        .drawIsovist(
+          this.guard,
+          zigZag((this.isovistFlicks += deltaTime * 0.003), 0.5) * 100
+        );
     }
   }
 
@@ -1030,7 +1035,7 @@ class AsanoVisualization {
     this.preventFlicksRoundingError = false;
     this.isovistDrawingPoints = [this.guard.getPoint(), this.current];
     this.endAnimationGo = false;
-    this.isovistFlicks = false;
+    this.isovistFlicks = 100;
   }
 
   angleBetweenEdge1Edge2(edge1, edge2) {
