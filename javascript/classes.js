@@ -832,7 +832,6 @@ class AsanoVisualization {
     this.sweepLineAnimationGo = false;
     this.speed = 3;
     this.lineThickness = 7;
-    this.flicks = 0;
     this.initialIntersectEdges = this.guard.initialIntersect();
     this.guard.visibleVertices();
     this.isovist = this.guard.getIsovist();
@@ -841,13 +840,15 @@ class AsanoVisualization {
     this.preventFlicksRoundingError = false;
     this.isovistDrawingPoints = [this.guard.getPoint(), this.current];
     this.endAnimationGo = false;
-    this.isovistFlicks = 100;
-    this.initPointFlick = 1;
+    this.isovistFlicks = 0;
+    this.initPointFlicks = 1;
     this.speeds = new Map([
-      ["btnradio1", [1, 125]],
-      ["btnradio2", [4, 115]],
-      ["btnradio3", [7, 110]],
+      ["btnradio1", [1, 15, 16]],
+      ["btnradio2", [4, 11, 12]],
+      ["btnradio3", [7, 5, 6]],
     ]);
+    this.initPointFlicksMax;
+    this.isovistFlicksMax;
   }
 
   animateMasterMethod() {
@@ -881,7 +882,9 @@ class AsanoVisualization {
       drawLine(this.initLine, "white", 2);
       push();
 
-      strokeWeight(zigZag((this.initPointFlick += deltaTime * 0.0025), 1) * 15);
+      strokeWeight(
+        zigZag((this.initPointFlicks += deltaTime * 0.0025), 1) * 15
+      );
       stroke(
         this.guard.getName()[0],
         this.guard.getName()[1],
@@ -893,10 +896,9 @@ class AsanoVisualization {
       );
 
       pop();
-      if (this.initPointFlick >= 15) {
+      if (this.initPointFlicks >= this.initPointFlicksMax) {
         this.initLineAnimationGo = false;
         this.sweepLineAnimationGo = true;
-        this.isovistFlicks = 100;
       }
     }
   }
@@ -995,20 +997,21 @@ class AsanoVisualization {
 
   endAnimation() {
     if (!this.endAnimationGo) return;
-
     if (this.initLine.getPoint2().getX() > this.guard.getPoint().getX()) {
       this.guard.getIsovist().drawIsovist(this.guard, 100);
       drawLine(this.initLine, "white", 2);
       this.initLine
         .getPoint2()
         .setX(this.initLine.getPoint2().getX() - this.speed);
-    } else {
+    } else if (this.isovistFlicks < this.isovistFlicksMax) {
       this.guard
         .getIsovist()
         .drawIsovist(
           this.guard,
-          zigZag((this.isovistFlicks += deltaTime * 0.0025), 0.5) * 100
+          zigZag((this.isovistFlicks += deltaTime * 0.001), 1) * 100
         );
+    } else {
+      this.guard.getIsovist().drawIsovist(this.guard, 100);
     }
   }
 
@@ -1042,7 +1045,6 @@ class AsanoVisualization {
     this.sweepLineAnimationGo = false;
     this.speed = 3;
     this.lineThickness = 7;
-    this.flicks = 0;
     this.angle = 0;
     this.initialIntersectEdges = this.guard.initialIntersect();
     this.guard.visibleVertices();
@@ -1052,8 +1054,8 @@ class AsanoVisualization {
     this.preventFlicksRoundingError = false;
     this.isovistDrawingPoints = [this.guard.getPoint(), this.current];
     this.endAnimationGo = false;
-    this.isovistFlicks = 100;
-    this.initPointFlick = 1;
+    this.isovistFlicks = 0;
+    this.initPointFlicks = 1;
   }
 
   angleBetweenEdge1Edge2(edge1, edge2) {
@@ -1076,9 +1078,9 @@ class AsanoVisualization {
   }
 
   setSpeed(speed) {
-    this.speeds.get(speed);
     this.speed = this.speeds.get(speed)[0];
-    this.isovistFlicksMax = this.speeds.get(speed)[1];
+    this.initPointFlicksMax = this.speeds.get(speed)[1];
+    this.isovistFlicksMax = this.speeds.get(speed)[2];
   }
 
   getSecurityGuard() {
