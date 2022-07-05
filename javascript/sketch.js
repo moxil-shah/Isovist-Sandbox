@@ -61,7 +61,6 @@ function getScrollBarWidth() {
 }
 
 function draw() {
-
   background(102);
   dragSecurityGuard();
   dragPoint();
@@ -134,6 +133,7 @@ function polygon(x, y, radius, npoints) {
 function renderAllSecurityGuards() {
   for (let guard of allGuards) {
     if (guardDragged !== -1) guard = guardDragged;
+    if (guard.outsideStage() === true) continue;
     guard.visibleVertices();
     guard.getIsovist().drawIsovist(guard, 100);
     if (guardDragged !== -1) break;

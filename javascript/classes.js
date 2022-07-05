@@ -170,7 +170,6 @@ class SecurityGuard extends Point {
     let toRemove = [];
     let toAdd = [];
     let currentlyOnSelfIntersectionPoint = false;
-
     this.initialIntersect();
 
     for (let i = 0; i < this.sortedVertices.length; i += 1) {
@@ -600,6 +599,10 @@ class SecurityGuard extends Point {
 
   getSize() {
     return this.size;
+  }
+
+  outsideStage() {
+    return this.x >= width || this.x <= 0 || this.y >= height || this.y <= 0;
   }
 }
 
