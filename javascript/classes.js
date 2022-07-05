@@ -826,6 +826,8 @@ class Isovist extends Shape {
 class AsanoVisualization {
   constructor(guard) {
     this.guard = guard;
+    this.scrollBar = document.getElementById("customRange");
+    this.scrollBar.disabled = true;
   }
 
   animateMasterMethod() {
@@ -833,6 +835,9 @@ class AsanoVisualization {
       this.initLineAnimation();
       this.sweepAnimation();
       this.endAnimation();
+    }
+    if (this.state === "done") {
+      this.guard.getIsovist().drawIsovist(this.guard, 100);
     }
   }
 
@@ -978,7 +983,10 @@ class AsanoVisualization {
           zigZag((this.isovistFlicks += deltaTime * 0.001), 1) * 100
         );
     } else {
-      this.guard.getIsovist().drawIsovist(this.guard, 100);
+      this.state = "done";
+      this.endAnimationGo = this.scrollBar.disabled = false;
+      window.scrollTo(0, 0);
+      this.scrollBar.value = 360;
     }
   }
 
@@ -1030,6 +1038,7 @@ class AsanoVisualization {
     ]);
     this.initPointFlicksMax;
     this.isovistFlicksMax;
+    this.scrollBar.disabled = true;
   }
 
   angleBetweenEdge1Edge2(edge1, edge2) {
