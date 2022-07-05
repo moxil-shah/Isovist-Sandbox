@@ -839,6 +839,9 @@ class AsanoVisualization {
     if (this.state === "done") {
       this.guard.getIsovist().drawIsovist(this.guard, 100);
     }
+    if (this.state === "slider") {
+      this.scrollBarAnimation();
+    }
   }
 
   initLineAnimation() {
@@ -987,6 +990,43 @@ class AsanoVisualization {
       this.endAnimationGo = this.scrollBar.disabled = false;
       window.scrollTo(0, 0);
       this.scrollBar.value = 360;
+    }
+  }
+
+  scrollBarAnimation() {
+    this.angle = (this.scrollBar.value * PI) / 180;
+    this.current = this.isovist.getVertexHead();
+    this.isovistDrawingPoints = [this.guard.getPoint(), this.current];
+    if (this.angle !== TWO_PI) {
+      while (
+        this.current.getPointNext().getAngle() <= this.angle &&
+        this.current.getPointNext().getAngle() !== 0
+      ) {
+        this.current = this.current.getPointNext();
+        this.isovistDrawingPoints.push(
+          new Point(this.current.getX(), this.current.getY())
+        );
+      }
+
+      let A = this.angleBetweenEdge1Edge2(
+        new Line(this.guard.getPoint(), this.current),
+        new Line(this.current, this.current.getPointNext())
+      );
+      let B = this.angle - this.current.getAngle();
+      let C = PI - A - B;
+      let c = distanceBetweenTwoPoints(this.guard.getPoint(), this.current);
+      let a = (sin(A) * c) / sin(C);
+
+      this.isovistDrawingPoints.push(
+        new Point(
+          this.guard.getX() + cos(this.angle) * a,
+          this.guard.getY() - sin(this.angle) * a
+        )
+      );
+
+      this.drawPartialIsovist();
+    } else {
+      this.guard.getIsovist().drawIsovist(this.guard, 100);
     }
   }
 

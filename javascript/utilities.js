@@ -20,7 +20,9 @@ function clearShapes() {
 function visualizeAsanoPrelude() {
   visualizeGuard.resetAll();
   visualizeGuard.setState("drawing");
-  visualizeGuard.setSpeed($("input[type='radio'][class='btn-check']:checked").attr("id"));
+  visualizeGuard.setSpeed(
+    $("input[type='radio'][class='btn-check']:checked").attr("id")
+  );
   window.scrollTo(0, windowHeight);
 }
 
@@ -36,6 +38,10 @@ function drawLine(theLine, color, weight) {
     theLine.getPoint2().getY()
   );
   pop();
+}
+
+function visualizeAsanoSlider() {
+  visualizeGuard.setState("slider");
 }
 
 // from the HTML form
