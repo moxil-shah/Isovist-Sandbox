@@ -888,11 +888,7 @@ class AsanoVisualization {
       this.current.specialCase === null
     ) {
       this.current = this.current.getPointNext();
-      if (
-        this.isovistDrawingPoints[this.isovistDrawingPoints.length - 1] ===
-        this.sweepLine.getPoint2()
-      )
-        this.isovistDrawingPoints.pop();
+      this.isovistDrawingPoints.pop();
       this.isovistDrawingPoints.push(this.current);
     }
 
@@ -908,10 +904,8 @@ class AsanoVisualization {
       let a = this.sweepLine.getLength() + this.speed * deltaTime;
       this.sweepLine.getPoint2().setX(this.guard.getX() + cos(this.angle) * a);
       this.sweepLine.getPoint2().setY(this.guard.getY() - sin(this.angle) * a);
-
       this.drawPartialIsovist();
       drawLine(this.sweepLine, "white", this.lineThickness);
-
       return;
     } else if (
       this.current.specialCase === "shrink into next" &&
@@ -925,7 +919,6 @@ class AsanoVisualization {
       let a = this.sweepLine.getLength() - this.speed * deltaTime;
       this.sweepLine.getPoint2().setX(this.guard.getX() + cos(this.angle) * a);
       this.sweepLine.getPoint2().setY(this.guard.getY() - sin(this.angle) * a);
-
       this.drawPartialIsovist();
       drawLine(this.sweepLine, "white", this.lineThickness);
       return;
@@ -953,7 +946,6 @@ class AsanoVisualization {
       this.isovistDrawingPoints.push(this.sweepLine.getPoint2());
     }
 
-    // this.angle += 0.01;
     let velocity = this.speed * deltaTime;
     this.angle +=
       velocity /
@@ -964,7 +956,6 @@ class AsanoVisualization {
     if (this.angle > TWO_PI) {
       this.sweepLineAnimationGo = false;
       this.endAnimationGo = true;
-      this.isovistDrawingPoints.pop(); // to get rid of last Point object in the array
     } else {
       this.drawPartialIsovist();
       drawLine(this.sweepLine, "white", this.lineThickness);
