@@ -68,7 +68,8 @@ function SecurityGuardInput() {
     guard.addAllVertices();
     guard.sortVertices();
     allGuards.add(guard);
-  } else {
+  }
+  if (securityGuardNames.length === 0) {
     document.getElementById("addBtn").disabled = true;
     document.getElementById("addBtn").innerText = "Add Guard (Disabled)";
   }
@@ -84,6 +85,8 @@ function exitGuardControlPanel() {
 function removeGuard() {
   allGuards.delete(visualizeGuard.getGuard());
   securityGuardNames.push(visualizeGuard.getGuard().getName());
+  document.getElementById("addBtn").disabled = false;
+  document.getElementById("addBtn").innerText = "Add Guard";
   exitGuardControlPanel();
 }
 
