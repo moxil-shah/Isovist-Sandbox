@@ -830,7 +830,8 @@ class AsanoVisualization {
   constructor(guard) {
     this.guard = guard;
     this.scrollBar = document.getElementById("customRange");
-    this.scrollBar.disabled = true;
+    this.scrollBar.style.display = "block";
+    this.resetAll();
   }
 
   animateMasterMethod() {
@@ -990,8 +991,6 @@ class AsanoVisualization {
         );
     } else {
       this.state = "done";
-      this.endAnimationGo = this.scrollBar.disabled = false;
-      window.scrollTo(0, 0);
       this.scrollBar.value = 360;
       this.scrollBar.style.display = "block";
     }
@@ -1082,7 +1081,6 @@ class AsanoVisualization {
     ]);
     this.initPointFlicksMax;
     this.isovistFlicksMax;
-    this.scrollBar.disabled = true;
   }
 
   angleBetweenEdge1Edge2(edge1, edge2) {
@@ -1127,5 +1125,9 @@ class AsanoVisualization {
       vertex(eachPoint.getX(), eachPoint.getY());
     endShape(CLOSE);
     pop();
+  }
+
+  getGuard() {
+    return this.guard;
   }
 }

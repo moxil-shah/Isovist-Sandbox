@@ -24,6 +24,7 @@ function visualizeAsanoPrelude() {
     $("input[type='radio'][class='btn-check']:checked").attr("id")
   );
   window.scrollTo(0, windowHeight);
+  visualizeGuard.scrollBar.style.display = "none";
 }
 
 function drawLine(theLine, color, weight) {
@@ -71,6 +72,19 @@ function SecurityGuardInput() {
     document.getElementById("addBtn").disabled = true;
     document.getElementById("addBtn").innerText = "Add Guard (Disabled)";
   }
+}
+
+function exitGuardControlPanel() {
+  window.scrollTo(0, 0);
+  visualizeGuard.scrollBar.style.display = "none";
+  visualizeGuard = -1;
+  controlPanel.style.display = "none";
+}
+
+function removeGuard() {
+  allGuards.delete(visualizeGuard.getGuard());
+  securityGuardNames.push(visualizeGuard.getGuard().getName());
+  exitGuardControlPanel();
 }
 
 function findIntersection(line1, line2) {

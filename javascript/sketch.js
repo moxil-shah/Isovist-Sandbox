@@ -71,8 +71,7 @@ function draw() {
   if (visualizeGuard !== -1) {
     visualizeGuard.animateMasterMethod();
     visualizeGuard.getSecurityGuard().drawSecurityGuard();
-  }
-  renderAllShapesPoints();
+  } else renderAllShapesPoints();
 }
 
 // gets parameters ready to make the new polygon

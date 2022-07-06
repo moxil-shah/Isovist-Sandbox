@@ -13,13 +13,6 @@ function doubleClicked() {
 
 function mouseClicked() {
   if (mouseY < 0) return;
-  controlPanel.style.display = "none";
-  if (visualizeGuard !== -1) {
-    window.scrollTo(0, 0);
-    visualizeGuard.scrollBar.style.display = "none";
-    visualizeGuard = -1;
-    return;
-  }
   if (guardDragged !== -1) {
     guardDragged = -1;
     return;
