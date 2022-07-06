@@ -993,6 +993,7 @@ class AsanoVisualization {
       this.endAnimationGo = this.scrollBar.disabled = false;
       window.scrollTo(0, 0);
       this.scrollBar.value = 360;
+      this.scrollBar.style.display = "block";
     }
   }
 

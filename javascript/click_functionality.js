@@ -16,6 +16,7 @@ function mouseClicked() {
   controlPanel.style.display = "none";
   if (visualizeGuard !== -1) {
     window.scrollTo(0, 0);
+    visualizeGuard.scrollBar.style.display = "none";
     visualizeGuard = -1;
     return;
   }
