@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "gjk": "^0.0.1",
     "math.js": "^1.1.46",
     "mathjs": "^10.5.3"
   }
