@@ -25,19 +25,6 @@ function getMax(a, b) {
   return a > b ? a : b;
 }
 
-function drawline(aline, c) {
-  push();
-  strokeWeight(14);
-  stroke(c);
-  line(
-    aline.getPoint1().getX(),
-    aline.getPoint1().getY(),
-    aline.getPoint2().getX(),
-    aline.getPoint2().getY()
-  );
-  pop();
-}
-
 // A utility function to right rotate subtree theRooted with y
 // See the diagram given above.
 function rightRotate(y) {
@@ -132,9 +119,9 @@ function insertNode(node, theKey, v_i, guard, other) {
   /* 1. Perform the normal BST rotation */
   if (node == null) return new Node(theKey);
 
-  if (guard.lineSideToInsert(v_i, node.theKey, other) === "toward")
+  if (guard.lineSideToInsert(v_i, node.theKey, other, theKey) === "toward")
     node.left = insertNode(node.left, theKey, v_i, guard, other);
-  else if (guard.lineSideToInsert(v_i, node.theKey, other) === "away")
+  else if (guard.lineSideToInsert(v_i, node.theKey, other, theKey) === "away")
     node.right = insertNode(node.right, theKey, v_i, guard, other);
   // Equal theKeys not allowed
   else {
@@ -154,21 +141,21 @@ function insertNode(node, theKey, v_i, guard, other) {
   // there are 4 cases Left Left Case
   if (
     balance > 1 &&
-    guard.lineSideToInsert(v_i, node.left.theKey, other) === "toward"
+    guard.lineSideToInsert(v_i, node.left.theKey, other, theKey) === "toward"
   )
     return rightRotate(node);
 
   // Right Right Case
   if (
     balance < -1 &&
-    guard.lineSideToInsert(v_i, node.right.theKey, other) === "away"
+    guard.lineSideToInsert(v_i, node.right.theKey, other, theKey) === "away"
   )
     return leftRotate(node);
 
   // Left Right Case
   if (
     balance > 1 &&
-    guard.lineSideToInsert(v_i, node.left.theKey, other) === "away"
+    guard.lineSideToInsert(v_i, node.left.theKey, other, theKey) === "away"
   ) {
     node.left = leftRotate(node.left);
     return rightRotate(node);
@@ -177,7 +164,7 @@ function insertNode(node, theKey, v_i, guard, other) {
   // Right Left Case
   if (
     balance < -1 &&
-    guard.lineSideToInsert(v_i, node.right.theKey, other) === "toward"
+    guard.lineSideToInsert(v_i, node.right.theKey, other, theKey) === "toward"
   ) {
     node.right = rightRotate(node.right);
     return leftRotate(node);
