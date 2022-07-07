@@ -22,10 +22,6 @@ let visualizeGuard = -1;
 let gameShape;
 let controlPanel;
 
-function myFunction(el) {
-  console.log(el);
-}
-
 function setup() {
   // let canvas = createCanvas($(window).width(), $(window).height());
   let canvas = createCanvas(windowWidth - getScrollBarWidth(), windowHeight);
