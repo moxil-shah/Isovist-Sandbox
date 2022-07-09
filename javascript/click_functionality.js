@@ -100,7 +100,7 @@ function dragPoint() {
     pointDragged.setX(mouseX);
     pointDragged.setY(mouseY);
     let thething = checkIfSelfIntersectingPolygon(shapesPointDragged);
-
+    checkIfConvexHullIntersects(shapesPointDragged)
     for (const [key, value] of thething) {
       let referencePoint;
       let nextPoint;

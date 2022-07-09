@@ -230,6 +230,21 @@ function checkIfSelfIntersectingPolygon(theShape) {
   return intersectionPoints;
 }
 
+function checkIfConvexHullIntersects(theshape) {
+  for (let eachShape of allShapes) {
+    if (
+      eachShape === theshape ||
+      eachShape === gameShape ||
+      gjk.intersect(
+        theshape.getConvexHull().getPointsArray(),
+        eachShape.getConvexHull().getPointsArray()
+      ) === false
+    )
+      continue;
+    console.log("yay");
+  }
+}
+
 function updateVertexArrayDistancetoMousePress(shape) {
   shape.verticesDistancetoMousePress = new Map();
 
