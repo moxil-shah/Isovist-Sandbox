@@ -173,6 +173,7 @@ function dragPoint() {
       guard.addAllVertices();
       guard.sortVertices();
     }
+    shapesPointDragged.setConvexHull();
   }
 }
 
@@ -226,5 +227,6 @@ function dragShape() {
     for (let guard of allGuards) {
       guard.sortVertices();
     }
+    shapeDragged.setConvexHull();
   }
 }

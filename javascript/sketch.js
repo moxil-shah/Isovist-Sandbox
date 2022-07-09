@@ -107,6 +107,7 @@ function polygon(x, y, radius, npoints) {
 
   newObstacle.setVerticesLinkedList(vertexes);
   newObstacle.setEdges();
+  newObstacle.setConvexHull();
   allShapes.add(newObstacle);
 
   for (let eachShape of allShapes) {

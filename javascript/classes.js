@@ -744,6 +744,7 @@ class Shape {
     this.vertexHead;
     this.edges = new Set();
     this.color = color;
+    this.convexHull;
   }
 
   setVerticesLinkedList(vertexArray) {
@@ -775,6 +776,18 @@ class Shape {
     } while (currentVertex !== this.vertexHead);
   }
 
+  setConvexHull() {
+    let boundaryPoints = grahamScan(this.getPointsArray());
+    let vertexArray = [];
+    this.convexHull = new Shape([0, 0, 0]);
+    for (let eachPoint of boundaryPoints)
+      vertexArray.push(
+        new ShapePoint(eachPoint[0], eachPoint[1], this.convexHull)
+      );
+    this.convexHull.setVerticesLinkedList(vertexArray);
+    this.convexHull.setEdges();
+  }
+
   getEdges() {
     return this.edges;
   }
@@ -802,14 +815,7 @@ class Shape {
   }
 
   getConvexHull() {
-    let boundaryPoints = grahamScan(this.getPointsArray());
-    let vertexArray = [];
-    let convexHull = new Shape([0, 0, 0]);
-    for (let eachPoint of boundaryPoints)
-      vertexArray.push(new ShapePoint(eachPoint[0], eachPoint[1], convexHull));
-    convexHull.setVerticesLinkedList(vertexArray);
-    convexHull.setEdges();
-    return convexHull;
+    return this.convexHull;
   }
 
   drawShape(opacity) {
