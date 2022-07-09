@@ -1,5 +1,6 @@
 {
   "dependencies": {
-    "gjk": "^0.0.1"
+    "gjk": "^0.0.1",
+    "graham-scan": "^0.0.0"
   }
 }

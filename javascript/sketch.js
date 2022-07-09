@@ -148,22 +148,7 @@ function renderVertexClicked() {
 
 function renderAllShapes() {
   for (let shape of allShapes) {
-    push();
-    if (shapeDragged === shape) {
-      fill([115, 119, 123]);
-    } else fill(shape.getColor()[0], shape.getColor()[1], shape.getColor()[2]);
-    beginShape();
-
-    let aVertex = shape.getVertexHead();
-    do {
-      push();
-      if (aVertex.getNotSelfIntersect() === true)
-        vertex(aVertex.getX(), aVertex.getY());
-      pop();
-      aVertex = aVertex.getPointNext();
-    } while (aVertex !== shape.vertexHead);
-    endShape(CLOSE);
-    pop();
+    shape.drawShape(255);
   }
 }
 

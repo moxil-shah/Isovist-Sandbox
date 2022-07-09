@@ -790,6 +790,40 @@ class Shape {
   getVertexHead() {
     return this.vertexHead;
   }
+
+  getPointsArray() {
+    let pointsArray = [];
+    let currentVertex = this.vertexHead;
+    do {
+      pointsArray.push([currentVertex.getX(), currentVertex.getY()]);
+      currentVertex = currentVertex.getPointNext();
+    } while (currentVertex !== this.vertexHead);
+    return pointsArray;
+  }
+
+  getConvexHull() {
+    let boundaryPoints = grahamScan(this.getPointsArray());
+    let vertexArray = [];
+    let convexHull = new Shape([0, 0, 0]);
+    for (let eachPoint of boundaryPoints)
+      vertexArray.push(new ShapePoint(eachPoint[0], eachPoint[1], convexHull));
+    convexHull.setVerticesLinkedList(vertexArray);
+    convexHull.setEdges();
+    return convexHull;
+  }
+
+  drawShape(opacity) {
+    push();
+    fill(this.color[0], this.color[1], this.color[2], opacity);
+    beginShape();
+    let aVertex = this.vertexHead;
+    do {
+      vertex(aVertex.getX(), aVertex.getY());
+      aVertex = aVertex.getPointNext();
+    } while (aVertex !== this.vertexHead);
+    endShape(CLOSE);
+    pop();
+  }
 }
 
 class Obstacle extends Shape {
