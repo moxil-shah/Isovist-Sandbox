@@ -97,10 +97,21 @@ function dragPoint() {
   }
   if (pointDragged !== -1) {
     deleteTheSelfIntersect(shapesPointDragged);
+
+    if (shapesPointDragged.getUnionParent() !== null) {
+      allShapes.delete(shapesPointDragged.getUnionParent());
+
+      for (let eachShape of shapesPointDragged
+        .getUnionParent()
+        .getChildrenObstacles()) {
+        allShapes.add(eachShape);
+        eachShape.setUnionParent(null);
+      }
+    }
     pointDragged.setX(mouseX);
     pointDragged.setY(mouseY);
     let thething = checkIfSelfIntersectingPolygon(shapesPointDragged);
-    checkIfConvexHullIntersects(shapesPointDragged)
+    checkIfConvexHullIntersects(shapesPointDragged);
     for (const [key, value] of thething) {
       let referencePoint;
       let nextPoint;

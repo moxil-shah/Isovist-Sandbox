@@ -836,6 +836,11 @@ class Obstacle extends Shape {
   constructor(color) {
     super(color);
     this.verticesDistancetoMousePress = new Map();
+    this.unionParent = null;
+  }
+
+  setUnionParent(shape) {
+    this.unionParent = shape;
   }
 
   setVerticesDistancetoMousePress(theVertex, coordinate) {
@@ -844,6 +849,10 @@ class Obstacle extends Shape {
 
   getVerticesDistancetoMousePress(theVertex) {
     return this.verticesDistancetoMousePress.get(theVertex);
+  }
+
+  getUnionParent() {
+    return this.unionParent;
   }
 }
 

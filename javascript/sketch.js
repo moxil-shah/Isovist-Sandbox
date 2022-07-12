@@ -6,6 +6,7 @@
 let allShapes = new Set(); // global array of all shapes made
 let allGuards = new Set(); // global array of all security guards made
 let allOverlappingShapes = new Set();
+
 const securityGuardNames = [
   [255, 165, 0],
   [28, 197, 220],
@@ -251,7 +252,7 @@ function checkIfConvexHullIntersects(theShape) {
     var comb = PolyBool.combine(segments, seg2);
     segments = PolyBool.selectUnion(comb);
   }
-  let obstacleOverlap = new UnionObstacle([0, 0, 0]);
+  let obstacleOverlap = new UnionObstacle([209, 209, 209]);
   let allPoints = PolyBool.polygon(segments).regions;
   let points = [];
   for (let i = 0; i < allPoints[0].length; i += 1) {
@@ -263,9 +264,10 @@ function checkIfConvexHullIntersects(theShape) {
   obstacleOverlap.setEdges();
   for (let eachShape of overlapShapes) {
     obstacleOverlap.addChildrenObstacles(eachShape);
+    eachShape.setUnionParent(obstacleOverlap);
     if (allShapes.delete(eachShape) === false) console.log("Big error!");
   }
-  allOverlappingShapes.add(obstacleOverlap);
+  allShapes.add(obstacleOverlap);
   console.log(obstacleOverlap.getChildrenObstacles());
 }
 
