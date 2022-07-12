@@ -241,7 +241,9 @@ function checkIfConvexHullIntersects(theshape) {
       ) === false
     )
       continue;
-    console.log("yay");
+    let poly1 = { regions: [theshape.getPointsArray()], inverted: false };
+    let poly2 = { regions: [eachShape.getPointsArray()], inverted: false };
+    console.log(PolyBool.union(poly1, poly2));
   }
 }
 
