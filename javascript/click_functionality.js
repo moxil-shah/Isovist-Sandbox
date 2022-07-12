@@ -37,7 +37,7 @@ function mouseClicked() {
 }
 
 function checkIfClickInsideShape() {
-  for (let shape of allShapes) {
+  for (let shape of new Set([...allShapes, ...allOverlappingChildren])) {
     if (shape === gameShape) continue;
     let lineSegmentCrossesCounter = 0; // for ray trace algorithm
     for (let edge of shape.getEdges()) {
@@ -72,7 +72,7 @@ function checkIfClickSecurityGuard() {
 }
 
 function checkIfClickAVertex() {
-  for (let eachShape of allShapes) {
+  for (let eachShape of new Set([...allShapes, ...allOverlappingChildren])) {
     if (eachShape === gameShape) continue;
 
     let currentVertex = eachShape.getVertexHead();
@@ -97,14 +97,15 @@ function dragPoint() {
   }
   if (pointDragged !== -1) {
     deleteTheSelfIntersect(shapesPointDragged);
-
     if (shapesPointDragged.getUnionParent() !== null) {
-      allShapes.delete(shapesPointDragged.getUnionParent());
+      allOverlappingShapes.delete(shapesPointDragged.getUnionParent());
+
 
       for (let eachShape of shapesPointDragged
         .getUnionParent()
         .getChildrenObstacles()) {
         allShapes.add(eachShape);
+        allOverlappingChildren.delete(eachShape);
         eachShape.setUnionParent(null);
       }
     }

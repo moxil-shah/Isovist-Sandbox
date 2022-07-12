@@ -1184,11 +1184,11 @@ class AsanoVisualization {
 class UnionObstacle extends Obstacle {
   constructor(color) {
     super(color);
-    this.childrenObstacles = [];
+    this.childrenObstacles = new Set();
   }
 
   addChildrenObstacles(children) {
-    this.childrenObstacles.push(children);
+    this.childrenObstacles.add(children);
   }
 
   resetChildrenObstacles() {

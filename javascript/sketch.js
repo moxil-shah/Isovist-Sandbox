@@ -6,6 +6,7 @@
 let allShapes = new Set(); // global array of all shapes made
 let allGuards = new Set(); // global array of all security guards made
 let allOverlappingShapes = new Set();
+let allOverlappingChildren = new Set();
 
 const securityGuardNames = [
   [255, 165, 0],
@@ -150,13 +151,13 @@ function renderVertexClicked() {
 }
 
 function renderAllShapes() {
-  for (let shape of allShapes) {
+  for (let shape of new Set([...allShapes, ...allOverlappingChildren])) {
     shape.drawShape(255);
   }
 }
 
 function renderAllShapesPoints() {
-  for (let shape of allShapes) {
+  for (let shape of new Set([...allShapes, ...allOverlappingChildren])) {
     let currentVertex = shape.getVertexHead();
     do {
       if (
@@ -267,7 +268,10 @@ function checkIfConvexHullIntersects(theShape) {
     eachShape.setUnionParent(obstacleOverlap);
     if (allShapes.delete(eachShape) === false) console.log("Big error!");
   }
-  allShapes.add(obstacleOverlap);
+  allOverlappingShapes.add(obstacleOverlap);
+  for (let eachShape of obstacleOverlap.getChildrenObstacles()) {
+    allOverlappingChildren.add(eachShape);
+  }
   console.log(obstacleOverlap.getChildrenObstacles());
 }
 
