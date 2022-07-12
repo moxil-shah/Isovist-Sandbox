@@ -1171,3 +1171,22 @@ class AsanoVisualization {
     return this.guard;
   }
 }
+
+class UnionObstacle extends Obstacle {
+  constructor(color) {
+    super(color);
+    this.childrenObstacles = [];
+  }
+
+  addChildrenObstacles(children) {
+    this.childrenObstacles.push(children);
+  }
+
+  resetChildrenObstacles() {
+    this.childrenObstacle = [];
+  }
+
+  getChildrenObstacles() {
+    return this.childrenObstacles;
+  }
+}

@@ -5,6 +5,7 @@
 // code starts //
 let allShapes = new Set(); // global array of all shapes made
 let allGuards = new Set(); // global array of all security guards made
+let allOverlappingShapes = new Set();
 const securityGuardNames = [
   [255, 165, 0],
   [28, 197, 220],
@@ -230,21 +231,42 @@ function checkIfSelfIntersectingPolygon(theShape) {
   return intersectionPoints;
 }
 
-function checkIfConvexHullIntersects(theshape) {
+function checkIfConvexHullIntersects(theShape) {
+  let poly1Init = { regions: [theShape.getPointsArray()], inverted: false };
+  let overlaps = [poly1Init];
+  let overlapShapes = [theShape];
   for (let eachShape of allShapes) {
-    if (
-      eachShape === theshape ||
-      eachShape === gameShape ||
-      gjk.intersect(
-        theshape.getConvexHull().getPointsArray(),
-        eachShape.getConvexHull().getPointsArray()
-      ) === false
-    )
-      continue;
-    let poly1 = { regions: [theshape.getPointsArray()], inverted: false };
+    if (eachShape === theShape || eachShape === gameShape) continue;
+    let poly1 = { regions: [theShape.getPointsArray()], inverted: false };
     let poly2 = { regions: [eachShape.getPointsArray()], inverted: false };
-    console.log(PolyBool.union(poly1, poly2));
+    if (PolyBool.union(poly1, poly2).regions.length === 1) {
+      overlaps.push(poly2);
+      overlapShapes.push(eachShape);
+    }
   }
+  if (overlaps.length === 1) return;
+  var segments = PolyBool.segments(overlaps[0]);
+  for (var i = 1; i < overlaps.length; i++) {
+    var seg2 = PolyBool.segments(overlaps[i]);
+    var comb = PolyBool.combine(segments, seg2);
+    segments = PolyBool.selectUnion(comb);
+  }
+  let obstacleOverlap = new UnionObstacle([0, 0, 0]);
+  let allPoints = PolyBool.polygon(segments).regions;
+  let points = [];
+  for (let i = 0; i < allPoints[0].length; i += 1) {
+    points.push(
+      new ObstaclePoint(allPoints[0][i][0], allPoints[0][i][1], obstacleOverlap)
+    );
+  }
+  obstacleOverlap.setVerticesLinkedList(points);
+  obstacleOverlap.setEdges();
+  for (let eachShape of overlapShapes) {
+    obstacleOverlap.addChildrenObstacles(eachShape);
+    if (allShapes.delete(eachShape) === false) console.log("Big error!");
+  }
+  allOverlappingShapes.add(obstacleOverlap);
+  console.log(obstacleOverlap.getChildrenObstacles());
 }
 
 function updateVertexArrayDistancetoMousePress(shape) {
