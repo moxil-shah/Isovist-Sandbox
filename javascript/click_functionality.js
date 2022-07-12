@@ -171,7 +171,7 @@ function dragPoint() {
     shapesPointDragged.setEdges();
     updateVertexArrayDistancetoMousePress(shapesPointDragged);
 
-    for (let eachShape of allShapes) {
+    for (let eachShape of new Set([...allShapes, ...allOverlappingShapes])) {
       let currentVertex = eachShape.getVertexHead();
       do {
         for (let guard of allGuards) {
@@ -198,7 +198,7 @@ function dragSecurityGuard() {
     guardDragged.setX(mouseX);
     guardDragged.setY(mouseY);
 
-    for (let eachShape of allShapes) {
+    for (let eachShape of new Set([...allShapes, ...allOverlappingShapes])) {
       let currentVertex = eachShape.getVertexHead();
       do {
         currentVertex.setSecurityGuardAngle(guardDragged);
@@ -226,7 +226,7 @@ function dragShape() {
       currentVertex.setY(currentVertex.getY() + deltaYCurrent - deltaY);
       currentVertex = currentVertex.getPointNext();
     } while (currentVertex !== shapeDragged.getVertexHead());
-    for (let eachShape of allShapes) {
+    for (let eachShape of new Set([...allShapes, ...allOverlappingShapes])) {
       let currentVertex = eachShape.getVertexHead();
       do {
         for (let guard of allGuards) {

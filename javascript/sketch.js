@@ -113,7 +113,7 @@ function polygon(x, y, radius, npoints) {
   newObstacle.setConvexHull();
   allShapes.add(newObstacle);
 
-  for (let eachShape of allShapes) {
+  for (let eachShape of new Set([...allShapes, ...allOverlappingShapes])) {
     let currentVertex = eachShape.getVertexHead();
     do {
       for (let guard of allGuards) {

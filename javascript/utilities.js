@@ -57,7 +57,7 @@ function sidesInput() {
 function SecurityGuardInput() {
   if (securityGuardNames.length !== 0) {
     guard = new SecurityGuard(27.5, 100, securityGuardNames.pop());
-    for (let eachShape of allShapes) {
+    for (let eachShape of new Set([...allShapes, ...allOverlappingShapes])) {
       let currentVertex = eachShape.getVertexHead();
       do {
         currentVertex.setSecurityGuardAngle(guard);

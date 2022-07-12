@@ -92,7 +92,7 @@ class SecurityGuard extends Point {
     // If it goes above then does not count.
     let initialIntersectEdges = [];
     this.root = null;
-    for (let shape of allShapes) {
+    for (let shape of new Set([...allShapes, ...allOverlappingShapes])) {
       for (let edge of shape.getEdges()) {
         if (checkIfIntersect(this.lineToRightWall, edge)) {
           if (edge.getPoint1().getAngleForSecurityGuard(this.name) === 0) {
@@ -470,7 +470,7 @@ class SecurityGuard extends Point {
 
   addAllVertices() {
     this.sortedVertices = [];
-    for (let eachShape of allShapes) {
+    for (let eachShape of new Set([...allShapes, ...allOverlappingShapes])) {
       let currentVertex = eachShape.getVertexHead();
       do {
         this.sortedVertices.push(currentVertex);
