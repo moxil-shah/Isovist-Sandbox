@@ -100,7 +100,6 @@ function dragPoint() {
     if (shapesPointDragged.getUnionParent() !== null) {
       allOverlappingShapes.delete(shapesPointDragged.getUnionParent());
 
-
       for (let eachShape of shapesPointDragged
         .getUnionParent()
         .getChildrenObstacles()) {
@@ -236,7 +235,31 @@ function dragShape() {
       } while (currentVertex !== eachShape.getVertexHead());
     }
 
+    if (shapeDragged.getUnionParent() !== null) {
+      allOverlappingShapes.delete(shapeDragged.getUnionParent());
+
+      for (let eachShape of shapeDragged
+        .getUnionParent()
+        .getChildrenObstacles()) {
+        allShapes.add(eachShape);
+        allOverlappingChildren.delete(eachShape);
+        eachShape.setUnionParent(null);
+      }
+    }
+    checkIfConvexHullIntersects(shapeDragged);
+
+    for (let eachShape of new Set([...allShapes, ...allOverlappingShapes])) {
+      let currentVertex = eachShape.getVertexHead();
+      do {
+        for (let guard of allGuards) {
+          currentVertex.setSecurityGuardAngle(guard);
+        }
+        currentVertex = currentVertex.getPointNext();
+      } while (currentVertex !== eachShape.getVertexHead());
+    }
+
     for (let guard of allGuards) {
+      guard.addAllVertices();
       guard.sortVertices();
     }
     shapeDragged.setConvexHull();

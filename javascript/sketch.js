@@ -272,7 +272,6 @@ function checkIfConvexHullIntersects(theShape) {
   for (let eachShape of obstacleOverlap.getChildrenObstacles()) {
     allOverlappingChildren.add(eachShape);
   }
-  console.log(obstacleOverlap.getChildrenObstacles());
 }
 
 function updateVertexArrayDistancetoMousePress(shape) {
