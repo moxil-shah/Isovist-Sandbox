@@ -171,7 +171,7 @@ class SecurityGuard extends Point {
     let toAdd = [];
     let currentlyOnSelfIntersectionPoint = false;
     this.initialIntersect();
-
+    console.log(this.sortedVertices.length);
     for (let i = 0; i < this.sortedVertices.length; i += 1) {
       // console.log(i);
       // preOrder(this.root);
@@ -429,7 +429,6 @@ class SecurityGuard extends Point {
         currentlyOnSelfIntersectionPoint = false;
       }
     }
-
     this.isovist.setVerticesLinkedList(this.constructedPoints);
     this.isovist.setEdges();
   }
@@ -470,12 +469,22 @@ class SecurityGuard extends Point {
 
   addAllVertices() {
     this.sortedVertices = [];
+    let overlaps = new Set();
     for (let eachShape of allShapes) {
-      let currentVertex = eachShape.getVertexHead();
-      do {
-        this.sortedVertices.push(currentVertex);
-        currentVertex = currentVertex.getPointNext();
-      } while (currentVertex !== eachShape.getVertexHead());
+      if (eachShape.getUnionParent() === null) {
+        let currentVertex = eachShape.getVertexHead();
+        do {
+          this.sortedVertices.push(currentVertex);
+          currentVertex = currentVertex.getPointNext();
+        } while (currentVertex !== eachShape.getVertexHead());
+      } else if (overlaps.has(eachShape.getUnionParent()) === false) {
+        overlaps.add(eachShape.getUnionParent());
+        let currentVertex = eachShape.getUnionParent().getVertexHead();
+        do {
+          this.sortedVertices.push(currentVertex);
+          currentVertex = currentVertex.getPointNext();
+        } while (currentVertex !== eachShape.getUnionParent().getVertexHead());
+      }
     }
   }
 
@@ -836,14 +845,23 @@ class Obstacle extends Shape {
   constructor(color) {
     super(color);
     this.verticesDistancetoMousePress = new Map();
+    this.unionParent = null;
   }
 
   setVerticesDistancetoMousePress(theVertex, coordinate) {
     this.verticesDistancetoMousePress.set(theVertex, coordinate);
   }
 
+  setUnionParent(shape) {
+    this.unionParent = shape;
+  }
+
   getVerticesDistancetoMousePress(theVertex) {
     return this.verticesDistancetoMousePress.get(theVertex);
+  }
+
+  getUnionParent() {
+    return this.unionParent;
   }
 }
 
