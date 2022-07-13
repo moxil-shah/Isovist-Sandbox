@@ -21,6 +21,8 @@ let guardDragged = -1;
 let visualizeGuard = -1;
 let gameShape;
 let controlPanel;
+let superImposedShape = -1;
+let superImposedShapeChildren = new Set();
 
 function setup() {
   // let canvas = createCanvas($(window).width(), $(window).height());
@@ -230,21 +232,102 @@ function checkIfSelfIntersectingPolygon(theShape) {
   return intersectionPoints;
 }
 
-function checkIfConvexHullIntersects(theshape) {
+function checkIfConvexHullIntersects(theShape) {
+  // const poly1 = [
+  //   [
+  //     [1, 1],
+  //     [2, 2],
+  //     [4, 0],
+  //   ],
+  // ];
+  // const poly2 = [
+  //   [
+  //     [5, 5],
+  //     [6, 4],
+  //     [1, 0],
+  //   ],
+  // ];
+
+  // console.log(polygonClipping.union(poly1, poly2));
+
+  let overlapShapes = [theShape];
+  let overlaps = [[theShape.getPointsArray()]];
   for (let eachShape of allShapes) {
+    if (eachShape === theShape || eachShape === gameShape) continue;
+
     if (
-      eachShape === theshape ||
-      eachShape === gameShape ||
-      gjk.intersect(
-        theshape.getConvexHull().getPointsArray(),
-        eachShape.getConvexHull().getPointsArray()
-      ) === false
-    )
-      continue;
-    let poly1 = { regions: [theshape.getPointsArray()], inverted: false };
-    let poly2 = { regions: [eachShape.getPointsArray()], inverted: false };
-    console.log(PolyBool.union(poly1, poly2));
+      polygonClipping.union(
+        [theShape.getPointsArray()],
+        [eachShape.getPointsArray()]
+      ).length === 1
+    ) {
+      overlapShapes.push(eachShape);
+      overlaps.push([eachShape.getPointsArray()]);
+    }
   }
+  if (overlapShapes.length === 1) return;
+
+  let allPoints = polygonClipping.union(overlaps);
+  allPoints[0][0].pop();
+  allPoints = allPoints[0];
+
+  let obstacleOverlap = new Obstacle([209, 209, 209]);
+  let points = [];
+
+  for (let i = 0; i < allPoints[0].length; i += 1) {
+    points.push(
+      new ObstaclePoint(allPoints[0][i][0], allPoints[0][i][1], obstacleOverlap)
+    );
+  }
+  console.log(allPoints);
+  obstacleOverlap.setVerticesLinkedList(points);
+  obstacleOverlap.setEdges();
+  for (let eachShape of overlapShapes) {
+    if (allShapes.delete(eachShape) === false) console.log("Big error!");
+    superImposedShapeChildren.add(eachShape);
+  }
+
+  allShapes.add(obstacleOverlap);
+  superImposedShape = obstacleOverlap;
+
+  // let overlaps = [[theShape.getPointsArray()]];
+  // let overlapShapes = [theShape];
+  // for (let eachShape of allShapes) {
+  //   if (eachShape === theShape || eachShape === gameShape) continue;
+  //   if (
+  //     polygonClipping.union(
+  //       [theShape.getPointsArray()],
+  //       [eachShape.getPointsArray()]
+  //     ).regions.length === 1
+  //   ) {
+  //     overlaps.push([eachShape.getPointsArray()]);
+  //     overlapShapes.push(eachShape);
+  //   }
+  // }
+  // if (overlaps.length === 1) return;
+  // var segments = PolyBool.segments(overlaps[0]);
+  // for (var i = 1; i < overlaps.length; i++) {
+  //   var seg2 = PolyBool.segments(overlaps[i]);
+  //   var comb = PolyBool.combine(segments, seg2);
+  //   segments = PolyBool.selectUnion(comb);
+  // }
+  // let obstacleOverlap = new Obstacle([209, 209, 209]);
+  // let allPoints = PolyBool.polygon(segments).regions;
+  // let points = [];
+
+  // for (let i = 0; i < allPoints[0].length; i += 1) {
+  //   points.push(
+  //     new ObstaclePoint(allPoints[0][i][0], allPoints[0][i][1], obstacleOverlap)
+  //   );
+  // }
+  // obstacleOverlap.setVerticesLinkedList(points);
+  // obstacleOverlap.setEdges();
+  // for (let eachShape of overlapShapes) {
+  //   if (allShapes.delete(eachShape) === false) console.log("Big error!");
+  //   superImposedShapeChildren.add(eachShape);
+  // }
+  // allShapes.add(obstacleOverlap);
+  // superImposedShape = obstacleOverlap;
 }
 
 function updateVertexArrayDistancetoMousePress(shape) {

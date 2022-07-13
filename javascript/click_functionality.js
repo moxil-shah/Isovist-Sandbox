@@ -22,6 +22,8 @@ function mouseClicked() {
   }
   if (pointDragged !== -1) {
     pointDragged = shapesPointDragged = -1;
+    superImposedShape = -1;
+    superImposedShapeChildren.clear();
     return;
   } else if (shapeDragged === -1 && guardDragged === -1) {
     [pointDragged, shapesPointDragged] = checkIfClickAVertex();
@@ -97,10 +99,19 @@ function dragPoint() {
   }
   if (pointDragged !== -1) {
     deleteTheSelfIntersect(shapesPointDragged);
+    if (superImposedShape !== -1) {
+      allShapes.delete(superImposedShape);
+      for (let each of superImposedShapeChildren) {
+        allShapes.add(each);
+      }
+      superImposedShape = -1;
+      superImposedShapeChildren.clear();
+    }
+
     pointDragged.setX(mouseX);
     pointDragged.setY(mouseY);
     let thething = checkIfSelfIntersectingPolygon(shapesPointDragged);
-    checkIfConvexHullIntersects(shapesPointDragged)
+    checkIfConvexHullIntersects(shapesPointDragged);
     for (const [key, value] of thething) {
       let referencePoint;
       let nextPoint;
