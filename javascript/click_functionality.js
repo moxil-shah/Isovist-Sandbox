@@ -22,7 +22,7 @@ function mouseClicked() {
   }
   if (pointDragged !== -1) {
     pointDragged = shapesPointDragged = -1;
-    superImposedShape = -1;
+    superImposedShapes.clear();
     superImposedShapeChildren.clear();
     return;
   } else if (shapeDragged === -1 && guardDragged === -1) {
@@ -99,14 +99,15 @@ function dragPoint() {
   }
   if (pointDragged !== -1) {
     deleteTheSelfIntersect(shapesPointDragged);
-    if (superImposedShape !== -1) {
-      allShapes.delete(superImposedShape);
-      for (let each of superImposedShapeChildren) {
-        allShapes.add(each);
-      }
-      superImposedShape = -1;
-      superImposedShapeChildren.clear();
+
+    for (let each of superImposedShapes) {
+      allShapes.delete(each);
     }
+    for (let each of superImposedShapeChildren) {
+      allShapes.add(each);
+    }
+    superImposedShapes.clear();
+    superImposedShapeChildren.clear();
 
     pointDragged.setX(mouseX);
     pointDragged.setY(mouseY);

@@ -777,15 +777,15 @@ class Shape {
   }
 
   setConvexHull() {
-    let boundaryPoints = grahamScan(this.getPointsArray());
-    let vertexArray = [];
-    this.convexHull = new Shape([0, 0, 0]);
-    for (let eachPoint of boundaryPoints)
-      vertexArray.push(
-        new ShapePoint(eachPoint[0], eachPoint[1], this.convexHull)
-      );
-    this.convexHull.setVerticesLinkedList(vertexArray);
-    this.convexHull.setEdges();
+    // let boundaryPoints = grahamScan(this.getPointsArray());
+    // let vertexArray = [];
+    // this.convexHull = new Shape([0, 0, 0]);
+    // for (let eachPoint of boundaryPoints)
+    //   vertexArray.push(
+    //     new ShapePoint(eachPoint[0], eachPoint[1], this.convexHull)
+    //   );
+    // this.convexHull.setVerticesLinkedList(vertexArray);
+    // this.convexHull.setEdges();
   }
 
   getEdges() {
@@ -804,14 +804,15 @@ class Shape {
     return this.vertexHead;
   }
 
-  getPointsArray() {
+  getPointsArray(brackets) {
     let pointsArray = [];
     let currentVertex = this.vertexHead;
     do {
       pointsArray.push([currentVertex.getX(), currentVertex.getY()]);
       currentVertex = currentVertex.getPointNext();
     } while (currentVertex !== this.vertexHead);
-    return pointsArray;
+    if (brackets) return [pointsArray];
+    else return pointsArray;
   }
 
   getConvexHull() {
