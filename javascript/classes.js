@@ -248,8 +248,7 @@ class SecurityGuard extends Point {
           i
         ].getEdgePairOrderedByAngleToSecurityGuardPointerless(
           this,
-          toRemove[0],
-          toRemove[1],
+          [toRemove[0], toRemove[1]],
           "toRemove"
         );
 
@@ -312,8 +311,7 @@ class SecurityGuard extends Point {
           i
         ].getEdgePairOrderedByAngleToSecurityGuardPointerless(
           this,
-          toAdd[0],
-          toAdd[1],
+          [toAdd[0], toAdd[1]],
           "toAdd"
         );
 
@@ -647,47 +645,47 @@ class ObstaclePoint extends ShapePoint {
     return this.secuirtyGuardMap.get(guard);
   }
 
-  getEdgePairOrderedByAngleToSecurityGuardPointerless(
-    guard,
-    edge1,
-    edge2,
-    state
-  ) {
+  getEdgePairOrderedByAngleToSecurityGuardPointerless(guard, edges, state) {
     let vmain = createVector(
       this.getX() - guard.getX(),
       -(this.getY() - guard.getY()),
       0
     );
+    let edgeAngleMap = new Map();
 
-    let v1 = createVector(
-      edge1.getPoint1().getX() - edge1.getPoint2().getX(),
-      -(edge1.getPoint1().getY() - edge1.getPoint2().getY()),
-      0
-    );
-
-    let v2 = createVector(
-      edge2.getPoint1().getX() - edge2.getPoint2().getX(),
-      -(edge2.getPoint1().getY() - edge2.getPoint2().getY()),
-      0
-    );
-
-    let angleBetween1 = vmain.angleBetween(v1);
-    let angleBetween2 = vmain.angleBetween(v2);
-
-    if (state === "toAdd") {
-      if (angleBetween1 > 0) angleBetween1 -= PI;
-      if (angleBetween2 > 0) angleBetween2 -= PI;
+    for (let each of edges) {
+      edgeAngleMap.set(
+        each,
+        vmain.angleBetween(
+          createVector(
+            each.getPoint1().getX() - each.getPoint2().getX(),
+            -(each.getPoint1().getY() - each.getPoint2().getY()),
+            0
+          )
+        )
+      );
     }
 
-    if (state === "toRemove") {
-      if (angleBetween1 < 0) angleBetween1 += PI;
-      if (angleBetween2 < 0) angleBetween2 += PI;
+    for (const eachKey of edgeAngleMap.keys()) {
+      if (edgeAngleMap.get(eachKey) > 0 && state === "toAdd")
+        edgeAngleMap.set(eachKey, edgeAngleMap.get(eachKey) - PI);
+      else if (edgeAngleMap.get(eachKey) < 0 && state === "toRemove")
+        edgeAngleMap.set(eachKey, edgeAngleMap.get(eachKey) + PI);
+      edgeAngleMap.set(eachKey, PI - Math.abs(edgeAngleMap.get(eachKey)));
     }
 
-    angleBetween1 = PI - Math.abs(angleBetween1);
-    angleBetween2 = PI - Math.abs(angleBetween2);
-    if (angleBetween1 > angleBetween2) return [edge1, edge2];
-    else return [edge2, edge1];
+    let edgesSorted = [];
+    for (const eachEntry of edgeAngleMap.entries()) {
+      edgesSorted.push(eachEntry);
+    }
+    edgesSorted.sort(function (a, b) {
+      return b[1] - a[1];
+    });
+
+    for (let i = 0; i < edgesSorted.length; i += 1) {
+      edgesSorted[i] = edgesSorted[i][0];
+    }
+    return edgesSorted;
   }
 
   getNotSelfIntersect() {
