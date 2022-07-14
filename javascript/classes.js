@@ -234,10 +234,8 @@ class SecurityGuard extends Point {
       ) {
         nextIssecondPoint = !nextIssecondPoint;
 
-        console.log(i, "insideOverlap", toAdd.length, toRemove.length);
         if (toAdd.length + toRemove.length !== 4) continue;
         else {
-          console.log(i, "2ndPoint");
           currentlyOnSelfIntersectionPoint = true;
         }
       }
@@ -254,6 +252,8 @@ class SecurityGuard extends Point {
 
         for (let j = 0; j < temp.length; j += 1) {
           toRemove[j] = temp[j];
+          // console.log("removing", toRemove[j]);
+
           this.root = deleteNode(
             this.root,
             toRemove[j],
@@ -262,9 +262,6 @@ class SecurityGuard extends Point {
             toRemove
           );
         }
-
-        // console.log("removing", toRemove[0]);
-        // console.log("removing", toRemove[1]);
 
         leftNew = getLeftmostLeaf(this.root).theKey;
         if (
@@ -313,14 +310,13 @@ class SecurityGuard extends Point {
           [0, 255, 255],
           [255, 0, 255], // pink
         ];
-        if (temp.length === 3) {
-          for (let c = 0; c < temp.length; c += 1) {
-            drawLine(toAdd[c], a[c], 12);
-          }
-        }
+
 
         for (let j = 0; j < temp.length; j += 1) {
           toAdd[j] = temp[j];
+
+          // console.log("adding", toAdd[j]);
+
           this.root = insertNode(
             this.root,
             toAdd[j],
@@ -329,10 +325,7 @@ class SecurityGuard extends Point {
             toAdd
           );
         }
-
-        // console.log("adding", toAdd[0]);
-        // console.log("adding", toAdd[1]);
-
+        
         leftNew = getLeftmostLeaf(this.root).theKey;
         if (
           leftPrev !== leftNew &&
@@ -398,7 +391,7 @@ class SecurityGuard extends Point {
           );
         }
       }
-      if (toAdd.length === 1 && toRemove.length === 0) {
+      if (toAdd.length === 1 && toRemove.length !== 1) {
         leftPrev = getLeftmostLeaf(this.root).theKey;
         this.root = insertNode(
           this.root,
@@ -408,13 +401,13 @@ class SecurityGuard extends Point {
           [null, null]
         );
 
-        // console.log("adding", toAdd[0]);
+        // console.log("adding solo", toAdd[0]);
 
         leftNew = getLeftmostLeaf(this.root).theKey;
         if (leftPrev !== leftNew) {
         }
       }
-      if (toRemove.length === 1 && toAdd.length === 0) {
+      if (toRemove.length === 1 && toAdd.length !== 1) {
         leftPrev = getLeftmostLeaf(this.root).theKey;
 
         this.root = deleteNode(
@@ -426,7 +419,7 @@ class SecurityGuard extends Point {
         );
 
         leftNew = getLeftmostLeaf(this.root).theKey;
-        // console.log("removing", toRemove[0]);
+        // console.log("removing solo", toRemove[0]);
 
         if (leftPrev !== leftNew) {
         }
