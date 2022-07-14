@@ -240,124 +240,6 @@ class SecurityGuard extends Point {
         }
       }
 
-      if (toRemove.length > 1) {
-        leftPrev = getLeftmostLeaf(this.root).theKey;
-        let temp = this.sortedVertices[
-          i
-        ].getEdgePairOrderedByAngleToSecurityGuardPointerless(
-          this,
-          toRemove,
-          "toRemove"
-        );
-
-        for (let j = 0; j < temp.length; j += 1) {
-          toRemove[j] = temp[j];
-          // console.log("removing", toRemove[j]);
-
-          this.root = deleteNode(
-            this.root,
-            toRemove[j],
-            this.sortedVertices[i],
-            this,
-            toRemove
-          );
-        }
-
-        leftNew = getLeftmostLeaf(this.root).theKey;
-        if (
-          leftPrev !== leftNew &&
-          currentlyOnSelfIntersectionPoint === false
-        ) {
-          this.constructVisibilityEdge(
-            leftNew,
-            this.sortedVertices[i],
-            "remove2"
-          );
-        } else if (
-          (leftPrev !== leftNew &&
-            currentlyOnSelfIntersectionPoint === true &&
-            this.constructedPoints.length > 0 &&
-            checkIfTwoPointsOverlap(
-              this.constructedPoints[this.constructedPoints.length - 1],
-              this.sortedVertices[i]
-            ) === false) ||
-          (leftPrev !== leftNew &&
-            currentlyOnSelfIntersectionPoint === true &&
-            this.constructedPoints.length === 0)
-        )
-          this.constructedPoints.push(
-            new IsovistPoint(
-              this.sortedVertices[i].getX(),
-              this.sortedVertices[i].getY(),
-              this.sortedVertices[i].getParentShape(),
-              this.sortedVertices[i].getAngleForSecurityGuard(this.name),
-              null
-            )
-          );
-      }
-      if (toAdd.length > 1) {
-        leftPrev = getLeftmostLeaf(this.root).theKey;
-        let temp = this.sortedVertices[
-          i
-        ].getEdgePairOrderedByAngleToSecurityGuardPointerless(
-          this,
-          toAdd,
-          "toAdd"
-        );
-
-        let a = [
-          [255, 255, 0], // yellow
-          [0, 255, 255],
-          [255, 0, 255], // pink
-        ];
-
-
-        for (let j = 0; j < temp.length; j += 1) {
-          toAdd[j] = temp[j];
-
-          // console.log("adding", toAdd[j]);
-
-          this.root = insertNode(
-            this.root,
-            toAdd[j],
-            this.sortedVertices[i],
-            this,
-            toAdd
-          );
-        }
-        
-        leftNew = getLeftmostLeaf(this.root).theKey;
-        if (
-          leftPrev !== leftNew &&
-          currentlyOnSelfIntersectionPoint === false
-        ) {
-          this.constructVisibilityEdge(
-            leftPrev,
-            this.sortedVertices[i],
-            "add2"
-          );
-        } else if (
-          (leftPrev !== leftNew &&
-            currentlyOnSelfIntersectionPoint === true &&
-            this.constructedPoints.length > 0 &&
-            checkIfTwoPointsOverlap(
-              this.constructedPoints[this.constructedPoints.length - 1],
-              this.sortedVertices[i]
-            ) === false) ||
-          (leftPrev !== leftNew &&
-            currentlyOnSelfIntersectionPoint === true &&
-            this.constructedPoints.length === 0)
-        )
-          this.constructedPoints.push(
-            new IsovistPoint(
-              this.sortedVertices[i].getX(),
-              this.sortedVertices[i].getY(),
-              this.sortedVertices[i].getParentShape(),
-              this.sortedVertices[i].getAngleForSecurityGuard(this.name),
-              null
-            )
-          );
-      }
       if (toAdd.length === 1 && toRemove.length === 1) {
         leftPrev = getLeftmostLeaf(this.root).theKey;
         // console.log("updating", toRemove[0]);
@@ -390,41 +272,125 @@ class SecurityGuard extends Point {
             )
           );
         }
-      }
-      if (toAdd.length === 1 && toRemove.length !== 1) {
-        leftPrev = getLeftmostLeaf(this.root).theKey;
-        this.root = insertNode(
-          this.root,
-          toAdd[0],
-          this.sortedVertices[i],
-          this,
-          [null, null]
-        );
+      } else {
+        if (toRemove.length >= 1) {
+          leftPrev = getLeftmostLeaf(this.root).theKey;
+          let temp = this.sortedVertices[
+            i
+          ].getEdgePairOrderedByAngleToSecurityGuardPointerless(
+            this,
+            toRemove,
+            "toRemove"
+          );
 
-        // console.log("adding solo", toAdd[0]);
+          for (let j = 0; j < temp.length; j += 1) {
+            toRemove[j] = temp[j];
+            // console.log("removing", toRemove[j]);
 
-        leftNew = getLeftmostLeaf(this.root).theKey;
-        if (leftPrev !== leftNew) {
+            this.root = deleteNode(
+              this.root,
+              toRemove[j],
+              this.sortedVertices[i],
+              this,
+              toRemove
+            );
+          }
+
+          leftNew = getLeftmostLeaf(this.root).theKey;
+          if (
+            leftPrev !== leftNew &&
+            currentlyOnSelfIntersectionPoint === false
+          ) {
+            this.constructVisibilityEdge(
+              leftNew,
+              this.sortedVertices[i],
+              "remove2"
+            );
+          } else if (
+            (leftPrev !== leftNew &&
+              currentlyOnSelfIntersectionPoint === true &&
+              this.constructedPoints.length > 0 &&
+              checkIfTwoPointsOverlap(
+                this.constructedPoints[this.constructedPoints.length - 1],
+                this.sortedVertices[i]
+              ) === false) ||
+            (leftPrev !== leftNew &&
+              currentlyOnSelfIntersectionPoint === true &&
+              this.constructedPoints.length === 0)
+          )
+            this.constructedPoints.push(
+              new IsovistPoint(
+                this.sortedVertices[i].getX(),
+                this.sortedVertices[i].getY(),
+                this.sortedVertices[i].getParentShape(),
+                this.sortedVertices[i].getAngleForSecurityGuard(this.name),
+                null
+              )
+            );
+        }
+        if (toAdd.length >= 1) {
+          leftPrev = getLeftmostLeaf(this.root).theKey;
+          let temp = this.sortedVertices[
+            i
+          ].getEdgePairOrderedByAngleToSecurityGuardPointerless(
+            this,
+            toAdd,
+            "toAdd"
+          );
+
+          let a = [
+            [255, 255, 0], // yellow
+            [0, 255, 255],
+            [255, 0, 255], // pink
+          ];
+
+          for (let j = 0; j < temp.length; j += 1) {
+            toAdd[j] = temp[j];
+
+            // console.log("adding", toAdd[j]);
+
+            this.root = insertNode(
+              this.root,
+              toAdd[j],
+              this.sortedVertices[i],
+              this,
+              toAdd
+            );
+          }
+
+          leftNew = getLeftmostLeaf(this.root).theKey;
+          if (
+            leftPrev !== leftNew &&
+            currentlyOnSelfIntersectionPoint === false
+          ) {
+            this.constructVisibilityEdge(
+              leftPrev,
+              this.sortedVertices[i],
+              "add2"
+            );
+          } else if (
+            (leftPrev !== leftNew &&
+              currentlyOnSelfIntersectionPoint === true &&
+              this.constructedPoints.length > 0 &&
+              checkIfTwoPointsOverlap(
+                this.constructedPoints[this.constructedPoints.length - 1],
+                this.sortedVertices[i]
+              ) === false) ||
+            (leftPrev !== leftNew &&
+              currentlyOnSelfIntersectionPoint === true &&
+              this.constructedPoints.length === 0)
+          )
+            this.constructedPoints.push(
+              new IsovistPoint(
+                this.sortedVertices[i].getX(),
+                this.sortedVertices[i].getY(),
+                this.sortedVertices[i].getParentShape(),
+                this.sortedVertices[i].getAngleForSecurityGuard(this.name),
+                null
+              )
+            );
         }
       }
-      if (toRemove.length === 1 && toAdd.length !== 1) {
-        leftPrev = getLeftmostLeaf(this.root).theKey;
-
-        this.root = deleteNode(
-          this.root,
-          toRemove[0],
-          this.sortedVertices[i],
-          this,
-          [null, null]
-        );
-
-        leftNew = getLeftmostLeaf(this.root).theKey;
-        // console.log("removing solo", toRemove[0]);
-
-        if (leftPrev !== leftNew) {
-        }
-      }
-
       toRemove = [];
       toAdd = [];
       if (currentlyOnSelfIntersectionPoint === true) {
