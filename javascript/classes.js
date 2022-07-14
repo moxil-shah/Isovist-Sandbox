@@ -171,6 +171,7 @@ class SecurityGuard extends Point {
     let toAdd = [];
     let currentlyOnSelfIntersectionPoint = false;
     this.initialIntersect();
+    let nextIssecondPoint = false;
 
     for (let i = 0; i < this.sortedVertices.length; i += 1) {
       // console.log(i);
@@ -223,9 +224,22 @@ class SecurityGuard extends Point {
       else if (crossProduct2 < 0)
         toRemove.push(this.sortedVertices[i].getLineNext());
 
-      if (this.sortedVertices[i].getNotSelfIntersect() === false) {
+      if (
+        (i !== this.sortedVertices.length - 1 &&
+          checkIfTwoPointsOverlap(
+            this.sortedVertices[i],
+            this.sortedVertices[i + 1]
+          )) ||
+        nextIssecondPoint === true
+      ) {
+        nextIssecondPoint = !nextIssecondPoint;
+
+        console.log(i, "insideOverlap", toAdd.length + toRemove.length);
         if (toAdd.length + toRemove.length !== 4) continue;
-        else currentlyOnSelfIntersectionPoint = true;
+        else {
+          console.log(i, "2ndPoint");
+          currentlyOnSelfIntersectionPoint = true;
+        }
       }
 
       if (toRemove.length === 2) {
