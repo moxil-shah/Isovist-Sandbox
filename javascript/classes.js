@@ -234,7 +234,7 @@ class SecurityGuard extends Point {
       ) {
         nextIssecondPoint = !nextIssecondPoint;
 
-        console.log(i, "insideOverlap", toAdd.length + toRemove.length);
+        console.log(i, "insideOverlap", toAdd.length, toRemove.length);
         if (toAdd.length + toRemove.length !== 4) continue;
         else {
           console.log(i, "2ndPoint");
@@ -242,33 +242,26 @@ class SecurityGuard extends Point {
         }
       }
 
-      if (toRemove.length === 2) {
+      if (toRemove.length > 1) {
         leftPrev = getLeftmostLeaf(this.root).theKey;
         let temp = this.sortedVertices[
           i
         ].getEdgePairOrderedByAngleToSecurityGuardPointerless(
           this,
-          [toRemove[0], toRemove[1]],
+          toRemove,
           "toRemove"
         );
 
-        toRemove[0] = temp[0];
-        toRemove[1] = temp[1];
-        this.root = deleteNode(
-          this.root,
-          toRemove[1],
-          this.sortedVertices[i],
-          this,
-          toRemove
-        );
-
-        this.root = deleteNode(
-          this.root,
-          toRemove[0],
-          this.sortedVertices[i],
-          this,
-          toRemove
-        );
+        for (let j = 0; j < temp.length; j += 1) {
+          toRemove[j] = temp[j];
+          this.root = deleteNode(
+            this.root,
+            toRemove[j],
+            this.sortedVertices[i],
+            this,
+            toRemove
+          );
+        }
 
         // console.log("removing", toRemove[0]);
         // console.log("removing", toRemove[1]);
@@ -305,33 +298,37 @@ class SecurityGuard extends Point {
             )
           );
       }
-      if (toAdd.length === 2) {
+      if (toAdd.length > 1) {
         leftPrev = getLeftmostLeaf(this.root).theKey;
         let temp = this.sortedVertices[
           i
         ].getEdgePairOrderedByAngleToSecurityGuardPointerless(
           this,
-          [toAdd[0], toAdd[1]],
+          toAdd,
           "toAdd"
         );
 
-        toAdd[0] = temp[0];
-        toAdd[1] = temp[1];
+        let a = [
+          [255, 255, 0], // yellow
+          [0, 255, 255],
+          [255, 0, 255], // pink
+        ];
+        if (temp.length === 3) {
+          for (let c = 0; c < temp.length; c += 1) {
+            drawLine(toAdd[c], a[c], 12);
+          }
+        }
 
-        this.root = insertNode(
-          this.root,
-          toAdd[0],
-          this.sortedVertices[i],
-          this,
-          toAdd
-        );
-        this.root = insertNode(
-          this.root,
-          toAdd[1],
-          this.sortedVertices[i],
-          this,
-          toAdd
-        );
+        for (let j = 0; j < temp.length; j += 1) {
+          toAdd[j] = temp[j];
+          this.root = insertNode(
+            this.root,
+            toAdd[j],
+            this.sortedVertices[i],
+            this,
+            toAdd
+          );
+        }
 
         // console.log("adding", toAdd[0]);
         // console.log("adding", toAdd[1]);
