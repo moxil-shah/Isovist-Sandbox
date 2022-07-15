@@ -173,6 +173,7 @@ class SecurityGuard extends Point {
     this.initialIntersect();
     let nextIssecondPoint = false;
 
+    console.log(this.sortedVertices.length);
     for (let i = 0; i < this.sortedVertices.length; i += 1) {
       // console.log(i);
       // InOrder(this.root);
