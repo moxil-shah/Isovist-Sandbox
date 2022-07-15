@@ -175,7 +175,7 @@ class SecurityGuard extends Point {
 
     for (let i = 0; i < this.sortedVertices.length; i += 1) {
       // console.log(i);
-      // preOrder(this.root);
+      // InOrder(this.root);
       // console.log("done");
       this.sweepLine = new Line(
         new Point(this.x, this.y),
@@ -253,6 +253,7 @@ class SecurityGuard extends Point {
 
         if (toUpdate === null) {
           console.log(i);
+          InOrder(this.root);
           console.alert();
         } else toUpdate.theKey = toAdd[0];
 
@@ -282,17 +283,16 @@ class SecurityGuard extends Point {
             toRemove,
             "toRemove"
           );
-
           for (let j = 0; j < temp.length; j += 1) {
             toRemove[j] = temp[j];
             // console.log("removing", toRemove[j]);
 
             this.root = deleteNode(
               this.root,
-              toRemove[j],
+              temp[j],
               this.sortedVertices[i],
               this,
-              toRemove
+              temp
             );
           }
 
@@ -338,12 +338,6 @@ class SecurityGuard extends Point {
             "toAdd"
           );
 
-          let a = [
-            [255, 255, 0], // yellow
-            [0, 255, 255],
-            [255, 0, 255], // pink
-          ];
-
           for (let j = 0; j < temp.length; j += 1) {
             toAdd[j] = temp[j];
 
@@ -351,10 +345,10 @@ class SecurityGuard extends Point {
 
             this.root = insertNode(
               this.root,
-              toAdd[j],
+              temp[j],
               this.sortedVertices[i],
               this,
-              toAdd
+              temp
             );
           }
 
@@ -397,7 +391,7 @@ class SecurityGuard extends Point {
         currentlyOnSelfIntersectionPoint = false;
       }
     }
-
+    
     this.isovist.setVerticesLinkedList(this.constructedPoints);
     this.isovist.setEdges();
   }
@@ -432,7 +426,9 @@ class SecurityGuard extends Point {
 
   lineSideToSearch(v_i, edge) {
     let guardtov_i = new Line(new Point(this.x, this.y), v_i);
-    if (checkIfIntersect(guardtov_i, edge) === true) return "away";
+    if (checkIfIntersect(guardtov_i, edge) === true) 
+    {
+      return "away";};
     return "toward";
   }
 

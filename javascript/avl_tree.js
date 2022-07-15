@@ -281,6 +281,19 @@ function preOrder(node) {
   }
 }
 
+function InOrder(node) {
+  if (node === null) return;
+
+  /* first recur on left child */
+  InOrder(node.left);
+
+  /* then print the data of node */
+  console.log(node.theKey.getPoint1(), node.theKey.getPoint2(), " ");
+
+  /* now recur on right child */
+  InOrder(node.right);
+}
+
 function searchAVLForNode(root, key, override, v_i, guard) {
   // Base Cases: root is null
   // or key is present at root
