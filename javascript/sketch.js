@@ -109,7 +109,6 @@ function polygon(x, y, radius, npoints) {
 
   newObstacle.setVerticesLinkedList(vertexes);
   newObstacle.setEdges();
-  newObstacle.setConvexHull();
   allShapes.add(newObstacle);
 
   for (let eachShape of allShapes) {
@@ -182,6 +181,7 @@ function renderAllShapesPoints() {
   }
 }
 
+// not used
 function deleteTheSelfIntersect(shape) {
   let aVertex = shape.getVertexHead();
   do {
@@ -196,6 +196,7 @@ function deleteTheSelfIntersect(shape) {
   shape.setEdges();
 }
 
+// not used
 function checkIfSelfIntersectingPolygon(theShape) {
   let intersectionPoints = new Map();
   for (let eachLine of theShape.getEdges()) {
@@ -232,8 +233,7 @@ function checkIfSelfIntersectingPolygon(theShape) {
   return intersectionPoints;
 }
 
-function checkIfConvexHullIntersects(theShape) {
-  superImposedShapeChildren.add(theShape);
+function dealWithShapeIntersection() {
   let overlaps = [];
   let overlapShapes = [];
   for (let eachShape of allShapes) {
@@ -256,7 +256,6 @@ function checkIfConvexHullIntersects(theShape) {
   let final = PolyBool.polygon(segments);
 
   for (let eachPointArray of final.regions) {
-    
     let obstacleOverlap = new Obstacle([209, 209, 209]);
     let points = [];
     for (let i = 0; i < eachPointArray.length; i += 1) {

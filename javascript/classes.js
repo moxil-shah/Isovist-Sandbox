@@ -772,15 +772,15 @@ class Shape {
   }
 
   setConvexHull() {
-    // let boundaryPoints = grahamScan(this.getPointsArray());
-    // let vertexArray = [];
-    // this.convexHull = new Shape([0, 0, 0]);
-    // for (let eachPoint of boundaryPoints)
-    //   vertexArray.push(
-    //     new ShapePoint(eachPoint[0], eachPoint[1], this.convexHull)
-    //   );
-    // this.convexHull.setVerticesLinkedList(vertexArray);
-    // this.convexHull.setEdges();
+    let boundaryPoints = grahamScan(this.getPointsArray());
+    let vertexArray = [];
+    this.convexHull = new Shape([0, 0, 0]);
+    for (let eachPoint of boundaryPoints)
+      vertexArray.push(
+        new ShapePoint(eachPoint[0], eachPoint[1], this.convexHull)
+      );
+    this.convexHull.setVerticesLinkedList(vertexArray);
+    this.convexHull.setEdges();
   }
 
   getEdges() {

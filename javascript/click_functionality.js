@@ -31,6 +31,8 @@ function mouseClicked() {
   }
   if (shapeDragged !== -1) {
     shapeDragged = -1;
+    superImposedShapes.clear();
+    superImposedShapeChildren.clear();
     return;
   } else if (pointDragged === -1 && guardDragged === -1) {
     shapeDragged = checkIfClickInsideShape();
@@ -98,8 +100,6 @@ function dragPoint() {
     return;
   }
   if (pointDragged !== -1) {
-
-
     for (let each of superImposedShapes) {
       allShapes.delete(each);
     }
@@ -112,8 +112,7 @@ function dragPoint() {
     pointDragged.setX(mouseX);
     pointDragged.setY(mouseY);
 
-    checkIfConvexHullIntersects(shapesPointDragged);
-
+    dealWithShapeIntersection();
     shapesPointDragged.setEdges();
     updateVertexArrayDistancetoMousePress(shapesPointDragged);
 
@@ -131,7 +130,6 @@ function dragPoint() {
       guard.addAllVertices();
       guard.sortVertices();
     }
-    shapesPointDragged.setConvexHull();
   }
 }
 
@@ -161,6 +159,14 @@ function dragShape() {
     return;
   }
   if (shapeDragged !== -1) {
+    for (let each of superImposedShapes) {
+      allShapes.delete(each);
+    }
+    for (let each of superImposedShapeChildren) {
+      allShapes.add(each);
+    }
+    superImposedShapes.clear();
+    superImposedShapeChildren.clear();
     let currentVertex = shapeDragged.getVertexHead();
     do {
       deltaXCurrent = mouseX - currentVertex.getX();
@@ -172,6 +178,8 @@ function dragShape() {
       currentVertex.setY(currentVertex.getY() + deltaYCurrent - deltaY);
       currentVertex = currentVertex.getPointNext();
     } while (currentVertex !== shapeDragged.getVertexHead());
+
+    dealWithShapeIntersection();
     for (let eachShape of allShapes) {
       let currentVertex = eachShape.getVertexHead();
       do {
@@ -183,8 +191,8 @@ function dragShape() {
     }
 
     for (let guard of allGuards) {
+      guard.addAllVertices();
       guard.sortVertices();
     }
-    shapeDragged.setConvexHull();
   }
 }
