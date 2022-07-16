@@ -171,9 +171,9 @@ class SecurityGuard extends Point {
     let toAdd = [];
     let currentlyOnSelfIntersectionPoint = false;
     this.initialIntersect();
-    let nextIssecondPoint = false;
+    let goNextHowManyTimes = 0;
 
-    console.log(this.sortedVertices.length);
+    // console.log(this.sortedVertices.length);
     for (let i = 0; i < this.sortedVertices.length; i += 1) {
       // console.log(i);
       // InOrder(this.root);
@@ -226,19 +226,19 @@ class SecurityGuard extends Point {
         toRemove.push(this.sortedVertices[i].getLineNext());
 
       if (
-        (i !== this.sortedVertices.length - 1 &&
-          checkIfTwoPointsOverlap(
-            this.sortedVertices[i],
-            this.sortedVertices[i + 1]
-          )) ||
-        nextIssecondPoint === true
+        i !== this.sortedVertices.length - 1 &&
+        checkIfTwoPointsOverlap(
+          this.sortedVertices[i],
+          this.sortedVertices[i + 1]
+        )
       ) {
-        nextIssecondPoint = !nextIssecondPoint;
+        goNextHowManyTimes += 1;
+      }
 
-        if (toAdd.length + toRemove.length !== 4) continue;
-        else {
-          currentlyOnSelfIntersectionPoint = true;
-        }
+      if (toAdd.length + toRemove.length !== (goNextHowManyTimes + 1) * 2)
+        continue;
+      else if (toAdd.length + toRemove.length > 2) {
+        currentlyOnSelfIntersectionPoint = true;
       }
 
       if (toAdd.length === 1 && toRemove.length === 1) {
@@ -308,11 +308,11 @@ class SecurityGuard extends Point {
                 this.constructedPoints[this.constructedPoints.length - 1],
                 this.sortedVertices[i]
               ) === false &&
-              toRemove.length === 4) ||
+              toRemove.length === (goNextHowManyTimes + 1) * 2) ||
             (leftPrev !== leftNew &&
               currentlyOnSelfIntersectionPoint === true &&
               this.constructedPoints.length === 0 &&
-              toRemove.length === 4)
+              toRemove.length === (goNextHowManyTimes + 1) * 2)
           ) {
             this.constructVisibilityEdge(
               leftNew,
@@ -327,11 +327,11 @@ class SecurityGuard extends Point {
                 this.constructedPoints[this.constructedPoints.length - 1],
                 this.sortedVertices[i]
               ) === false &&
-              toRemove.length < 4) ||
+              toRemove.length < (goNextHowManyTimes + 1) * 2) ||
             (leftPrev !== leftNew &&
               currentlyOnSelfIntersectionPoint === true &&
               this.constructedPoints.length === 0 &&
-              toRemove.length < 4)
+              toRemove.length < (goNextHowManyTimes + 1) * 2)
           ) {
             this.constructedPoints.push(
               new IsovistPoint(
@@ -379,11 +379,11 @@ class SecurityGuard extends Point {
                 this.constructedPoints[this.constructedPoints.length - 1],
                 this.sortedVertices[i]
               ) === false &&
-              toAdd.length === 4) ||
+              toAdd.length === (goNextHowManyTimes + 1) * 2) ||
             (leftPrev !== leftNew &&
               currentlyOnSelfIntersectionPoint === true &&
               this.constructedPoints.length === 0 &&
-              toAdd.length === 4)
+              toAdd.length === (goNextHowManyTimes + 1) * 2)
           ) {
             this.constructVisibilityEdge(
               leftPrev,
@@ -398,11 +398,11 @@ class SecurityGuard extends Point {
                 this.constructedPoints[this.constructedPoints.length - 1],
                 this.sortedVertices[i]
               ) === false &&
-              toAdd.length < 4) ||
+              toAdd.length < (goNextHowManyTimes + 1) * 2) ||
             (leftPrev !== leftNew &&
               currentlyOnSelfIntersectionPoint === true &&
               this.constructedPoints.length === 0 &&
-              toAdd.length < 4)
+              toAdd.length < (goNextHowManyTimes + 1) * 2)
           ) {
             this.constructedPoints.push(
               new IsovistPoint(
@@ -420,6 +420,7 @@ class SecurityGuard extends Point {
       toAdd = [];
       if (currentlyOnSelfIntersectionPoint === true) {
         currentlyOnSelfIntersectionPoint = false;
+        goNextHowManyTimes = 0;
       }
     }
 
