@@ -425,7 +425,6 @@ class SecurityGuard extends Point {
     }
 
     this.isovist.setVerticesLinkedList(this.constructedPoints);
-    this.isovist.setEdges();
   }
 
   lineSideToInsert(v_i, edge, other, edgeToInsert) {
@@ -757,6 +756,7 @@ class Shape {
       vertexArray[i].setPointPrev(vertexArray[i - 1]);
       vertexArray[i].setPointNext(vertexArray[i + 1]);
     }
+    this.setEdges();
   }
 
   setEdges() {
@@ -770,18 +770,6 @@ class Shape {
       this.edges.add(aLine);
       currentVertex = currentVertex.getPointNext();
     } while (currentVertex !== this.vertexHead);
-  }
-
-  setConvexHull() {
-    let boundaryPoints = grahamScan(this.getPointsArray());
-    let vertexArray = [];
-    this.convexHull = new Shape([0, 0, 0]);
-    for (let eachPoint of boundaryPoints)
-      vertexArray.push(
-        new ShapePoint(eachPoint[0], eachPoint[1], this.convexHull)
-      );
-    this.convexHull.setVerticesLinkedList(vertexArray);
-    this.convexHull.setEdges();
   }
 
   getEdges() {
@@ -1087,7 +1075,7 @@ class AsanoVisualization {
     this.isovist.getVertexHead().setPointPrev(newIsovistPoint);
 
     this.isovist.setVertexHead(newIsovistPoint);
-    this.isovist.setEdges();
+    this.isovist.setEdges(); // only place where I write setEdges() outside of setVertexLinkedList()
   }
 
   resetAll() {

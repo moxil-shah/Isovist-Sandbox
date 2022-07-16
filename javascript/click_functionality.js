@@ -111,10 +111,7 @@ function dragPoint() {
 
     pointDragged.setX(mouseX);
     pointDragged.setY(mouseY);
-
     dealWithShapeIntersection();
-    shapesPointDragged.setEdges();
-    updateVertexArrayDistancetoMousePress(shapesPointDragged);
 
     for (let eachShape of allShapes) {
       let currentVertex = eachShape.getVertexHead();

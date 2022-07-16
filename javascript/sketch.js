@@ -92,6 +92,8 @@ function polygon(x, y, radius, npoints) {
     for (let i = 0; i < stage.length; i += 1) {
       vertexes.push(stage[i]);
     }
+    newObstacle.setVerticesLinkedList(vertexes);
+    allShapes.add(newObstacle);
   } else {
     newObstacle = new Obstacle([209, 209, 209]);
 
@@ -105,11 +107,14 @@ function polygon(x, y, radius, npoints) {
       vertexes.push(new ObstaclePoint(sx, sy, newObstacle));
       copyVertexes.push([sx, sy]);
     }
+    newObstacle.setVerticesLinkedList(vertexes);
+    allShapes.add(newObstacle);
+    dealWithShapeIntersection();
+    superImposedShapeChildren.clear();
+    superImposedShapes.clear();
   }
 
-  newObstacle.setVerticesLinkedList(vertexes);
-  newObstacle.setEdges();
-  allShapes.add(newObstacle);
+
 
   for (let eachShape of allShapes) {
     let currentVertex = eachShape.getVertexHead();
@@ -181,58 +186,6 @@ function renderAllShapesPoints() {
   }
 }
 
-// not used
-function deleteTheSelfIntersect(shape) {
-  let aVertex = shape.getVertexHead();
-  do {
-    if (aVertex.getNotSelfIntersect() === false) {
-      aVertex.getPointPrev().setPointNext(aVertex.getPointNext());
-      aVertex.getPointNext().setPointPrev(aVertex.getPointPrev());
-      aVertex = aVertex.getPointPrev();
-    }
-    aVertex = aVertex.getPointNext();
-  } while (aVertex !== shape.vertexHead);
-
-  shape.setEdges();
-}
-
-// not used
-function checkIfSelfIntersectingPolygon(theShape) {
-  let intersectionPoints = new Map();
-  for (let eachLine of theShape.getEdges()) {
-    for (let shapeLine of theShape.getEdges()) {
-      if (eachLine === shapeLine) continue;
-      if (checkIfIntersect(eachLine, shapeLine) === true) {
-        let intersectionPoint = findIntersection(eachLine, shapeLine);
-        intersectionPoint = new ObstaclePoint(
-          intersectionPoint.getX(),
-          intersectionPoint.getY(),
-          theShape
-        );
-        if (
-          checkIfTwoPointsOverlapRounded(
-            eachLine.getPoint1(),
-            intersectionPoint,
-            ROUND_FACTOR
-          ) === false &&
-          checkIfTwoPointsOverlapRounded(
-            eachLine.getPoint2(),
-            intersectionPoint,
-            ROUND_FACTOR
-          ) === false
-        ) {
-          if (intersectionPoints.get(eachLine) !== undefined)
-            intersectionPoints.get(eachLine).push(intersectionPoint);
-          else {
-            intersectionPoints.set(eachLine, [intersectionPoint]);
-          }
-        }
-      }
-    }
-  }
-  return intersectionPoints;
-}
-
 function dealWithShapeIntersection() {
   let overlaps = [];
   let overlapShapes = [];
@@ -268,7 +221,6 @@ function dealWithShapeIntersection() {
       );
     }
     obstacleOverlap.setVerticesLinkedList(points);
-    obstacleOverlap.setEdges();
 
     superImposedShapes.add(obstacleOverlap);
     allShapes.add(obstacleOverlap);
