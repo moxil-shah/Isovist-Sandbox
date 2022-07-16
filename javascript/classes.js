@@ -299,8 +299,20 @@ class SecurityGuard extends Point {
 
           leftNew = getLeftmostLeaf(this.root).theKey;
           if (
-            leftPrev !== leftNew &&
-            currentlyOnSelfIntersectionPoint === false
+            (leftPrev !== leftNew &&
+              currentlyOnSelfIntersectionPoint === false) ||
+            (leftPrev !== leftNew &&
+              currentlyOnSelfIntersectionPoint === true &&
+              this.constructedPoints.length > 0 &&
+              checkIfTwoPointsOverlap(
+                this.constructedPoints[this.constructedPoints.length - 1],
+                this.sortedVertices[i]
+              ) === false &&
+              toRemove.length === 4) ||
+            (leftPrev !== leftNew &&
+              currentlyOnSelfIntersectionPoint === true &&
+              this.constructedPoints.length === 0 &&
+              toRemove.length === 4)
           ) {
             this.constructVisibilityEdge(
               leftNew,
@@ -314,11 +326,13 @@ class SecurityGuard extends Point {
               checkIfTwoPointsOverlap(
                 this.constructedPoints[this.constructedPoints.length - 1],
                 this.sortedVertices[i]
-              ) === false) ||
+              ) === false &&
+              toRemove.length < 4) ||
             (leftPrev !== leftNew &&
               currentlyOnSelfIntersectionPoint === true &&
-              this.constructedPoints.length === 0)
-          )
+              this.constructedPoints.length === 0 &&
+              toRemove.length < 4)
+          ) {
             this.constructedPoints.push(
               new IsovistPoint(
                 this.sortedVertices[i].getX(),
@@ -328,6 +342,7 @@ class SecurityGuard extends Point {
                 null
               )
             );
+          }
         }
         if (toAdd.length >= 1) {
           leftPrev = getLeftmostLeaf(this.root).theKey;
@@ -355,8 +370,20 @@ class SecurityGuard extends Point {
 
           leftNew = getLeftmostLeaf(this.root).theKey;
           if (
-            leftPrev !== leftNew &&
-            currentlyOnSelfIntersectionPoint === false
+            (leftPrev !== leftNew &&
+              currentlyOnSelfIntersectionPoint === false) ||
+            (leftPrev !== leftNew &&
+              currentlyOnSelfIntersectionPoint === true &&
+              this.constructedPoints.length > 0 &&
+              checkIfTwoPointsOverlap(
+                this.constructedPoints[this.constructedPoints.length - 1],
+                this.sortedVertices[i]
+              ) === false &&
+              toAdd.length === 4) ||
+            (leftPrev !== leftNew &&
+              currentlyOnSelfIntersectionPoint === true &&
+              this.constructedPoints.length === 0 &&
+              toAdd.length === 4)
           ) {
             this.constructVisibilityEdge(
               leftPrev,
@@ -370,11 +397,13 @@ class SecurityGuard extends Point {
               checkIfTwoPointsOverlap(
                 this.constructedPoints[this.constructedPoints.length - 1],
                 this.sortedVertices[i]
-              ) === false) ||
+              ) === false &&
+              toAdd.length < 4) ||
             (leftPrev !== leftNew &&
               currentlyOnSelfIntersectionPoint === true &&
-              this.constructedPoints.length === 0)
-          )
+              this.constructedPoints.length === 0 &&
+              toAdd.length < 4)
+          ) {
             this.constructedPoints.push(
               new IsovistPoint(
                 this.sortedVertices[i].getX(),
@@ -384,6 +413,7 @@ class SecurityGuard extends Point {
                 null
               )
             );
+          }
         }
       }
       toRemove = [];
@@ -392,7 +422,7 @@ class SecurityGuard extends Point {
         currentlyOnSelfIntersectionPoint = false;
       }
     }
-    
+
     this.isovist.setVerticesLinkedList(this.constructedPoints);
     this.isovist.setEdges();
   }
@@ -427,9 +457,9 @@ class SecurityGuard extends Point {
 
   lineSideToSearch(v_i, edge) {
     let guardtov_i = new Line(new Point(this.x, this.y), v_i);
-    if (checkIfIntersect(guardtov_i, edge) === true) 
-    {
-      return "away";};
+    if (checkIfIntersect(guardtov_i, edge) === true) {
+      return "away";
+    }
     return "toward";
   }
 
