@@ -235,7 +235,7 @@ function checkIfSelfIntersectingPolygon(theShape) {
 function checkIfConvexHullIntersects(theShape) {
   superImposedShapeChildren.add(theShape);
   let overlaps = [];
-
+  let overlapShapes = [];
   for (let eachShape of allShapes) {
     if (eachShape === gameShape) continue;
     overlaps.push(eachShape.getPointsArray(true));
@@ -243,14 +243,20 @@ function checkIfConvexHullIntersects(theShape) {
     allShapes.delete(eachShape);
   }
 
-  let allPoints = polygonClipping.union(overlaps);
-
-  for (let each of allPoints) {
-    each[0].pop();
+  for (let each of overlaps) {
+    overlapShapes.push({ regions: each, inverted: false });
   }
 
-  for (let eachPointArray of allPoints) {
-    eachPointArray = eachPointArray[0];
+  var segments = PolyBool.segments(overlapShapes[0]);
+  for (var i = 1; i < overlapShapes.length; i++) {
+    var seg2 = PolyBool.segments(overlapShapes[i]);
+    var comb = PolyBool.combine(segments, seg2);
+    segments = PolyBool.selectUnion(comb);
+  }
+  let final = PolyBool.polygon(segments);
+
+  for (let eachPointArray of final.regions) {
+    
     let obstacleOverlap = new Obstacle([209, 209, 209]);
     let points = [];
     for (let i = 0; i < eachPointArray.length; i += 1) {
