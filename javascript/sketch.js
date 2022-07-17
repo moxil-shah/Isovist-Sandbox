@@ -87,7 +87,7 @@ function polygon(x, y, radius, npoints) {
       new ObstaclePoint(0, 0, newObstacle),
       new ObstaclePoint(width, 0, newObstacle),
       new ObstaclePoint(width, height, newObstacle),
-      new ObstaclePoint(0, height, newObstacle),
+      new ObstaclePoint(0, height - 50, newObstacle),
     ];
     for (let i = 0; i < stage.length; i += 1) {
       vertexes.push(stage[i]);
@@ -113,8 +113,6 @@ function polygon(x, y, radius, npoints) {
     superImposedShapeChildren.clear();
     superImposedShapes.clear();
   }
-
-
 
   for (let eachShape of allShapes) {
     let currentVertex = eachShape.getVertexHead();
@@ -238,4 +236,61 @@ function updateVertexArrayDistancetoMousePress(shape) {
     shape.setVerticesDistancetoMousePress(currentVertex, [deltaX, deltaY]);
     currentVertex = currentVertex.getPointNext();
   } while (currentVertex !== shape.getVertexHead());
+}
+
+function deleteTheIntersectWithGameShape(shape) {
+  let aVertex = shape.getVertexHead();
+  do {
+    if (aVertex.getNotSelfIntersect() === false) {
+      aVertex.getPointPrev().setPointNext(aVertex.getPointNext());
+      aVertex.getPointNext().setPointPrev(aVertex.getPointPrev());
+      aVertex = aVertex.getPointPrev();
+    }
+    aVertex = aVertex.getPointNext();
+  } while (aVertex !== shape.vertexHead);
+
+  shape.setEdges();
+
+  aVertex = gameShape.getVertexHead();
+  do {
+    if (aVertex.getNotSelfIntersect() === false) {
+      aVertex.getPointPrev().setPointNext(aVertex.getPointNext());
+      aVertex.getPointNext().setPointPrev(aVertex.getPointPrev());
+      aVertex = aVertex.getPointPrev();
+    }
+    aVertex = aVertex.getPointNext();
+  } while (aVertex !== gameShape.vertexHead);
+
+  gameShape.setEdges();
+}
+
+function checkIfShapeIntersectsWithGameShapeData(theShape) {
+  let intersectionPoints = new Map();
+  for (let eachLine of theShape.getEdges()) {
+    for (let shapeLine of gameShape.getEdges()) {
+      if (checkIfIntersect(eachLine, shapeLine) === true) {
+        let intersectionPoint = findIntersection(eachLine, shapeLine);
+        intersectionPoint = new ObstaclePoint(
+          intersectionPoint.getX(),
+          intersectionPoint.getY(),
+          theShape
+        );
+
+        if (intersectionPoints.get(eachLine) !== undefined)
+          intersectionPoints.get(eachLine).push(intersectionPoint);
+        else {
+          intersectionPoints.set(eachLine, [intersectionPoint]);
+        }
+      }
+    }
+  }
+  return intersectionPoints;
+}
+
+function checkIfShapeIntersectsWithGameShape(theShape) {
+  for (let eachLine of theShape.getEdges()) {
+    for (let shapeLine of gameShape.getEdges())
+      if (checkIfIntersect(eachLine, shapeLine) === true) return true;
+  }
+  return false;
 }

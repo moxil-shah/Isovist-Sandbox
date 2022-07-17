@@ -114,6 +114,20 @@ function dragPoint() {
     dealWithShapeIntersection();
 
     for (let eachShape of allShapes) {
+      if (eachShape === gameShape) continue;
+      if (checkIfShapeIntersectsWithGameShape(eachShape)) {
+        let polyOutside = PolyBool.difference(
+          { regions: eachShape.getPointsArray(true), inverted: false },
+          { regions: gameShape.getPointsArray(true), inverted: false }
+        );
+        let polyInside = PolyBool.difference(
+          { regions: eachShape.getPointsArray(true), inverted: false },
+          { regions: polyOutside.regions, inverted: false }
+        );
+        console.log(polyInside); // continue here
+      }
+    }
+    for (let eachShape of allShapes) {
       let currentVertex = eachShape.getVertexHead();
       do {
         for (let guard of allGuards) {
