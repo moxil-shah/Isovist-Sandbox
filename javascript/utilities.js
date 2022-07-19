@@ -56,7 +56,7 @@ function sidesInput() {
 // from the HTML form
 function SecurityGuardInput() {
   if (securityGuardNames.length !== 0) {
-    guard = new SecurityGuard(27.5, 100, securityGuardNames.pop());
+    guard = new SecurityGuard(100, 100, securityGuardNames.pop());
     for (let eachShape of allShapes) {
       let currentVertex = eachShape.getVertexHead();
       do {

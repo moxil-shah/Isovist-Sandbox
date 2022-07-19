@@ -23,6 +23,10 @@ class Point {
   getPoint() {
     return this;
   }
+
+  getArrayForm() {
+    return [this.x, this.y];
+  }
 }
 
 class ShapePoint extends Point {
@@ -821,7 +825,6 @@ class Obstacle extends Shape {
   constructor(color) {
     super(color);
     this.verticesDistancetoMousePress = new Map();
-    this.unionParent = null;
   }
 
   setVerticesDistancetoMousePress(theVertex, coordinate) {

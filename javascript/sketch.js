@@ -24,6 +24,9 @@ let controlPanel;
 let superImposedShapes = new Set();
 let superImposedShapeChildren = new Set();
 
+let uncutShapes = new Set();
+let cutShapes = new Set();
+
 function setup() {
   // let canvas = createCanvas($(window).width(), $(window).height());
   let canvas = createCanvas(windowWidth - getScrollBarWidth(), windowHeight);
@@ -84,9 +87,9 @@ function polygon(x, y, radius, npoints) {
     newObstacle = new Obstacle([0, 0, 0]);
     gameShape = newObstacle;
     let stage = [
-      new ObstaclePoint(0, 0, newObstacle),
-      new ObstaclePoint(width, 0, newObstacle),
-      new ObstaclePoint(width, height, newObstacle),
+      new ObstaclePoint(50, 0, newObstacle),
+      new ObstaclePoint(width + 50, 0, newObstacle),
+      new ObstaclePoint(width + 50, height - 50, newObstacle),
       new ObstaclePoint(0, height - 50, newObstacle),
     ];
     for (let i = 0; i < stage.length; i += 1) {
@@ -185,6 +188,8 @@ function renderAllShapesPoints() {
 }
 
 function dealWithShapeIntersection() {
+  superImposedShapes.clear();
+  superImposedShapeChildren.clear();
   let overlaps = [];
   let overlapShapes = [];
   for (let eachShape of allShapes) {
@@ -222,6 +227,46 @@ function dealWithShapeIntersection() {
 
     superImposedShapes.add(obstacleOverlap);
     allShapes.add(obstacleOverlap);
+  }
+}
+
+function dealWithGameShapeIntersection() {
+  cutShapes.clear();
+  uncutShapes.clear();
+  let shapesToCut = new Set();
+  for (let eachShape of allShapes) {
+    if (eachShape === gameShape) continue;
+    if (checkIfShapeIntersectsWithGameShape(eachShape)) {
+      let polyOutside = PolyBool.difference(
+        { regions: eachShape.getPointsArray(true), inverted: false },
+        { regions: gameShape.getPointsArray(true), inverted: false }
+      );
+      let polyInside = PolyBool.difference(
+        { regions: eachShape.getPointsArray(true), inverted: false },
+        { regions: polyOutside.regions, inverted: false }
+      );
+      let obstacleCut = new Obstacle([209, 209, 209]);
+      let points = [];
+      if (polyInside.regions.length === 0) return;
+      for (let i = 0; i < polyInside.regions[0].length; i += 1) {
+        points.push(
+          new ObstaclePoint(
+            polyInside.regions[0][i][0],
+            polyInside.regions[0][i][1],
+            obstacleCut
+          )
+        );
+      }
+      obstacleCut.setVerticesLinkedList(points);
+      shapesToCut.add([eachShape, obstacleCut]);
+    }
+  }
+
+  for (let each of shapesToCut) {
+    allShapes.delete(each[0]);
+    allShapes.add(each[1]);
+    cutShapes.add(each[1]);
+    uncutShapes.add(each[0]);
   }
 }
 
@@ -288,9 +333,17 @@ function checkIfShapeIntersectsWithGameShapeData(theShape) {
 }
 
 function checkIfShapeIntersectsWithGameShape(theShape) {
-  for (let eachLine of theShape.getEdges()) {
-    for (let shapeLine of gameShape.getEdges())
-      if (checkIfIntersect(eachLine, shapeLine) === true) return true;
-  }
+  let currentVertex = theShape.getVertexHead();
+  do {
+    if (
+      classifyPoint(
+        gameShape.getPointsArray(),
+        currentVertex.getArrayForm()
+      ) === 1
+    )
+      return true;
+
+    currentVertex = currentVertex.getPointNext();
+  } while (currentVertex !== theShape.getVertexHead());
   return false;
 }

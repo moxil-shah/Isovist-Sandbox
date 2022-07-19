@@ -24,6 +24,8 @@ function mouseClicked() {
     pointDragged = shapesPointDragged = -1;
     superImposedShapes.clear();
     superImposedShapeChildren.clear();
+    cutShapes.clear();
+    uncutShapes.clear();
     return;
   } else if (shapeDragged === -1 && guardDragged === -1) {
     [pointDragged, shapesPointDragged] = checkIfClickAVertex();
@@ -33,6 +35,8 @@ function mouseClicked() {
     shapeDragged = -1;
     superImposedShapes.clear();
     superImposedShapeChildren.clear();
+    cutShapes.clear();
+    uncutShapes.clear();
     return;
   } else if (pointDragged === -1 && guardDragged === -1) {
     shapeDragged = checkIfClickInsideShape();
@@ -100,33 +104,20 @@ function dragPoint() {
     return;
   }
   if (pointDragged !== -1) {
-    for (let each of superImposedShapes) {
-      allShapes.delete(each);
-    }
-    for (let each of superImposedShapeChildren) {
-      allShapes.add(each);
-    }
-    superImposedShapes.clear();
-    superImposedShapeChildren.clear();
+    for (let each of cutShapes) allShapes.delete(each);
+
+    for (let each of uncutShapes) allShapes.add(each);
+
+    for (let each of superImposedShapes) allShapes.delete(each);
+
+    for (let each of superImposedShapeChildren) allShapes.add(each);
 
     pointDragged.setX(mouseX);
     pointDragged.setY(mouseY);
-    dealWithShapeIntersection();
 
-    for (let eachShape of allShapes) {
-      if (eachShape === gameShape) continue;
-      if (checkIfShapeIntersectsWithGameShape(eachShape)) {
-        let polyOutside = PolyBool.difference(
-          { regions: eachShape.getPointsArray(true), inverted: false },
-          { regions: gameShape.getPointsArray(true), inverted: false }
-        );
-        let polyInside = PolyBool.difference(
-          { regions: eachShape.getPointsArray(true), inverted: false },
-          { regions: polyOutside.regions, inverted: false }
-        );
-        console.log(polyInside); // continue here
-      }
-    }
+    dealWithShapeIntersection();
+    dealWithGameShapeIntersection();
+
     for (let eachShape of allShapes) {
       let currentVertex = eachShape.getVertexHead();
       do {
@@ -170,14 +161,14 @@ function dragShape() {
     return;
   }
   if (shapeDragged !== -1) {
-    for (let each of superImposedShapes) {
-      allShapes.delete(each);
-    }
-    for (let each of superImposedShapeChildren) {
-      allShapes.add(each);
-    }
-    superImposedShapes.clear();
-    superImposedShapeChildren.clear();
+    for (let each of cutShapes) allShapes.delete(each);
+
+    for (let each of uncutShapes) allShapes.add(each);
+
+    for (let each of superImposedShapes) allShapes.delete(each);
+
+    for (let each of superImposedShapeChildren) allShapes.add(each);
+
     let currentVertex = shapeDragged.getVertexHead();
     do {
       deltaXCurrent = mouseX - currentVertex.getX();
@@ -191,6 +182,7 @@ function dragShape() {
     } while (currentVertex !== shapeDragged.getVertexHead());
 
     dealWithShapeIntersection();
+    dealWithGameShapeIntersection();
     for (let eachShape of allShapes) {
       let currentVertex = eachShape.getVertexHead();
       do {
