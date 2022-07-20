@@ -87,10 +87,10 @@ function polygon(x, y, radius, npoints) {
     newObstacle = new Obstacle([0, 0, 0]);
     gameShape = newObstacle;
     let stage = [
-      new ObstaclePoint(50, 0, newObstacle),
-      new ObstaclePoint(width + 50, 0, newObstacle),
-      new ObstaclePoint(width + 50, height - 50, newObstacle),
-      new ObstaclePoint(0, height - 50, newObstacle),
+      new ObstaclePoint(50, 50, newObstacle),
+      new ObstaclePoint(width - 50, 50, newObstacle),
+      new ObstaclePoint(width - 50, height - 50, newObstacle),
+      new ObstaclePoint(0 + 50, height - 50, newObstacle),
     ];
     for (let i = 0; i < stage.length; i += 1) {
       vertexes.push(stage[i]);

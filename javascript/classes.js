@@ -27,6 +27,13 @@ class Point {
   getArrayForm() {
     return [this.x, this.y];
   }
+
+  getArrayFormRounded() {
+    return [
+      Math.round(this.x * ROUND_FACTOR) / ROUND_FACTOR,
+      Math.round(this.y * ROUND_FACTOR) / ROUND_FACTOR,
+    ];
+  }
 }
 
 class ShapePoint extends Point {
@@ -179,9 +186,17 @@ class SecurityGuard extends Point {
 
     // console.log(this.sortedVertices.length);
     for (let i = 0; i < this.sortedVertices.length; i += 1) {
-      // console.log(i);
-      // InOrder(this.root);
-      // console.log("done");
+      if (
+        classifyPoint(
+          gameShape.getPointsArray(),
+          this.sortedVertices[i].getArrayFormRounded()
+        ) === 1
+      )
+        continue;
+
+      console.log(i);
+      InOrder(this.root);
+      console.log("done");
       this.sweepLine = new Line(
         new Point(this.x, this.y),
         new Point(this.sortedVertices[i].getX(), this.sortedVertices[i].getY())
@@ -247,11 +262,10 @@ class SecurityGuard extends Point {
 
       if (toAdd.length === 1 && toRemove.length === 1) {
         leftPrev = getLeftmostLeaf(this.root).theKey;
-        // console.log("updating", toRemove[0]);
+        console.log("updating", toRemove[0]);
         let toUpdate = searchAVLForNode(
           this.root,
           toRemove[0],
-          false,
           this.sortedVertices[i],
           this
         );
@@ -290,7 +304,7 @@ class SecurityGuard extends Point {
           );
           for (let j = 0; j < temp.length; j += 1) {
             toRemove[j] = temp[j];
-            // console.log("removing", toRemove[j]);
+            console.log("removing", toRemove[j]);
 
             this.root = deleteNode(
               this.root,
@@ -361,7 +375,7 @@ class SecurityGuard extends Point {
           for (let j = 0; j < temp.length; j += 1) {
             toAdd[j] = temp[j];
 
-            // console.log("adding", toAdd[j]);
+            console.log("adding", toAdd[j]);
 
             this.root = insertNode(
               this.root,
@@ -439,6 +453,20 @@ class SecurityGuard extends Point {
         if (other.indexOf(edge) < other.indexOf(edgeToInsert)) return "away";
         else if (other.indexOf(edge) > other.indexOf(edgeToInsert))
           return "toward";
+      } else if (edge.getParentShape() === gameShape) {
+        let v0 = createVector(
+          edge.getPoint2().getX() - edge.getPoint1().getX(),
+          -(edge.getPoint2().getY() - edge.getPoint1().getY()),
+          0
+        );
+        let v1 = createVector(
+          edgeToInsert.getPoint2().getX() - edgeToInsert.getPoint1().getX(),
+          -(edgeToInsert.getPoint2().getY() - edgeToInsert.getPoint1().getY()),
+          0
+        );
+        if (v0.angleBetween(v1) === 0 || v0.angleBetween(v1) === PI) {
+          return "toward";
+        }
       } else return "away";
     }
     return "toward";
@@ -454,12 +482,27 @@ class SecurityGuard extends Point {
         if (other.indexOf(edge) < other.indexOf(edgeToDelete)) return "away";
         else if (other.indexOf(edge) > other.indexOf(edgeToDelete))
           return "toward";
+      } else if (edge.getParentShape() === gameShape) {
+        let v0 = createVector(
+          edge.getPoint2().getX() - edge.getPoint1().getX(),
+          -(edge.getPoint2().getY() - edge.getPoint1().getY()),
+          0
+        );
+        let v1 = createVector(
+          edgeToDelete.getPoint2().getX() - edgeToDelete.getPoint1().getX(),
+          -(edgeToDelete.getPoint2().getY() - edgeToDelete.getPoint1().getY()),
+          0
+        );
+        console.log(v0.angleBetween(v1));
+        if (v0.angleBetween(v1) === 0 || v0.angleBetween(v1) === PI) {
+          return "toward";
+        }
       } else return "away";
     }
     return "toward";
   }
 
-  lineSideToSearch(v_i, edge) {
+  lineSideToSearch(v_i, edge, edgeToFind) {
     let guardtov_i = new Line(new Point(this.x, this.y), v_i);
     if (checkIfIntersect(guardtov_i, edge) === true) {
       return "away";
@@ -699,6 +742,7 @@ class Line {
     this.point2 = p2;
     this.position = null;
     this.positionPrior = null;
+    this.parentShape = null;
   }
 
   setPosition(position) {
@@ -715,6 +759,10 @@ class Line {
 
   setPoint2(p2) {
     this.point2 = p2;
+  }
+
+  setParentShape(shape) {
+    this.parentShape = shape;
   }
 
   getPoint1() {
@@ -735,6 +783,10 @@ class Line {
 
   getLength() {
     return distanceBetweenTwoPoints(this.point1, this.point2);
+  }
+
+  getParentShape() {
+    return this.parentShape;
   }
 }
 
@@ -767,8 +819,10 @@ class Shape {
     this.edges = new Set();
 
     let currentVertex = this.vertexHead;
+
     do {
       let aLine = new Line(currentVertex, currentVertex.getPointNext());
+      if (allShapes.size === 0) aLine.setParentShape(gameShape);
       currentVertex.setLineNext(aLine);
       currentVertex.getPointNext().setLinePrev(aLine);
       this.edges.add(aLine);

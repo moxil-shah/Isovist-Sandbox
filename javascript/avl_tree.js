@@ -294,20 +294,20 @@ function InOrder(node) {
   InOrder(node.right);
 }
 
-function searchAVLForNode(root, key, override, v_i, guard) {
+function searchAVLForNode(root, key, v_i, guard) {
   // Base Cases: root is null
   // or key is present at root
   if (root === null || root.theKey === key) {
-    if (root === null && override === false) {
+    if (root === null) {
       console.log("Big error 2!");
     }
     return root;
   }
 
   // Key is greater than root's key
-  if (guard.lineSideToSearch(v_i, root.theKey) === "away") {
-    return searchAVLForNode(root.right, key, override, v_i, guard);
+  if (guard.lineSideToSearch(v_i, root.theKey, key) === "away") {
+    return searchAVLForNode(root.right, key, v_i, guard);
   }
   // Key is smaller than root's key
-  return searchAVLForNode(root.left, key, override, v_i, guard);
+  return searchAVLForNode(root.left, key, v_i, guard);
 }
