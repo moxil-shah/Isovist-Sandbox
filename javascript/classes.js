@@ -145,6 +145,17 @@ class SecurityGuard extends Point {
             ROUND_FACTOR
           );
           edge.setPositionPrior(distanceFromIntersectiontoGuard);
+          if (
+            classifyPoint(
+              gameShape.getPointsArray(),
+              edge.getPoint1().getArrayFormRounded()
+            ) === 1 &&
+            classifyPoint(
+              gameShape.getPointsArray(),
+              edge.getPoint2().getArrayFormRounded()
+            ) === 1
+          )
+            continue;
           initialIntersectEdges.push(edge);
         }
       }
@@ -159,6 +170,19 @@ class SecurityGuard extends Point {
           guard.getAngleFromLinetoRightWall(a)
       );
     });
+
+    let tempIndex = -1;
+    for (let i = 0; i < initialIntersectEdges.length; i += 1) {
+      if (initialIntersectEdges[i].getParentShape() === gameShape) {
+        tempIndex = i;
+        break;
+      }
+    }
+
+    if (tempIndex !== -1) {
+      initialIntersectEdges.push(initialIntersectEdges.splice(tempIndex, 1)[0]);
+    }
+
     for (let i = 0; i < initialIntersectEdges.length; i += 1) {
       initialIntersectEdges[i].setPosition(i);
       this.root = insertNodeInitialIntersect(
@@ -194,9 +218,9 @@ class SecurityGuard extends Point {
       )
         continue;
 
-      console.log(i);
-      InOrder(this.root);
-      console.log("done");
+      // console.log(i);
+      // InOrder(this.root);
+      // console.log("done");
       this.sweepLine = new Line(
         new Point(this.x, this.y),
         new Point(this.sortedVertices[i].getX(), this.sortedVertices[i].getY())
@@ -262,7 +286,7 @@ class SecurityGuard extends Point {
 
       if (toAdd.length === 1 && toRemove.length === 1) {
         leftPrev = getLeftmostLeaf(this.root).theKey;
-        console.log("updating", toRemove[0]);
+        //console.log("updating", toRemove[0]);
         let toUpdate = searchAVLForNode(
           this.root,
           toRemove[0],
@@ -304,7 +328,7 @@ class SecurityGuard extends Point {
           );
           for (let j = 0; j < temp.length; j += 1) {
             toRemove[j] = temp[j];
-            console.log("removing", toRemove[j]);
+            //console.log("removing", toRemove[j]);
 
             this.root = deleteNode(
               this.root,
@@ -375,7 +399,7 @@ class SecurityGuard extends Point {
           for (let j = 0; j < temp.length; j += 1) {
             toAdd[j] = temp[j];
 
-            console.log("adding", toAdd[j]);
+            // console.log("adding", toAdd[j]);
 
             this.root = insertNode(
               this.root,
@@ -447,6 +471,7 @@ class SecurityGuard extends Point {
 
   lineSideToInsert(v_i, edge, other, edgeToInsert) {
     if (edge === null) return "DNE";
+    if (edgeToInsert.getParentShape() === gameShape) return "away";
     let guardtov_i = new Line(new Point(this.x, this.y), v_i);
     if (checkIfIntersect(guardtov_i, edge) === true) {
       if (other.includes(edge)) {
@@ -464,6 +489,8 @@ class SecurityGuard extends Point {
           -(edgeToInsert.getPoint2().getY() - edgeToInsert.getPoint1().getY()),
           0
         );
+        //console.log(v0.angleBetween(v1));
+        //console.log(v0.angleBetween(v1) === 0 || v0.angleBetween(v1) === PI);
         if (v0.angleBetween(v1) === 0 || v0.angleBetween(v1) === PI) {
           return "toward";
         }
@@ -476,6 +503,7 @@ class SecurityGuard extends Point {
     if (edge === edgeToDelete) {
       return "found";
     }
+    if (edgeToDelete.getParentShape() === gameShape) return "away";
     let guardtov_i = new Line(new Point(this.x, this.y), v_i);
     if (checkIfIntersect(guardtov_i, edge) === true) {
       if (other.includes(edge)) {
@@ -493,7 +521,8 @@ class SecurityGuard extends Point {
           -(edgeToDelete.getPoint2().getY() - edgeToDelete.getPoint1().getY()),
           0
         );
-        console.log(v0.angleBetween(v1));
+        //console.log(v0.angleBetween(v1));
+        //console.log(v0.angleBetween(v1) === 0 || v0.angleBetween(v1) === PI);
         if (v0.angleBetween(v1) === 0 || v0.angleBetween(v1) === PI) {
           return "toward";
         }
@@ -503,9 +532,26 @@ class SecurityGuard extends Point {
   }
 
   lineSideToSearch(v_i, edge, edgeToFind) {
+    if (edgeToFind.getParentShape() === gameShape) return "away";
     let guardtov_i = new Line(new Point(this.x, this.y), v_i);
     if (checkIfIntersect(guardtov_i, edge) === true) {
-      return "away";
+      if (edge.getParentShape() === gameShape) {
+        let v0 = createVector(
+          edge.getPoint2().getX() - edge.getPoint1().getX(),
+          -(edge.getPoint2().getY() - edge.getPoint1().getY()),
+          0
+        );
+        let v1 = createVector(
+          edgeToFind.getPoint2().getX() - edgeToFind.getPoint1().getX(),
+          -(edgeToFind.getPoint2().getY() - edgeToFind.getPoint1().getY()),
+          0
+        );
+        //console.log(v0.angleBetween(v1));
+        //console.log(v0.angleBetween(v1) === 0 || v0.angleBetween(v1) === PI);
+        if (v0.angleBetween(v1) === 0 || v0.angleBetween(v1) === PI) {
+          return "toward";
+        }
+      } else return "away";
     }
     return "toward";
   }
@@ -715,6 +761,18 @@ class ObstaclePoint extends ShapePoint {
     for (let i = 0; i < edgesSorted.length; i += 1) {
       edgesSorted[i] = edgesSorted[i][0];
     }
+    let tempIndex = -1;
+    for (let i = 0; i < edgesSorted.length; i += 1) {
+      if (edgesSorted[i].getParentShape() === gameShape) {
+        tempIndex = i;
+        break;
+      }
+    }
+
+    if (tempIndex !== -1) {
+      edgesSorted.push(edgesSorted.splice(tempIndex, 1)[0]);
+    }
+
     return edgesSorted;
   }
 
