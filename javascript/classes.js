@@ -318,7 +318,8 @@ class SecurityGuard extends Point {
         }
       } else {
         if (toRemove.length >= 1) {
-          leftPrev = getLeftmostLeaf(this.root).theKey;
+          if (this.root === null) leftPrev = null;
+          else leftPrev = getLeftmostLeaf(this.root).theKey;
           let temp = this.sortedVertices[
             i
           ].getEdgePairOrderedByAngleToSecurityGuardPointerless(
@@ -338,8 +339,8 @@ class SecurityGuard extends Point {
               temp
             );
           }
-
-          leftNew = getLeftmostLeaf(this.root).theKey;
+          if (this.root === null) leftNew = null;
+          else leftNew = getLeftmostLeaf(this.root).theKey;
           if (
             (leftPrev !== leftNew &&
               currentlyOnSelfIntersectionPoint === false) ||
@@ -387,7 +388,8 @@ class SecurityGuard extends Point {
           }
         }
         if (toAdd.length >= 1) {
-          leftPrev = getLeftmostLeaf(this.root).theKey;
+          if (this.root === null) leftPrev = null;
+          else leftPrev = getLeftmostLeaf(this.root).theKey;
           let temp = this.sortedVertices[
             i
           ].getEdgePairOrderedByAngleToSecurityGuardPointerless(
@@ -410,7 +412,8 @@ class SecurityGuard extends Point {
             );
           }
 
-          leftNew = getLeftmostLeaf(this.root).theKey;
+          if (this.root === null) leftNew = null;
+          else leftNew = getLeftmostLeaf(this.root).theKey;
           if (
             (leftPrev !== leftNew &&
               currentlyOnSelfIntersectionPoint === false) ||

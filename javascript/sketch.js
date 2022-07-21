@@ -41,12 +41,12 @@ function windowResized() {
   clearAll();
   resizeCanvas(windowWidth - getScrollBarWidth(), windowHeight);
   let currentVertex = gameShape.getVertexHead().getPointNext();
-  currentVertex.setX(width);
+  currentVertex.setX(width - 50);
   currentVertex = currentVertex.getPointNext();
-  currentVertex.setX(width);
-  currentVertex.setY(height);
+  currentVertex.setX(width - 50);
+  currentVertex.setY(height - 50);
   currentVertex = currentVertex.getPointNext();
-  currentVertex.setY(height);
+  currentVertex.setY(height - 50);
 }
 
 function getScrollBarWidth() {
