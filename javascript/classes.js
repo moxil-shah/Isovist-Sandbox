@@ -857,6 +857,7 @@ class Shape {
     this.edges = new Set();
     this.color = color;
     this.convexHull;
+    this.pointsBackup;
   }
 
   setVerticesLinkedList(vertexArray) {
@@ -933,6 +934,14 @@ class Shape {
     } while (aVertex !== this.vertexHead);
     endShape(CLOSE);
     pop();
+  }
+
+  setPointsBackup() {
+    this.pointsBackup = this.getPointsArray(false);
+  }
+
+  getPointsBackup() {
+    return this.pointsBackup;
   }
 }
 
@@ -1273,5 +1282,112 @@ class AsanoVisualization {
 
   getGuard() {
     return this.guard;
+  }
+}
+
+class ShapeVisualization {
+  constructor(shape) {
+    this.shape = shape;
+    this.shape.setPointsBackup();
+    this.scrollBarSize = document.getElementById("shapeRangeSize");
+    this.scrollBarRotate = document.getElementById("shapeRangeRotate");
+    this.scrollBarRotate.value = 0;
+    this.scrollBarSize.value = 1;
+    this.rotateBtn = document.getElementById("shapebtnradio1");
+    this.sizeBtn = document.getElementById("shapebtnradio2");
+
+    this.pointClicked = new Point(mouseX, mouseY);
+  }
+
+  masterMethod() {
+    for (let each of cutShapes) allShapes.delete(each);
+    for (let each of uncutShapes) allShapes.add(each);
+    for (let each of superImposedShapes) allShapes.delete(each);
+    for (let each of superImposedShapeChildren) allShapes.add(each);
+
+    console.log(allShapes.has(this.shape));
+    if (this.rotateBtn.checked) this.rotateShape();
+    else if (this.sizeBtn.checked) this.growOrShrinkShape();
+  }
+
+  rotateShape() {
+    this.scrollBarRotate.style.display = "block";
+    this.scrollBarSize.style.display = "none";
+
+    let currentVertex = this.shape.getVertexHead();
+    let angle = (this.scrollBarRotate.value * PI) / 180;
+    for (let eachCoord of this.shape.getPointsBackup()) {
+      currentVertex.setX(
+        Math.cos(angle) * (eachCoord[0] - this.pointClicked.x) -
+          Math.sin(angle) * (eachCoord[1] - this.pointClicked.y) +
+          this.pointClicked.x
+      );
+      currentVertex.setY(
+        Math.sin(angle) * (eachCoord[0] - this.pointClicked.x) +
+          Math.cos(angle) * (eachCoord[1] - this.pointClicked.y) +
+          this.pointClicked.y
+      );
+      currentVertex = currentVertex.getPointNext();
+    }
+
+    dealWithShapeIntersection();
+    dealWithGameShapeIntersection();
+
+    for (let eachShape of allShapes) {
+      let currentVertex = eachShape.getVertexHead();
+      do {
+        for (let guard of allGuards) {
+          currentVertex.setSecurityGuardAngle(guard);
+        }
+        currentVertex = currentVertex.getPointNext();
+      } while (currentVertex !== eachShape.getVertexHead());
+    }
+
+    for (let guard of allGuards) {
+      guard.addAllVertices();
+      guard.sortVertices();
+    }
+  }
+
+  growOrShrinkShape() {
+    this.scrollBarRotate.style.display = "none";
+    this.scrollBarSize.style.display = "block";
+
+    let currentVertex = this.shape.getVertexHead();
+    do {
+      currentVertex.setX(
+        this.pointClicked.getX() -
+          this.shape.getVerticesDistancetoMousePress(currentVertex)[0] *
+            this.scrollBarSize.value
+      );
+      currentVertex.setY(
+        this.pointClicked.getY() -
+          this.shape.getVerticesDistancetoMousePress(currentVertex)[1] *
+            this.scrollBarSize.value
+      );
+      currentVertex = currentVertex.getPointNext();
+    } while (currentVertex !== this.shape.getVertexHead());
+
+    dealWithShapeIntersection();
+    dealWithGameShapeIntersection();
+
+    for (let eachShape of allShapes) {
+      let currentVertex = eachShape.getVertexHead();
+      do {
+        for (let guard of allGuards) {
+          currentVertex.setSecurityGuardAngle(guard);
+        }
+        currentVertex = currentVertex.getPointNext();
+      } while (currentVertex !== eachShape.getVertexHead());
+    }
+
+    for (let guard of allGuards) {
+      guard.addAllVertices();
+      guard.sortVertices();
+    }
+  }
+
+  getShape() {
+    return this.shape;
   }
 }

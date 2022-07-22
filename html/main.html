@@ -107,8 +107,8 @@
       </nav>
     </div>
 
-    <div class="container-fluid" id="controlPanel">
-      <h6>Control Panel</h6>
+    <div class="container-fluid" id="guardControlPanel">
+      <h6>Guard Control Panel</h6>
 
       <div class="d-flex bd-highlight justify-content-evenly">
         <div
@@ -174,19 +174,95 @@
           </button>
         </div>
       </div>
+      <div>
+        <input
+          type="range"
+          class="form-range"
+          min="0"
+          max="360"
+          value="360"
+          step="0.1"
+          id="customRange"
+        />
+      </div>
     </div>
 
-    <div>
-      <input
-        type="range"
-        class="form-range"
-        min="0"
-        max="360"
-        value="360"
-        step="0.1"
-        id="customRange"
-        onmousedown="visualizeAsanoSlider()"
-      />
+    <div class="container-fluid" id="shapeControlPanel">
+      <h6>Shape Control Panel</h6>
+      <div class="d-flex bd-highlight justify-content-evenly">
+        <div
+          class="ps-0 py-2 btn-group btn-group-sm"
+          id="shape-group"
+          role="group"
+          aria-label="Basic radio toggle button group"
+        >
+          <input
+            type="radio"
+            class="btn-check"
+            name="shapebtnradio"
+            id="shapebtnradio1"
+            autocomplete="off"
+            onclick="helper()"
+          />
+          <label class="btn btn-outline-primary" for="shapebtnradio1"
+            >Rotate</label
+          >
+
+          <input
+            type="radio"
+            checked="checked"
+            class="btn-check"
+            name="shapebtnradio"
+            id="shapebtnradio2"
+            autocomplete="off"
+            onclick="helper()"
+          />
+          <label class="btn btn-outline-primary" for="shapebtnradio2"
+            >Change Size</label
+          >
+        </div>
+
+        <div class="me-auto p-2 bd-highlight"></div>
+        <div class="p-2 bd-highlight">
+          <button
+            class="btn btn-outline-warning btn-sm"
+            type="button"
+            onclick="removeShape()"
+          >
+            Remove&nbspShape
+          </button>
+        </div>
+        <div class="ps-2 py-2 bd-highlight">
+          <button
+            class="btn btn-outline-danger btn-sm"
+            type="button"
+            onclick="exitShapeControlPanel()"
+          >
+            Exit
+          </button>
+        </div>
+      </div>
+
+      <div>
+        <input
+          type="range"
+          class="form-range"
+          min="0"
+          max="360"
+          value="360"
+          step="0.1"
+          id="shapeRangeRotate"
+        />
+        <input
+          type="range"
+          class="form-range"
+          min="0"
+          max="2"
+          value="1"
+          step="0.01"
+          id="shapeRangeSize"
+        />
+      </div>
     </div>
 
     <div id="canvasDiv"></div>

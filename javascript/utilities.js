@@ -76,10 +76,18 @@ function SecurityGuardInput() {
 }
 
 function exitGuardControlPanel() {
-  window.scrollTo(0, 0);
   visualizeGuard.scrollBar.style.display = "none";
   visualizeGuard = -1;
-  controlPanel.style.display = "none";
+  guardControlPanel.style.display = "none";
+}
+
+function exitShapeControlPanel() {
+  shapeToHandle = pointClicked = -1;
+  superImposedShapes.clear();
+  superImposedShapeChildren.clear();
+  cutShapes.clear();
+  uncutShapes.clear();
+  shapeControlPanel.style.display = "none";
 }
 
 function removeGuard() {
@@ -88,6 +96,20 @@ function removeGuard() {
   document.getElementById("addBtn").disabled = false;
   document.getElementById("addBtn").innerText = "Add Guard";
   exitGuardControlPanel();
+}
+
+function removeShape() {
+  for (let each of cutShapes) allShapes.delete(each);
+  for (let each of uncutShapes) allShapes.add(each);
+  for (let each of superImposedShapes) allShapes.delete(each);
+  for (let each of superImposedShapeChildren) allShapes.add(each);
+  allShapes.delete(shapeToHandle.getShape());
+
+  for (let guard of allGuards) {
+    guard.addAllVertices();
+    guard.sortVertices();
+  }
+  exitShapeControlPanel();
 }
 
 function findIntersection(line1, line2) {
@@ -222,4 +244,13 @@ function checkIfTwoLinesIntersectOnEndPointsRounded(line1, line2) {
     checkIfTwoPointsOverlapRounded(line1.getPoint1(), line2.getPoint2()) ||
     checkIfTwoPointsOverlapRounded(line1.getPoint2(), line2.getPoint1())
   );
+}
+
+function helper() {
+  updateVertexArrayDistancetoMousePressNew(
+    shapeToHandle.shape,
+    shapeToHandle.pointClicked
+  );
+  shapeToHandle.shape.setPointsBackup();
+  document.getElementById("shapeRangeSize").value = 1;
 }

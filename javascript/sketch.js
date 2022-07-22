@@ -19,11 +19,13 @@ let shapesPointDragged = -1;
 let pointDragged = -1;
 let guardDragged = -1;
 let visualizeGuard = -1;
+let shapeToHandle = -1;
+let pointClicked = -1;
 let gameShape;
-let controlPanel;
+let guardControlPanel;
+let shapeControlPanel;
 let superImposedShapes = new Set();
 let superImposedShapeChildren = new Set();
-
 let uncutShapes = new Set();
 let cutShapes = new Set();
 
@@ -34,7 +36,8 @@ function setup() {
   canvas.style("margin-bottom", "-5px");
   frameRate(60);
   polygon(null, null, null, 4);
-  controlPanel = document.getElementById("controlPanel");
+  guardControlPanel = document.getElementById("guardControlPanel");
+  shapeControlPanel = document.getElementById("shapeControlPanel");
 }
 
 function windowResized() {
@@ -66,6 +69,7 @@ function draw() {
   dragSecurityGuard();
   dragPoint();
   dragShape();
+  if (shapeToHandle !== -1) shapeToHandle.masterMethod();
   renderAllShapes();
   if (visualizeGuard === -1) renderAllSecurityGuards();
   renderVertexClicked();
@@ -278,6 +282,19 @@ function updateVertexArrayDistancetoMousePress(shape) {
     // the meat
     deltaX = mouseX - currentVertex.getX();
     deltaY = mouseY - currentVertex.getY();
+    shape.setVerticesDistancetoMousePress(currentVertex, [deltaX, deltaY]);
+    currentVertex = currentVertex.getPointNext();
+  } while (currentVertex !== shape.getVertexHead());
+}
+
+function updateVertexArrayDistancetoMousePressNew(shape, p) {
+  shape.verticesDistancetoMousePress = new Map();
+
+  let currentVertex = shape.getVertexHead();
+  do {
+    // the meat
+    deltaX = p.x - currentVertex.getX();
+    deltaY = p.y - currentVertex.getY();
     shape.setVerticesDistancetoMousePress(currentVertex, [deltaX, deltaY]);
     currentVertex = currentVertex.getPointNext();
   } while (currentVertex !== shape.getVertexHead());

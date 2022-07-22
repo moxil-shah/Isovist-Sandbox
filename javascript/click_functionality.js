@@ -1,14 +1,18 @@
 function doubleClicked() {
-  if (mouseY < 0) return;
   guardDragged = checkIfClickSecurityGuard();
-  if (guardDragged === -1) {
+  shapeDragged = checkIfClickInsideShape();
+  if (guardDragged !== -1) {
+    window.scrollTo(0, 0);
+    visualizeGuard = new AsanoVisualization(guardDragged);
+    guardControlPanel.style.display = "block";
+  } else if (shapeDragged !== -1) {
+    window.scrollTo(0, 0);
+
+    shapeToHandle = new ShapeVisualization(shapeDragged);
+    shapeControlPanel.style.display = "block";
+  } else {
     return;
   }
-  window.scrollTo(0, 0);
-  visualizeGuard = new AsanoVisualization(guardDragged);
-  controlPanel.style.display = "block";
-  const h6 = controlPanel.querySelector("h6");
-  h6.innerText = "Guard Control Panel";
 }
 
 function mouseClicked() {
@@ -99,7 +103,7 @@ function checkIfClickAVertex() {
 }
 
 function dragPoint() {
-  if (visualizeGuard !== -1 || pointDragged === -1) {
+  if (visualizeGuard !== -1 || shapeToHandle !== -1 || pointDragged === -1) {
     pointDragged = -1;
     return;
   }
@@ -136,7 +140,7 @@ function dragPoint() {
 }
 
 function dragSecurityGuard() {
-  if (visualizeGuard !== -1 || guardDragged === -1) {
+  if (visualizeGuard !== -1 || shapeToHandle !== -1 || guardDragged === -1) {
     guardDragged = -1;
     return;
   }
@@ -156,28 +160,24 @@ function dragSecurityGuard() {
 }
 
 function dragShape() {
-  if (visualizeGuard !== -1 || shapeDragged === -1) {
+  if (visualizeGuard !== -1 || shapeToHandle !== -1 || shapeDragged === -1) {
     shapeDragged = -1;
     return;
   }
   if (shapeDragged !== -1) {
     for (let each of cutShapes) allShapes.delete(each);
-
     for (let each of uncutShapes) allShapes.add(each);
-
     for (let each of superImposedShapes) allShapes.delete(each);
-
     for (let each of superImposedShapeChildren) allShapes.add(each);
 
     let currentVertex = shapeDragged.getVertexHead();
     do {
-      deltaXCurrent = mouseX - currentVertex.getX();
-      deltaYCurrent = mouseY - currentVertex.getY();
-      deltaX = shapeDragged.getVerticesDistancetoMousePress(currentVertex)[0];
-      deltaY = shapeDragged.getVerticesDistancetoMousePress(currentVertex)[1];
-      currentVertex.setX(currentVertex.getX() + deltaXCurrent - deltaX);
-
-      currentVertex.setY(currentVertex.getY() + deltaYCurrent - deltaY);
+      currentVertex.setX(
+        mouseX - shapeDragged.getVerticesDistancetoMousePress(currentVertex)[0]
+      );
+      currentVertex.setY(
+        mouseY - shapeDragged.getVerticesDistancetoMousePress(currentVertex)[1]
+      );
       currentVertex = currentVertex.getPointNext();
     } while (currentVertex !== shapeDragged.getVertexHead());
 
