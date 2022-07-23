@@ -82,7 +82,7 @@ function exitGuardControlPanel() {
 }
 
 function exitShapeControlPanel() {
-  shapeToHandle = pointClicked = -1;
+  shapeToHandle = -1;
   superImposedShapes.clear();
   superImposedShapeChildren.clear();
   cutShapes.clear();
@@ -246,11 +246,12 @@ function checkIfTwoLinesIntersectOnEndPointsRounded(line1, line2) {
   );
 }
 
-function helper() {
-  updateVertexArrayDistancetoMousePressNew(
-    shapeToHandle.shape,
-    shapeToHandle.pointClicked
+function shapeToHandleHelper() {
+  updateVertexArrayDistancetoMousePress(
+    shapeToHandle.getShape(),
+    shapeToHandle.getPointClicked()
   );
-  shapeToHandle.shape.setPointsBackup();
+  shapeToHandle.getShape().setPointsBackup();
   document.getElementById("shapeRangeSize").value = 1;
+  document.getElementById("shapeRangeRotate").value = 0;
 }

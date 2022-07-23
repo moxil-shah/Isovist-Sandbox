@@ -64,7 +64,7 @@ function checkIfClickInsideShape() {
     }
     // ray tracing algorithm says if line segment crosses === odd num, then click is inside the shape
     if (lineSegmentCrossesCounter % 2 === 1) {
-      updateVertexArrayDistancetoMousePress(shape);
+      updateVertexArrayDistancetoMousePress(shape, new Point(mouseX, mouseY));
       return shape;
     }
   }

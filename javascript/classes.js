@@ -1295,7 +1295,6 @@ class ShapeVisualization {
     this.scrollBarSize.value = 1;
     this.rotateBtn = document.getElementById("shapebtnradio1");
     this.sizeBtn = document.getElementById("shapebtnradio2");
-
     this.pointClicked = new Point(mouseX, mouseY);
   }
 
@@ -1305,7 +1304,6 @@ class ShapeVisualization {
     for (let each of superImposedShapes) allShapes.delete(each);
     for (let each of superImposedShapeChildren) allShapes.add(each);
 
-    console.log(allShapes.has(this.shape));
     if (this.rotateBtn.checked) this.rotateShape();
     else if (this.sizeBtn.checked) this.growOrShrinkShape();
   }
@@ -1389,5 +1387,9 @@ class ShapeVisualization {
 
   getShape() {
     return this.shape;
+  }
+
+  getPointClicked() {
+    return this.pointClicked;
   }
 }

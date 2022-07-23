@@ -20,7 +20,6 @@ let pointDragged = -1;
 let guardDragged = -1;
 let visualizeGuard = -1;
 let shapeToHandle = -1;
-let pointClicked = -1;
 let gameShape;
 let guardControlPanel;
 let shapeControlPanel;
@@ -274,27 +273,14 @@ function dealWithGameShapeIntersection() {
   }
 }
 
-function updateVertexArrayDistancetoMousePress(shape) {
+function updateVertexArrayDistancetoMousePress(shape, p) {
   shape.verticesDistancetoMousePress = new Map();
 
   let currentVertex = shape.getVertexHead();
   do {
     // the meat
-    deltaX = mouseX - currentVertex.getX();
-    deltaY = mouseY - currentVertex.getY();
-    shape.setVerticesDistancetoMousePress(currentVertex, [deltaX, deltaY]);
-    currentVertex = currentVertex.getPointNext();
-  } while (currentVertex !== shape.getVertexHead());
-}
-
-function updateVertexArrayDistancetoMousePressNew(shape, p) {
-  shape.verticesDistancetoMousePress = new Map();
-
-  let currentVertex = shape.getVertexHead();
-  do {
-    // the meat
-    deltaX = p.x - currentVertex.getX();
-    deltaY = p.y - currentVertex.getY();
+    deltaX = p.getX() - currentVertex.getX();
+    deltaY = p.getY() - currentVertex.getY();
     shape.setVerticesDistancetoMousePress(currentVertex, [deltaX, deltaY]);
     currentVertex = currentVertex.getPointNext();
   } while (currentVertex !== shape.getVertexHead());
