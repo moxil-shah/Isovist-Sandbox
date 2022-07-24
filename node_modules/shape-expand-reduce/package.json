@@ -1,0 +1,31 @@
+{
+  "name": "shape-expand-reduce",
+  "version": "1.0.0",
+  "description": "expands / reduces shape by given ratio",
+  "main": "index.js",
+  "license": "MIT",
+  "author": {
+    "name": "Vlastimil Šenfeld",
+    "email": "bobesa@gammosaur.com",
+    "url": "https://github.com/bobesa"
+  },
+  "dependencies": {},
+  "devDependencies": {},
+  "scripts": {
+    "test": "node test.js"
+  },
+  "keywords": [
+    "shape",
+    "line",
+    "size",
+    "polygon",
+    "distance",
+    "thickness",
+    "expand",
+    "reduce"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/bobesa/shape-expand-reduce.git"
+  }
+}

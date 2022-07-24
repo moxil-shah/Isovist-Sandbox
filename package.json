@@ -1,9 +1,7 @@
 {
   "dependencies": {
-    "gjk": "^0.0.1",
-    "graham-scan": "^0.0.0",
     "polybooljs": "^1.2.0",
-    "polygon-clipping": "^0.15.3",
-    "robust-point-in-polygon": "^1.0.3"
+    "robust-point-in-polygon": "^1.0.3",
+    "shape-expand-reduce": "^1.0.0"
   }
 }

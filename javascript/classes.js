@@ -171,16 +171,24 @@ class SecurityGuard extends Point {
       );
     });
 
-    let tempIndex = -1;
-    for (let i = 0; i < initialIntersectEdges.length; i += 1) {
-      if (initialIntersectEdges[i].getParentShape() === gameShape) {
-        tempIndex = i;
-        break;
+    for (let i = 0; i < initialIntersectEdges.length - 1; i += 1) {
+      if (
+        Math.round(
+          guard.getAngleFromLinetoRightWall(initialIntersectEdges[i]) *
+            ROUND_FACTOR
+        ) /
+          ROUND_FACTOR ===
+          Math.round(
+            guard.getAngleFromLinetoRightWall(initialIntersectEdges[i + 1]) *
+              ROUND_FACTOR
+          ) /
+            ROUND_FACTOR &&
+        initialIntersectEdges[i].getParentShape() === gameShape
+      ) {
+        let temp = initialIntersectEdges[i];
+        initialIntersectEdges[i] = initialIntersectEdges[i + 1];
+        initialIntersectEdges[i + 1] = temp;
       }
-    }
-
-    if (tempIndex !== -1) {
-      initialIntersectEdges.push(initialIntersectEdges.splice(tempIndex, 1)[0]);
     }
 
     for (let i = 0; i < initialIntersectEdges.length; i += 1) {
@@ -215,8 +223,12 @@ class SecurityGuard extends Point {
           gameShape.getPointsArray(),
           this.sortedVertices[i].getArrayFormRounded()
         ) === 1
-      )
+      ) {
+        console.log(gameShape.getPointsArray());
+        console.log(this.sortedVertices[i]);
+        console.log(i, "skipped");
         continue;
+      }
 
       // console.log(i);
       // InOrder(this.root);
@@ -286,7 +298,7 @@ class SecurityGuard extends Point {
 
       if (toAdd.length === 1 && toRemove.length === 1) {
         leftPrev = getLeftmostLeaf(this.root).theKey;
-        //console.log("updating", toRemove[0]);
+        // console.log("updating", toRemove[0]);
         let toUpdate = searchAVLForNode(
           this.root,
           toRemove[0],
@@ -329,7 +341,7 @@ class SecurityGuard extends Point {
           );
           for (let j = 0; j < temp.length; j += 1) {
             toRemove[j] = temp[j];
-            //console.log("removing", toRemove[j]);
+            // console.log("removing", toRemove[j]);
 
             this.root = deleteNode(
               this.root,
@@ -472,31 +484,159 @@ class SecurityGuard extends Point {
     this.isovist.setVerticesLinkedList(this.constructedPoints);
   }
 
+  // lineSideToInsert(v_i, edge, other, edgeToInsert) {
+  //   if (edge === null) return "DNE";
+
+  //   let guardtov_i = new Line(new Point(this.x, this.y), v_i);
+  //   if (checkIfIntersect(guardtov_i, edge) === true) {
+  //     if (other.includes(edge)) {
+  //       if (other.indexOf(edge) < other.indexOf(edgeToInsert)) return "away";
+  //       else if (other.indexOf(edge) > other.indexOf(edgeToInsert))
+  //         return "toward";
+  //     } else {
+  //       let v0 = createVector(
+  //         edge.getPoint2().getX() - edge.getPoint1().getX(),
+  //         -(edge.getPoint2().getY() - edge.getPoint1().getY()),
+  //         0
+  //       );
+  //       let v1 = createVector(
+  //         edgeToInsert.getPoint2().getX() - edgeToInsert.getPoint1().getX(),
+  //         -(edgeToInsert.getPoint2().getY() - edgeToInsert.getPoint1().getY()),
+  //         0
+  //       );
+
+  //       if (
+  //         edge.getParentShape() === gameShape &&
+  //         edgeToInsert.getParentShape() !== gameShape &&
+  //         (v0.angleBetween(v1) === 0 || v0.angleBetween(v1) === PI)
+  //       ) {
+  //         return "toward";
+  //       } else if (
+  //         edge.getParentShape() !== gameShape &&
+  //         edgeToInsert.getParentShape() === gameShape
+  //       ) {
+  //         return "away";
+  //       } else return "away";
+  //     }
+  //   }
+  //   return "toward";
+  // }
+
+  // lineSideToInsert(v_i, edge, other, edgeToInsert) {
+  //   if (edge === null) return "DNE";
+
+  //   let guardtov_i = new Line(new Point(this.x, this.y), v_i);
+  //   if (checkIfIntersect(guardtov_i, edge) === true) {
+  //     if (other.includes(edge)) {
+  //       if (other.indexOf(edge) < other.indexOf(edgeToInsert)) return "away";
+  //       else if (other.indexOf(edge) > other.indexOf(edgeToInsert))
+  //         return "toward";
+  //     } else {
+  //       let v0 = createVector(
+  //         edge.getPoint2().getX() - edge.getPoint1().getX(),
+  //         -(edge.getPoint2().getY() - edge.getPoint1().getY()),
+  //         0
+  //       );
+  //       let v1 = createVector(
+  //         edgeToInsert.getPoint2().getX() - edgeToInsert.getPoint1().getX(),
+  //         -(edgeToInsert.getPoint2().getY() - edgeToInsert.getPoint1().getY()),
+  //         0
+  //       );
+  //       if (v0.angleBetween(v1) === 0 || v0.angleBetween(v1) === PI) {
+  //         if (
+  //           edge.getParentShape() === gameShape &&
+  //           edgeToInsert.getParentShape() !== gameShape
+  //         ) {
+  //           return "toward";
+  //         } else if (
+  //           edge.getParentShape() !== gameShape &&
+  //           edgeToInsert.getParentShape() === gameShape
+  //         ) {
+  //           return "away";
+  //         }
+  //       } else {
+  //         console.log("bruh", v0.angleBetween(v1));
+  //         return "away";
+  //       }
+  //     }
+  //   }
+  //   return "toward";
+  // }
+
+  // lineSideToDelete(v_i, edge, other, edgeToDelete) {
+  //   if (edge === edgeToDelete) {
+  //     return "found";
+  //   }
+  //   let guardtov_i = new Line(new Point(this.x, this.y), v_i);
+  //   if (checkIfIntersect(guardtov_i, edge) === true) {
+  //     if (other.includes(edge)) {
+  //       if (other.indexOf(edge) < other.indexOf(edgeToDelete)) return "away";
+  //       else if (other.indexOf(edge) > other.indexOf(edgeToDelete))
+  //         return "toward";
+  //     } else {
+  //       let v0 = createVector(
+  //         edge.getPoint2().getX() - edge.getPoint1().getX(),
+  //         -(edge.getPoint2().getY() - edge.getPoint1().getY()),
+  //         0
+  //       );
+  //       let v1 = createVector(
+  //         edgeToDelete.getPoint2().getX() - edgeToDelete.getPoint1().getX(),
+  //         -(edgeToDelete.getPoint2().getY() - edgeToDelete.getPoint1().getY()),
+  //         0
+  //       );
+  //       if (
+  //         edge.getParentShape() === gameShape &&
+  //         edgeToDelete.getParentShape() !== gameShape &&
+  //         (v0.angleBetween(v1) === 0 || v0.angleBetween(v1) === PI)
+  //       ) {
+  //         return "toward";
+  //       } else if (
+  //         edge.getParentShape() !== gameShape &&
+  //         edgeToDelete.getParentShape() === gameShape
+  //       ) {
+  //         return "away";
+  //       } else return "away";
+  //     }
+  //   }
+  //   return "toward";
+  // }
+
+  // lineSideToSearch(v_i, edge, edgeToFind) {
+  //   let guardtov_i = new Line(new Point(this.x, this.y), v_i);
+  //   if (checkIfIntersect(guardtov_i, edge) === true) {
+  //     let v0 = createVector(
+  //       edge.getPoint2().getX() - edge.getPoint1().getX(),
+  //       -(edge.getPoint2().getY() - edge.getPoint1().getY()),
+  //       0
+  //     );
+  //     let v1 = createVector(
+  //       edgeToFind.getPoint2().getX() - edgeToFind.getPoint1().getX(),
+  //       -(edgeToFind.getPoint2().getY() - edgeToFind.getPoint1().getY()),
+  //       0
+  //     );
+  //     if (
+  //       edge.getParentShape() === gameShape &&
+  //       edgeToFind.getParentShape() !== gameShape &&
+  //       (v0.angleBetween(v1) === 0 || v0.angleBetween(v1) === PI)
+  //     ) {
+  //       return "toward";
+  //     } else if (
+  //       edge.getParentShape() !== gameShape &&
+  //       edgeToFind.getParentShape() === gameShape
+  //     ) {
+  //       return "away";
+  //     } else return "away";
+  //   }
+  //   return "toward";
+  // }
   lineSideToInsert(v_i, edge, other, edgeToInsert) {
     if (edge === null) return "DNE";
-    if (edgeToInsert.getParentShape() === gameShape) return "away";
     let guardtov_i = new Line(new Point(this.x, this.y), v_i);
     if (checkIfIntersect(guardtov_i, edge) === true) {
       if (other.includes(edge)) {
         if (other.indexOf(edge) < other.indexOf(edgeToInsert)) return "away";
         else if (other.indexOf(edge) > other.indexOf(edgeToInsert))
           return "toward";
-      } else if (edge.getParentShape() === gameShape) {
-        let v0 = createVector(
-          edge.getPoint2().getX() - edge.getPoint1().getX(),
-          -(edge.getPoint2().getY() - edge.getPoint1().getY()),
-          0
-        );
-        let v1 = createVector(
-          edgeToInsert.getPoint2().getX() - edgeToInsert.getPoint1().getX(),
-          -(edgeToInsert.getPoint2().getY() - edgeToInsert.getPoint1().getY()),
-          0
-        );
-        //console.log(v0.angleBetween(v1));
-        //console.log(v0.angleBetween(v1) === 0 || v0.angleBetween(v1) === PI);
-        if (v0.angleBetween(v1) === 0 || v0.angleBetween(v1) === PI) {
-          return "toward";
-        }
       } else return "away";
     }
     return "toward";
@@ -506,55 +646,21 @@ class SecurityGuard extends Point {
     if (edge === edgeToDelete) {
       return "found";
     }
-    if (edgeToDelete.getParentShape() === gameShape) return "away";
     let guardtov_i = new Line(new Point(this.x, this.y), v_i);
     if (checkIfIntersect(guardtov_i, edge) === true) {
       if (other.includes(edge)) {
         if (other.indexOf(edge) < other.indexOf(edgeToDelete)) return "away";
         else if (other.indexOf(edge) > other.indexOf(edgeToDelete))
           return "toward";
-      } else if (edge.getParentShape() === gameShape) {
-        let v0 = createVector(
-          edge.getPoint2().getX() - edge.getPoint1().getX(),
-          -(edge.getPoint2().getY() - edge.getPoint1().getY()),
-          0
-        );
-        let v1 = createVector(
-          edgeToDelete.getPoint2().getX() - edgeToDelete.getPoint1().getX(),
-          -(edgeToDelete.getPoint2().getY() - edgeToDelete.getPoint1().getY()),
-          0
-        );
-        //console.log(v0.angleBetween(v1));
-        //console.log(v0.angleBetween(v1) === 0 || v0.angleBetween(v1) === PI);
-        if (v0.angleBetween(v1) === 0 || v0.angleBetween(v1) === PI) {
-          return "toward";
-        }
       } else return "away";
     }
     return "toward";
   }
 
   lineSideToSearch(v_i, edge, edgeToFind) {
-    if (edgeToFind.getParentShape() === gameShape) return "away";
     let guardtov_i = new Line(new Point(this.x, this.y), v_i);
     if (checkIfIntersect(guardtov_i, edge) === true) {
-      if (edge.getParentShape() === gameShape) {
-        let v0 = createVector(
-          edge.getPoint2().getX() - edge.getPoint1().getX(),
-          -(edge.getPoint2().getY() - edge.getPoint1().getY()),
-          0
-        );
-        let v1 = createVector(
-          edgeToFind.getPoint2().getX() - edgeToFind.getPoint1().getX(),
-          -(edgeToFind.getPoint2().getY() - edgeToFind.getPoint1().getY()),
-          0
-        );
-        //console.log(v0.angleBetween(v1));
-        //console.log(v0.angleBetween(v1) === 0 || v0.angleBetween(v1) === PI);
-        if (v0.angleBetween(v1) === 0 || v0.angleBetween(v1) === PI) {
-          return "toward";
-        }
-      } else return "away";
+      return "away";
     }
     return "toward";
   }
@@ -761,20 +867,20 @@ class ObstaclePoint extends ShapePoint {
       return b[1] - a[1];
     });
 
-    for (let i = 0; i < edgesSorted.length; i += 1) {
-      edgesSorted[i] = edgesSorted[i][0];
-    }
-    let tempIndex = -1;
-    for (let i = 0; i < edgesSorted.length; i += 1) {
-      if (edgesSorted[i].getParentShape() === gameShape) {
-        tempIndex = i;
-        break;
+    for (let i = 0; i < edgesSorted.length - 1; i += 1) {
+      if (
+        Math.round(edgesSorted[i][1] * ROUND_FACTOR) / ROUND_FACTOR ===
+          Math.round(edgesSorted[i + 1][1] * ROUND_FACTOR) / ROUND_FACTOR &&
+        edgesSorted[i][0].getParentShape() === gameShape
+      ) {
+        let temp = edgesSorted[i];
+        edgesSorted[i] = edgesSorted[i + 1];
+        edgesSorted[i + 1] = temp;
       }
     }
 
-    if (tempIndex !== -1) {
-      edgesSorted.push(edgesSorted.splice(tempIndex, 1)[0]);
-    }
+    for (let i = 0; i < edgesSorted.length; i += 1)
+      edgesSorted[i] = edgesSorted[i][0];
 
     return edgesSorted;
   }
