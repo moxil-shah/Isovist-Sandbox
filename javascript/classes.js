@@ -484,151 +484,6 @@ class SecurityGuard extends Point {
     this.isovist.setVerticesLinkedList(this.constructedPoints);
   }
 
-  // lineSideToInsert(v_i, edge, other, edgeToInsert) {
-  //   if (edge === null) return "DNE";
-
-  //   let guardtov_i = new Line(new Point(this.x, this.y), v_i);
-  //   if (checkIfIntersect(guardtov_i, edge) === true) {
-  //     if (other.includes(edge)) {
-  //       if (other.indexOf(edge) < other.indexOf(edgeToInsert)) return "away";
-  //       else if (other.indexOf(edge) > other.indexOf(edgeToInsert))
-  //         return "toward";
-  //     } else {
-  //       let v0 = createVector(
-  //         edge.getPoint2().getX() - edge.getPoint1().getX(),
-  //         -(edge.getPoint2().getY() - edge.getPoint1().getY()),
-  //         0
-  //       );
-  //       let v1 = createVector(
-  //         edgeToInsert.getPoint2().getX() - edgeToInsert.getPoint1().getX(),
-  //         -(edgeToInsert.getPoint2().getY() - edgeToInsert.getPoint1().getY()),
-  //         0
-  //       );
-
-  //       if (
-  //         edge.getParentShape() === gameShape &&
-  //         edgeToInsert.getParentShape() !== gameShape &&
-  //         (v0.angleBetween(v1) === 0 || v0.angleBetween(v1) === PI)
-  //       ) {
-  //         return "toward";
-  //       } else if (
-  //         edge.getParentShape() !== gameShape &&
-  //         edgeToInsert.getParentShape() === gameShape
-  //       ) {
-  //         return "away";
-  //       } else return "away";
-  //     }
-  //   }
-  //   return "toward";
-  // }
-
-  // lineSideToInsert(v_i, edge, other, edgeToInsert) {
-  //   if (edge === null) return "DNE";
-
-  //   let guardtov_i = new Line(new Point(this.x, this.y), v_i);
-  //   if (checkIfIntersect(guardtov_i, edge) === true) {
-  //     if (other.includes(edge)) {
-  //       if (other.indexOf(edge) < other.indexOf(edgeToInsert)) return "away";
-  //       else if (other.indexOf(edge) > other.indexOf(edgeToInsert))
-  //         return "toward";
-  //     } else {
-  //       let v0 = createVector(
-  //         edge.getPoint2().getX() - edge.getPoint1().getX(),
-  //         -(edge.getPoint2().getY() - edge.getPoint1().getY()),
-  //         0
-  //       );
-  //       let v1 = createVector(
-  //         edgeToInsert.getPoint2().getX() - edgeToInsert.getPoint1().getX(),
-  //         -(edgeToInsert.getPoint2().getY() - edgeToInsert.getPoint1().getY()),
-  //         0
-  //       );
-  //       if (v0.angleBetween(v1) === 0 || v0.angleBetween(v1) === PI) {
-  //         if (
-  //           edge.getParentShape() === gameShape &&
-  //           edgeToInsert.getParentShape() !== gameShape
-  //         ) {
-  //           return "toward";
-  //         } else if (
-  //           edge.getParentShape() !== gameShape &&
-  //           edgeToInsert.getParentShape() === gameShape
-  //         ) {
-  //           return "away";
-  //         }
-  //       } else {
-  //         console.log("bruh", v0.angleBetween(v1));
-  //         return "away";
-  //       }
-  //     }
-  //   }
-  //   return "toward";
-  // }
-
-  // lineSideToDelete(v_i, edge, other, edgeToDelete) {
-  //   if (edge === edgeToDelete) {
-  //     return "found";
-  //   }
-  //   let guardtov_i = new Line(new Point(this.x, this.y), v_i);
-  //   if (checkIfIntersect(guardtov_i, edge) === true) {
-  //     if (other.includes(edge)) {
-  //       if (other.indexOf(edge) < other.indexOf(edgeToDelete)) return "away";
-  //       else if (other.indexOf(edge) > other.indexOf(edgeToDelete))
-  //         return "toward";
-  //     } else {
-  //       let v0 = createVector(
-  //         edge.getPoint2().getX() - edge.getPoint1().getX(),
-  //         -(edge.getPoint2().getY() - edge.getPoint1().getY()),
-  //         0
-  //       );
-  //       let v1 = createVector(
-  //         edgeToDelete.getPoint2().getX() - edgeToDelete.getPoint1().getX(),
-  //         -(edgeToDelete.getPoint2().getY() - edgeToDelete.getPoint1().getY()),
-  //         0
-  //       );
-  //       if (
-  //         edge.getParentShape() === gameShape &&
-  //         edgeToDelete.getParentShape() !== gameShape &&
-  //         (v0.angleBetween(v1) === 0 || v0.angleBetween(v1) === PI)
-  //       ) {
-  //         return "toward";
-  //       } else if (
-  //         edge.getParentShape() !== gameShape &&
-  //         edgeToDelete.getParentShape() === gameShape
-  //       ) {
-  //         return "away";
-  //       } else return "away";
-  //     }
-  //   }
-  //   return "toward";
-  // }
-
-  // lineSideToSearch(v_i, edge, edgeToFind) {
-  //   let guardtov_i = new Line(new Point(this.x, this.y), v_i);
-  //   if (checkIfIntersect(guardtov_i, edge) === true) {
-  //     let v0 = createVector(
-  //       edge.getPoint2().getX() - edge.getPoint1().getX(),
-  //       -(edge.getPoint2().getY() - edge.getPoint1().getY()),
-  //       0
-  //     );
-  //     let v1 = createVector(
-  //       edgeToFind.getPoint2().getX() - edgeToFind.getPoint1().getX(),
-  //       -(edgeToFind.getPoint2().getY() - edgeToFind.getPoint1().getY()),
-  //       0
-  //     );
-  //     if (
-  //       edge.getParentShape() === gameShape &&
-  //       edgeToFind.getParentShape() !== gameShape &&
-  //       (v0.angleBetween(v1) === 0 || v0.angleBetween(v1) === PI)
-  //     ) {
-  //       return "toward";
-  //     } else if (
-  //       edge.getParentShape() !== gameShape &&
-  //       edgeToFind.getParentShape() === gameShape
-  //     ) {
-  //       return "away";
-  //     } else return "away";
-  //   }
-  //   return "toward";
-  // }
   lineSideToInsert(v_i, edge, other, edgeToInsert) {
     if (edge === null) return "DNE";
     let guardtov_i = new Line(new Point(this.x, this.y), v_i);
@@ -695,11 +550,13 @@ class SecurityGuard extends Point {
   }
 
   drawSecurityGuard() {
+    let color = "white";
+    if (this === guardDragged) color = "grey"; // if guard is dragged guard
+
     push();
-    stroke("white");
+    stroke(color);
     strokeWeight(this.size + 5);
     point(this.x, this.y);
-
     strokeWeight(this.size);
     stroke(this.name);
     point(this.x, this.y);
@@ -798,8 +655,16 @@ class SecurityGuard extends Point {
     return this.size;
   }
 
-  outsideStage() {
-    return this.x >= width || this.x <= 0 || this.y >= height || this.y <= 0;
+  outsideGameShape() {
+    // -1 if point is contained inside shape
+    // 0 if point is on the boundary of shape
+    // 1 if point is outside shape
+    return (
+      classifyPoint(
+        gameShape.getPointsArray(),
+        this.getPoint().getArrayForm()
+      ) !== -1
+    );
   }
 }
 
@@ -1029,9 +894,11 @@ class Shape {
     return this.convexHull;
   }
 
-  drawShape(opacity) {
+  drawShape(opacity, colorOveride) {
     push();
-    fill(this.color[0], this.color[1], this.color[2], opacity);
+    if (colorOveride === false)
+      fill(this.color[0], this.color[1], this.color[2], opacity);
+    else fill(colorOveride[0], colorOveride[1], colorOveride[2], opacity);
     beginShape();
     let aVertex = this.vertexHead;
     do {

@@ -1,17 +1,17 @@
 function doubleClicked() {
   guardDragged = checkIfClickSecurityGuard();
   shapeDragged = checkIfClickInsideShape();
+  if (visualizeGuard !== -1 || shapeToHandle !== -1) return;
   if (guardDragged !== -1) {
-    window.scrollTo(0, 0);
     visualizeGuard = new AsanoVisualization(guardDragged);
     guardControlPanel.style.display = "block";
-  } else if (shapeDragged !== -1) {
+    document.getElementById("mainMenuNavBar").style.display = "none";
     window.scrollTo(0, 0);
-
+  } else if (shapeDragged !== -1) {
     shapeToHandle = new ShapeVisualization(shapeDragged);
     shapeControlPanel.style.display = "block";
-  } else {
-    return;
+    document.getElementById("mainMenuNavBar").style.display = "none";
+    window.scrollTo(0, 0);
   }
 }
 

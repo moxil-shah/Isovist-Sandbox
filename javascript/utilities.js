@@ -79,6 +79,8 @@ function exitGuardControlPanel() {
   visualizeGuard.scrollBar.style.display = "none";
   visualizeGuard = -1;
   guardControlPanel.style.display = "none";
+  document.getElementById("mainMenuNavBar").style.display = "block";
+  window.scrollTo(0, 0);
 }
 
 function exitShapeControlPanel() {
@@ -88,6 +90,8 @@ function exitShapeControlPanel() {
   cutShapes.clear();
   uncutShapes.clear();
   shapeControlPanel.style.display = "none";
+  document.getElementById("mainMenuNavBar").style.display = "block";
+  window.scrollTo(0, 0);
 }
 
 function removeGuard() {

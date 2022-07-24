@@ -5,6 +5,10 @@
 // code starts //
 let allShapes = new Set(); // global array of all shapes made
 let allGuards = new Set(); // global array of all security guards made
+let superImposedShapes = new Set();
+let superImposedShapeChildren = new Set();
+let uncutShapes = new Set();
+let cutShapes = new Set();
 const securityGuardNames = [
   [255, 165, 0],
   [28, 197, 220],
@@ -23,14 +27,9 @@ let shapeToHandle = -1;
 let gameShape;
 let guardControlPanel;
 let shapeControlPanel;
-let superImposedShapes = new Set();
-let superImposedShapeChildren = new Set();
-let uncutShapes = new Set();
-let cutShapes = new Set();
 let gameShapeSmaller;
 
 function setup() {
-  // let canvas = createCanvas($(window).width(), $(window).height());
   let canvas = createCanvas(windowWidth - getScrollBarWidth(), windowHeight);
   canvas.parent("canvasDiv");
   canvas.style("margin-bottom", "-5px");
@@ -65,14 +64,13 @@ function getScrollBarWidth() {
 }
 
 function draw() {
-  background(57, 62, 70);
+  background(34, 40, 49);
   dragSecurityGuard();
   dragPoint();
   dragShape();
   if (shapeToHandle !== -1) shapeToHandle.masterMethod();
   renderAllShapes();
   if (visualizeGuard === -1) renderAllSecurityGuards();
-  renderVertexClicked();
   if (visualizeGuard !== -1) {
     visualizeGuard.animateMasterMethod();
     visualizeGuard.getSecurityGuard().drawSecurityGuard();
@@ -80,8 +78,8 @@ function draw() {
 }
 
 function makeGameShapeSmaller() {
-  var vertexes = [];
-  var unknown = expander(gameShape.getPointsArray(false), 0.5);
+  let vertexes = [];
+  let unknown = expander(gameShape.getPointsArray(false), 0.5);
   gameShapeSmaller = new Obstacle([255, 0, 0]);
 
   for (let each of unknown)
@@ -113,6 +111,7 @@ function polygon(x, y, radius, npoints) {
     newObstacle.setVerticesLinkedList(vertexes);
 
     allShapes.add(newObstacle);
+    makeGameShapeSmaller();
   } else {
     newObstacle = new Obstacle([209, 209, 209]);
 
@@ -133,8 +132,6 @@ function polygon(x, y, radius, npoints) {
     superImposedShapes.clear();
   }
 
-  makeGameShapeSmaller();
-
   for (let eachShape of allShapes) {
     let currentVertex = eachShape.getVertexHead();
     do {
@@ -154,7 +151,7 @@ function polygon(x, y, radius, npoints) {
 function renderAllSecurityGuards() {
   for (let guard of allGuards) {
     if (guardDragged !== -1) guard = guardDragged;
-    if (guard.outsideStage() === true) continue;
+    if (guard.outsideGameShape() === true) continue;
     guard.visibleVertices();
     guard.getIsovist().drawIsovist(guard, 100);
     if (guardDragged !== -1) break;
@@ -162,20 +159,11 @@ function renderAllSecurityGuards() {
   for (let guard of allGuards) guard.drawSecurityGuard();
 }
 
-function renderVertexClicked() {
-  if (pointDragged !== -1) {
-    push();
-    strokeWeight(15);
-    stroke([115, 119, 123]);
-    point(pointDragged.getX(), pointDragged.getY());
-    pop();
-  }
-}
-
 function renderAllShapes() {
-  for (let shape of allShapes) {
-    shape.drawShape(255);
-  }
+  for (let shape of allShapes) shape.drawShape(255, false);
+
+  // draw the dragged shape
+  if (shapeDragged !== -1) shapeDragged.drawShape(255, [115, 119, 123]);
 }
 
 function renderAllShapesPoints() {
@@ -202,6 +190,15 @@ function renderAllShapesPoints() {
       }
       currentVertex = currentVertex.getPointNext();
     } while (currentVertex !== shape.vertexHead);
+  }
+
+  // draw the dragged shape
+  if (pointDragged !== -1) {
+    push();
+    strokeWeight(15);
+    stroke([115, 119, 123]);
+    point(pointDragged.getX(), pointDragged.getY());
+    pop();
   }
 }
 
@@ -293,7 +290,6 @@ function updateVertexArrayDistancetoMousePress(shape, p) {
 
   let currentVertex = shape.getVertexHead();
   do {
-    // the meat
     deltaX = p.getX() - currentVertex.getX();
     deltaY = p.getY() - currentVertex.getY();
     shape.setVerticesDistancetoMousePress(currentVertex, [deltaX, deltaY]);
