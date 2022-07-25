@@ -153,7 +153,7 @@ function renderAllSecurityGuards() {
     if (guardDragged !== -1) guard = guardDragged;
     if (guard.outsideGameShape() === true) continue;
     guard.visibleVertices();
-    guard.getIsovist().drawIsovist(guard, 100);
+    guard.getIsovist().drawIsovist(guard, 100, 0);
     if (guardDragged !== -1) break;
   }
   for (let guard of allGuards) guard.drawSecurityGuard();
@@ -189,7 +189,7 @@ function renderAllShapesPoints() {
         pop();
       }
       currentVertex = currentVertex.getPointNext();
-    } while (currentVertex !== shape.vertexHead);
+    } while (currentVertex !== shape.getVertexHead());
   }
 
   // draw the dragged shape
@@ -286,7 +286,7 @@ function dealWithGameShapeIntersection() {
 }
 
 function updateVertexArrayDistancetoMousePress(shape, p) {
-  shape.verticesDistancetoMousePress = new Map();
+  shape.resetVerticesDistancetoMousePress();
 
   let currentVertex = shape.getVertexHead();
   do {

@@ -20,7 +20,12 @@ function mouseClicked() {
   if (guardDragged !== -1) {
     guardDragged = -1;
     return;
-  } else if (shapeDragged === -1 && pointDragged === -1) {
+  } else if (
+    shapeDragged === -1 &&
+    pointDragged === -1 &&
+    visualizeGuard === -1 &&
+    shapeToHandle === -1
+  ) {
     guardDragged = checkIfClickSecurityGuard();
     if (guardDragged !== -1) return;
   }
@@ -31,7 +36,12 @@ function mouseClicked() {
     cutShapes.clear();
     uncutShapes.clear();
     return;
-  } else if (shapeDragged === -1 && guardDragged === -1) {
+  } else if (
+    shapeDragged === -1 &&
+    guardDragged === -1 &&
+    visualizeGuard === -1 &&
+    shapeToHandle === -1
+  ) {
     [pointDragged, shapesPointDragged] = checkIfClickAVertex();
     if (pointDragged !== -1 && shapesPointDragged !== -1) return;
   }
@@ -42,7 +52,12 @@ function mouseClicked() {
     cutShapes.clear();
     uncutShapes.clear();
     return;
-  } else if (pointDragged === -1 && guardDragged === -1) {
+  } else if (
+    guardDragged === -1 &&
+    pointDragged === -1 &&
+    visualizeGuard === -1 &&
+    shapeToHandle === -1
+  ) {
     shapeDragged = checkIfClickInsideShape();
     if (shapeDragged !== -1) return;
   }
@@ -103,7 +118,7 @@ function checkIfClickAVertex() {
 }
 
 function dragPoint() {
-  if (visualizeGuard !== -1 || shapeToHandle !== -1 || pointDragged === -1) {
+  if (visualizeGuard !== -1 || shapeToHandle !== -1) {
     pointDragged = -1;
     return;
   }
@@ -140,7 +155,7 @@ function dragPoint() {
 }
 
 function dragSecurityGuard() {
-  if (visualizeGuard !== -1 || shapeToHandle !== -1 || guardDragged === -1) {
+  if (visualizeGuard !== -1 || shapeToHandle !== -1) {
     guardDragged = -1;
     return;
   }
@@ -160,7 +175,7 @@ function dragSecurityGuard() {
 }
 
 function dragShape() {
-  if (visualizeGuard !== -1 || shapeToHandle !== -1 || shapeDragged === -1) {
+  if (visualizeGuard !== -1 || shapeToHandle !== -1) {
     shapeDragged = -1;
     return;
   }

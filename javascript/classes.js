@@ -931,6 +931,10 @@ class Obstacle extends Shape {
   getVerticesDistancetoMousePress(theVertex) {
     return this.verticesDistancetoMousePress.get(theVertex);
   }
+
+  resetVerticesDistancetoMousePress() {
+    this.verticesDistancetoMousePress = new Map();
+  }
 }
 
 class Isovist extends Shape {
@@ -938,8 +942,12 @@ class Isovist extends Shape {
     super();
   }
 
-  drawIsovist(guard, opacity) {
+  drawIsovist(guard, opacity, borderThickness) {
     push();
+    if (borderThickness !== 0) {
+      stroke(guard.getName()[0], guard.getName()[1], guard.getName()[2]);
+      strokeWeight(borderThickness);
+    } else noStroke();
     fill(guard.getName()[0], guard.getName()[1], guard.getName()[2], opacity);
     beginShape();
     let aVertex = this.vertexHead;
@@ -967,7 +975,7 @@ class AsanoVisualization {
       this.endAnimation();
     }
     if (this.state === "done") {
-      this.guard.getIsovist().drawIsovist(this.guard, 100);
+      this.guard.getIsovist().drawIsovist(this.guard, 100, this.lineThickness);
     }
     if (this.state === "slider") {
       this.scrollBarAnimation();
@@ -1013,6 +1021,7 @@ class AsanoVisualization {
       if (this.initPointFlicks >= this.initPointFlicksMax) {
         this.initLineAnimationGo = false;
         this.sweepLineAnimationGo = true;
+        this.initPointFlicks = 1;
       }
     }
   }
@@ -1103,7 +1112,7 @@ class AsanoVisualization {
   endAnimation() {
     if (!this.endAnimationGo) return;
     if (this.initLine.getPoint2().getX() > this.guard.getPoint().getX()) {
-      this.guard.getIsovist().drawIsovist(this.guard, 100);
+      this.guard.getIsovist().drawIsovist(this.guard, 100, this.lineThickness);
       drawLine(this.initLine, "white", this.lineThickness);
       this.initLine
         .getPoint2()
@@ -1113,7 +1122,8 @@ class AsanoVisualization {
         .getIsovist()
         .drawIsovist(
           this.guard,
-          zigZag((this.isovistFlicks += deltaTime * 0.001), 1) * 100
+          zigZag((this.isovistFlicks += deltaTime * 0.001), 1) * 100,
+          this.lineThickness
         );
     } else {
       this.state = "done";
@@ -1155,7 +1165,7 @@ class AsanoVisualization {
 
       this.drawPartialIsovist();
     } else {
-      this.guard.getIsovist().drawIsovist(this.guard, 100);
+      this.guard.getIsovist().drawIsovist(this.guard, 100, this.lineThickness);
     }
   }
 
@@ -1240,6 +1250,13 @@ class AsanoVisualization {
 
   drawPartialIsovist() {
     push();
+    stroke(
+      this.guard.getName()[0],
+      this.guard.getName()[1],
+      this.guard.getName()[2]
+    );
+
+    strokeWeight(this.lineThickness);
     fill(
       this.guard.getName()[0],
       this.guard.getName()[1],
