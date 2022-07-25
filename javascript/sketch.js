@@ -65,6 +65,7 @@ function getScrollBarWidth() {
 
 function draw() {
   background(34, 40, 49);
+  
   dragSecurityGuard();
   dragPoint();
   dragShape();

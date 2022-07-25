@@ -144,15 +144,15 @@ class SecurityGuard extends Point {
             intersectionPoint,
             ROUND_FACTOR
           );
-          edge.setPositionPrior(distanceFromIntersectiontoGuard);
+          edge.setDistanceFromIntersectToGuard(distanceFromIntersectiontoGuard);
           if (
             classifyPoint(
               gameShape.getPointsArray(),
-              edge.getPoint1().getArrayFormRounded()
+              edge.getPoint1().getArrayForm()
             ) === 1 &&
             classifyPoint(
               gameShape.getPointsArray(),
-              edge.getPoint2().getArrayFormRounded()
+              edge.getPoint2().getArrayForm()
             ) === 1
           )
             continue;
@@ -165,7 +165,8 @@ class SecurityGuard extends Point {
     let guard = this;
     initialIntersectEdges.sort(function (a, b) {
       return (
-        a.getPositionPrior() - b.getPositionPrior() ||
+        a.getDistanceFromIntersectToGuard() -
+          b.getDistanceFromIntersectToGuard() ||
         guard.getAngleFromLinetoRightWall(b) -
           guard.getAngleFromLinetoRightWall(a)
       );
@@ -221,7 +222,7 @@ class SecurityGuard extends Point {
       if (
         classifyPoint(
           gameShape.getPointsArray(),
-          this.sortedVertices[i].getArrayFormRounded()
+          this.sortedVertices[i].getArrayForm()
         ) === 1
       ) {
         console.log(gameShape.getPointsArray());
@@ -773,7 +774,7 @@ class Line {
     this.point1 = p1;
     this.point2 = p2;
     this.position = null;
-    this.positionPrior = null;
+    this.distanceFromIntersectToGuard = null;
     this.parentShape = null;
   }
 
@@ -781,8 +782,8 @@ class Line {
     this.position = position;
   }
 
-  setPositionPrior(positionPrior) {
-    this.positionPrior = positionPrior;
+  setDistanceFromIntersectToGuard(distanceFromIntersectToGuard) {
+    this.distanceFromIntersectToGuard = distanceFromIntersectToGuard;
   }
 
   setPoint1(p1) {
@@ -809,8 +810,8 @@ class Line {
     return this.position;
   }
 
-  getPositionPrior() {
-    return this.positionPrior;
+  getDistanceFromIntersectToGuard() {
+    return this.distanceFromIntersectToGuard;
   }
 
   getLength() {
@@ -987,7 +988,7 @@ class AsanoVisualization {
 
     if (
       this.initLine.getLength() <
-        this.initialIntersectEdges[0].getPositionPrior() &&
+        this.initialIntersectEdges[0].getDistanceFromIntersectToGuard() &&
       !this.initPointFlicksRoundingError
     ) {
       drawLine(this.initLine, "white", this.lineThickness);
@@ -999,7 +1000,8 @@ class AsanoVisualization {
       this.initLine
         .getPoint2()
         .setX(
-          this.guard.getX() + this.initialIntersectEdges[0].getPositionPrior()
+          this.guard.getX() +
+            this.initialIntersectEdges[0].getDistanceFromIntersectToGuard()
         );
       drawLine(this.initLine, "white", this.lineThickness);
 
@@ -1172,7 +1174,8 @@ class AsanoVisualization {
   sweepAnimationPrelude() {
     if (this.isovist.getVertexHead().getAngle() === 0) return;
     let newIsovistPoint = new IsovistPoint(
-      this.guard.getX() + this.initialIntersectEdges[0].getPositionPrior(),
+      this.guard.getX() +
+        this.initialIntersectEdges[0].getDistanceFromIntersectToGuard(),
       this.guard.getY(),
       null,
       0,
