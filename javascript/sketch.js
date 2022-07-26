@@ -65,7 +65,7 @@ function getScrollBarWidth() {
 
 function draw() {
   background(34, 40, 49);
-  
+
   dragSecurityGuard();
   dragPoint();
   dragShape();
@@ -261,20 +261,24 @@ function dealWithGameShapeIntersection() {
         { regions: eachShape.getPointsArray(true), inverted: false },
         { regions: polyOutside.regions, inverted: false }
       );
-      let obstacleCut = new Obstacle([209, 209, 209]);
-      let points = [];
+
       if (polyInside.regions.length === 0) return;
-      for (let i = 0; i < polyInside.regions[0].length; i += 1) {
-        points.push(
-          new ObstaclePoint(
-            polyInside.regions[0][i][0],
-            polyInside.regions[0][i][1],
-            obstacleCut
-          )
-        );
+
+      for (let j = 0; j < polyInside.regions.length; j += 1) {
+        let obstacleCut = new Obstacle([209, 209, 209]);
+        let points = [];
+        for (let i = 0; i < polyInside.regions[j].length; i += 1) {
+          points.push(
+            new ObstaclePoint(
+              polyInside.regions[j][i][0],
+              polyInside.regions[j][i][1],
+              obstacleCut
+            )
+          );
+        }
+        obstacleCut.setVerticesLinkedList(points);
+        shapesToCut.add([eachShape, obstacleCut]);
       }
-      obstacleCut.setVerticesLinkedList(points);
-      shapesToCut.add([eachShape, obstacleCut]);
     }
   }
 

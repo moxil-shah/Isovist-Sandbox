@@ -259,3 +259,269 @@ function shapeToHandleHelper() {
   document.getElementById("shapeRangeSize").value = 1;
   document.getElementById("shapeRangeRotate").value = 0;
 }
+
+function makeGrid() {
+  let gridPoints = [];
+  let counter_x = 0;
+  let y = 50;
+  while (counter_x <= 20) {
+    let x = 50;
+    let column = [];
+    let counter_y = 0;
+    while (counter_y <= 20) {
+      column.push([x, y]);
+      push();
+      strokeWeight(10);
+      stroke("white");
+      point(x, y);
+      pop();
+      x += (width - 100) / 20;
+      counter_y += 1;
+    }
+    y += (height - 100) / 20;
+    counter_x += 1;
+    gridPoints.push(column);
+  }
+
+  return gridPoints;
+}
+
+function makeRoom1() {
+  let gridPoints = makeGrid();
+  let newObstacle = new Obstacle([209, 209, 209]);
+  let vertexes = [];
+
+  for (let row = 0; row < gridPoints.length; row += 1) {
+    for (let col = 0; col < gridPoints[row].length; col += 1) {
+      gridPoints[row][col] = new ObstaclePoint(
+        gridPoints[row][col][0],
+        gridPoints[row][col][1],
+        newObstacle
+      );
+    }
+  }
+
+  vertexes.push(
+    gridPoints[1][1],
+    gridPoints[1][6],
+    gridPoints[5][6],
+    gridPoints[5][10],
+    gridPoints[1][10],
+    gridPoints[1][14],
+    gridPoints[2][14],
+    gridPoints[2][12],
+    gridPoints[5][12],
+    gridPoints[5][15],
+    gridPoints[1][15],
+    gridPoints[1][19],
+    gridPoints[9][19],
+    gridPoints[9][15],
+    gridPoints[7][15],
+    gridPoints[7][11],
+    gridPoints[12][11],
+    gridPoints[12][13],
+    gridPoints[9][13],
+    gridPoints[9][14],
+    gridPoints[11][14],
+    gridPoints[11][19],
+    gridPoints[18][19],
+    gridPoints[18][15],
+    gridPoints[14][15],
+    gridPoints[14][10],
+    gridPoints[16][10],
+    gridPoints[16][14],
+    gridPoints[19][14],
+    gridPoints[19][4],
+    gridPoints[17][1],
+    gridPoints[16][4],
+    gridPoints[14][4],
+    gridPoints[14][1],
+    gridPoints[11][1],
+    gridPoints[11][2],
+    gridPoints[9][2],
+    gridPoints[9][5],
+    gridPoints[11][5],
+    gridPoints[11][6],
+    gridPoints[7][6],
+    gridPoints[7][1]
+  );
+  newObstacle.setVerticesLinkedList(vertexes);
+  allShapes.add(newObstacle);
+  dealWithShapeIntersection();
+  superImposedShapeChildren.clear();
+  superImposedShapes.clear();
+
+  for (let eachShape of allShapes) {
+    let currentVertex = eachShape.getVertexHead();
+    do {
+      for (let guard of allGuards) {
+        currentVertex.setSecurityGuardAngle(guard);
+      }
+      currentVertex = currentVertex.getPointNext();
+    } while (currentVertex !== eachShape.getVertexHead());
+  }
+
+  for (let guard of allGuards) {
+    guard.addAllVertices();
+    guard.sortVertices();
+  }
+}
+
+function makeRoom2() {
+  let gridPoints = makeGrid();
+
+  for (let row = 12; row <= 18; row += 2) {
+    let newObstacle = new Obstacle([209, 209, 209]);
+    let vertexes = [];
+    vertexes.push(
+      new ObstaclePoint(
+        gridPoints[row][1][0],
+        gridPoints[row][1][1],
+        newObstacle
+      ),
+      new ObstaclePoint(
+        gridPoints[row][5][0],
+        gridPoints[row][5][1],
+        newObstacle
+      ),
+      new ObstaclePoint(
+        gridPoints[row + 1][5][0],
+        gridPoints[row + 1][5][1],
+        newObstacle
+      ),
+      new ObstaclePoint(
+        gridPoints[row + 1][1][0],
+        gridPoints[row + 1][1][1],
+        newObstacle
+      )
+    );
+
+    newObstacle.setVerticesLinkedList(vertexes);
+    allShapes.add(newObstacle);
+  }
+  for (let row = 12; row <= 18; row += 2) {
+    let newObstacle = new Obstacle([209, 209, 209]);
+    let vertexes = [];
+    vertexes.push(
+      new ObstaclePoint(
+        gridPoints[row][6][0],
+        gridPoints[row][6][1],
+        newObstacle
+      ),
+      new ObstaclePoint(
+        gridPoints[row][14][0],
+        gridPoints[row][14][1],
+        newObstacle
+      ),
+      new ObstaclePoint(
+        gridPoints[row + 1][14][0],
+        gridPoints[row + 1][14][1],
+        newObstacle
+      ),
+      new ObstaclePoint(
+        gridPoints[row + 1][6][0],
+        gridPoints[row + 1][6][1],
+        newObstacle
+      )
+    );
+
+    newObstacle.setVerticesLinkedList(vertexes);
+    allShapes.add(newObstacle);
+  }
+  for (let row = 12; row <= 18; row += 2) {
+    let newObstacle = new Obstacle([209, 209, 209]);
+    let vertexes = [];
+    vertexes.push(
+      new ObstaclePoint(
+        gridPoints[row][15][0],
+        gridPoints[row][15][1],
+        newObstacle
+      ),
+      new ObstaclePoint(
+        gridPoints[row][19][0],
+        gridPoints[row][19][1],
+        newObstacle
+      ),
+      new ObstaclePoint(
+        gridPoints[row + 1][19][0],
+        gridPoints[row + 1][19][1],
+        newObstacle
+      ),
+      new ObstaclePoint(
+        gridPoints[row + 1][15][0],
+        gridPoints[row + 1][15][1],
+        newObstacle
+      )
+    );
+
+    newObstacle.setVerticesLinkedList(vertexes);
+    allShapes.add(newObstacle);
+  }
+  let alternate = false;
+  for (let row = 4; row <= 10; row += 2) {
+    if (alternate) col = 2;
+    else col = 1;
+
+    while (col <= 18) {
+      let newObstacle = new Obstacle([209, 209, 209]);
+      let vertexes = [];
+      vertexes.push(
+        new ObstaclePoint(
+          gridPoints[row][col][0],
+          gridPoints[row][col][1],
+          newObstacle
+        ),
+        new ObstaclePoint(
+          gridPoints[row][col + 1][0],
+          gridPoints[row][col + 1][1],
+          newObstacle
+        ),
+        new ObstaclePoint(
+          gridPoints[row + 1][col + 1][0],
+          gridPoints[row + 1][col + 1][1],
+          newObstacle
+        ),
+        new ObstaclePoint(
+          gridPoints[row + 1][col][0],
+          gridPoints[row + 1][col][1],
+          newObstacle
+        )
+      );
+
+      newObstacle.setVerticesLinkedList(vertexes);
+      allShapes.add(newObstacle);
+      col += 2;
+    }
+    alternate = !alternate;
+  }
+  let newObstacle = new Obstacle([209, 209, 209]);
+  let vertexes = [];
+  vertexes.push(
+    new ObstaclePoint(gridPoints[1][1][0], gridPoints[1][1][1], newObstacle),
+    new ObstaclePoint(gridPoints[1][19][0], gridPoints[1][19][1], newObstacle),
+    new ObstaclePoint(gridPoints[2][19][0], gridPoints[2][19][1], newObstacle),
+    new ObstaclePoint(gridPoints[2][1][0], gridPoints[2][1][1], newObstacle)
+  );
+
+  newObstacle.setVerticesLinkedList(vertexes);
+  allShapes.add(newObstacle);
+
+  dealWithShapeIntersection();
+  superImposedShapeChildren.clear();
+  superImposedShapes.clear();
+
+  for (let eachShape of allShapes) {
+    let currentVertex = eachShape.getVertexHead();
+    do {
+      for (let guard of allGuards) {
+        currentVertex.setSecurityGuardAngle(guard);
+      }
+      currentVertex = currentVertex.getPointNext();
+    } while (currentVertex !== eachShape.getVertexHead());
+  }
+
+  for (let guard of allGuards) {
+    guard.addAllVertices();
+    guard.sortVertices();
+  }
+}

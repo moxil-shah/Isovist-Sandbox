@@ -46,8 +46,8 @@ class ShapePoint extends Point {
     this.lineToPointNext;
   }
 
-  getParentShape() {
-    return this.parentShape;
+  setParentShape(shape) {
+    this.parentShape = shape;
   }
 
   setPointPrev(point) {
@@ -80,6 +80,10 @@ class ShapePoint extends Point {
 
   getLineNext() {
     return this.lineToPointNext;
+  }
+
+  getParentShape() {
+    return this.parentShape;
   }
 }
 
@@ -1083,7 +1087,11 @@ class AsanoVisualization {
     let B = this.angle - this.current.getAngle();
     let C = PI - A - B;
     let c = distanceBetweenTwoPoints(this.guard.getPoint(), this.current);
+
     let a = (sin(A) * c) / sin(C);
+    if (this.guard.getY() - sin(this.angle) * a < 0 || a < 0) {
+      a = this.sweepLine.getLength() + this.speed * deltaTime;
+    }
 
     this.sweepLine.getPoint2().setX(this.guard.getX() + cos(this.angle) * a);
     this.sweepLine.getPoint2().setY(this.guard.getY() - sin(this.angle) * a);
@@ -1102,6 +1110,7 @@ class AsanoVisualization {
         this.guard.getPoint(),
         this.isovistDrawingPoints[this.isovistDrawingPoints.length - 1]
       );
+
     if (this.angle > TWO_PI) {
       this.sweepLineAnimationGo = false;
       this.endAnimationGo = true;
