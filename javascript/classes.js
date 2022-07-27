@@ -927,6 +927,7 @@ class Obstacle extends Shape {
   constructor(color) {
     super(color);
     this.verticesDistancetoMousePress = new Map();
+    this.onTop = [];
   }
 
   setVerticesDistancetoMousePress(theVertex, coordinate) {
@@ -939,6 +940,17 @@ class Obstacle extends Shape {
 
   resetVerticesDistancetoMousePress() {
     this.verticesDistancetoMousePress = new Map();
+  }
+
+  addOnTop(shape) {
+    this.onTop.push(shape);
+  }
+  getOnTop() {
+    return this.onTop;
+  }
+
+  clearOnTop() {
+    this.onTop = [];
   }
 }
 

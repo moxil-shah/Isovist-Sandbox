@@ -196,7 +196,7 @@ function dragShape() {
       currentVertex = currentVertex.getPointNext();
     } while (currentVertex !== shapeDragged.getVertexHead());
 
-    dealWithShapeIntersection();
+    dealWithShapeIntersectionDragShape();
     dealWithGameShapeIntersection();
     for (let eachShape of allShapes) {
       let currentVertex = eachShape.getVertexHead();

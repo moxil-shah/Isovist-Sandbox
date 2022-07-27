@@ -246,6 +246,119 @@ function dealWithShapeIntersection() {
   }
 }
 
+function dealWithShapeIntersectionDragShape() {
+  superImposedShapes.clear();
+  superImposedShapeChildren.clear();
+  let overlaps = [];
+  let overlapShapes = [];
+  let shapeDraggedPolyBool = {
+    regions: shapeDragged.getPointsArray(true),
+    inverted: false,
+  };
+  let firstTimeSoAddShapeDraggedToOverlaps = true;
+  for (let eachShape of allShapes) {
+    if (eachShape === gameShape || eachShape === shapeDragged) continue;
+
+    let shapeToTestPolyBool = {
+      regions: eachShape.getPointsArray(true),
+      inverted: false,
+    };
+    let isPerfectlyInside = true;
+    let unionPolygon = PolyBool.union(
+      shapeDraggedPolyBool,
+      shapeToTestPolyBool
+    );
+    if (unionPolygon.regions.length === 1) {
+      // means union is one shape so there can be overlap or one polygon perfectly inside other
+      // hence why I have unionPolygon.regions[0] below, because one region only
+      if (
+        unionPolygon.regions[0].length !==
+        eachShape.getPointsArray(false).length
+      ) {
+        isPerfectlyInside = false;
+      } else {
+        for (let i = 0; i < unionPolygon.regions[0].length; i += 1) {
+          if (
+            unionPolygon.regions[0][i][0] !==
+              eachShape.getPointsArray(false)[i][0] ||
+            unionPolygon.regions[0][i][1] !==
+              eachShape.getPointsArray(false)[i][1]
+          ) {
+            isPerfectlyInside = false;
+            break;
+          }
+        }
+      }
+      // if eachShape was not the perfectly encompassing shape, test if shapeDragged is
+      if (isPerfectlyInside === false) {
+        isPerfectlyInside = true;
+        if (
+          unionPolygon.regions[0].length !==
+          shapeDragged.getPointsArray(false).length
+        ) {
+          isPerfectlyInside = false;
+        } else {
+          for (let i = 0; i < unionPolygon.regions[0].length; i += 1) {
+            if (
+              unionPolygon.regions[0][i][0] !==
+                shapeDragged.getPointsArray(false)[i][0] ||
+              unionPolygon.regions[0][i][1] !==
+                shapeDragged.getPointsArray(false)[i][1]
+            ) {
+              isPerfectlyInside = false;
+              break;
+            }
+          }
+        }
+      }
+
+      if (isPerfectlyInside) continue;
+
+      if (firstTimeSoAddShapeDraggedToOverlaps === true) {
+        firstTimeSoAddShapeDraggedToOverlaps = false;
+        overlaps.push(shapeDragged.getPointsArray(true));
+        superImposedShapeChildren.add(shapeDragged);
+        allShapes.delete(shapeDragged);
+      }
+      overlaps.push(eachShape.getPointsArray(true));
+      superImposedShapeChildren.add(eachShape);
+      allShapes.delete(eachShape);
+    }
+  }
+
+  for (let each of overlaps) {
+    overlapShapes.push({ regions: each, inverted: false });
+  }
+  if (overlapShapes.length === 0) {
+    return;
+  }
+  var segments = PolyBool.segments(overlapShapes[0]);
+  for (var i = 1; i < overlapShapes.length; i++) {
+    var seg2 = PolyBool.segments(overlapShapes[i]);
+    var comb = PolyBool.combine(segments, seg2);
+    segments = PolyBool.selectUnion(comb);
+  }
+  let final = PolyBool.polygon(segments);
+
+  for (let eachPointArray of final.regions) {
+    let obstacleOverlap = new Obstacle([209, 209, 209]);
+    let points = [];
+    for (let i = 0; i < eachPointArray.length; i += 1) {
+      points.push(
+        new ObstaclePoint(
+          eachPointArray[i][0],
+          eachPointArray[i][1],
+          obstacleOverlap
+        )
+      );
+    }
+    obstacleOverlap.setVerticesLinkedList(points);
+
+    superImposedShapes.add(obstacleOverlap);
+    allShapes.add(obstacleOverlap);
+  }
+}
+
 function dealWithGameShapeIntersection() {
   cutShapes.clear();
   uncutShapes.clear();
