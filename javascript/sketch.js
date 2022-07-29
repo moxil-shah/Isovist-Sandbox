@@ -70,6 +70,10 @@ function draw() {
   dragPoint();
   dragShape();
   if (shapeToHandle !== -1) shapeToHandle.masterMethod();
+  // if (shapeDragged !== -1) {
+  //   console.log(shapeDragged.onTop);
+  //   console.log(allShapes.has(shapeDragged));
+  // }
   renderAllShapes();
   if (visualizeGuard === -1) renderAllSecurityGuards();
   if (visualizeGuard !== -1) {
@@ -128,9 +132,10 @@ function polygon(x, y, radius, npoints) {
     }
     newObstacle.setVerticesLinkedList(vertexes);
     allShapes.add(newObstacle);
-    dealWithShapeIntersection();
+    dealWithShapeIntersectionWithArugment(newObstacle);
     superImposedShapeChildren.clear();
     superImposedShapes.clear();
+    for (let eachShape of allShapes) eachShape.clearOnTopTemp();
   }
 
   for (let eachShape of allShapes) {
@@ -160,11 +165,19 @@ function renderAllSecurityGuards() {
   for (let guard of allGuards) guard.drawSecurityGuard();
 }
 
-function renderAllShapes() {
-  for (let shape of allShapes) shape.drawShape(255, false);
+function drawAllOnTop(shapesToDraw) {
+  for (let eachShape of shapesToDraw) {
+    eachShape.drawShape(255, false);
+    drawAllOnTop(eachShape.getOnTop());
+  }
+}
 
-  // draw the dragged shape
-  if (shapeDragged !== -1) shapeDragged.drawShape(255, [115, 119, 123]);
+function renderAllShapes() {
+  for (let eachShape of allShapes) {
+    eachShape.drawShape(255, false);
+
+    drawAllOnTop(eachShape.getOnTop());
+  }
 }
 
 function renderAllShapesPoints() {
@@ -246,29 +259,59 @@ function dealWithShapeIntersection() {
   }
 }
 
-function dealWithShapeIntersectionDragShape() {
+function dealWithShapeIntersectionWithArugment(theShape) {
   superImposedShapes.clear();
   superImposedShapeChildren.clear();
+  let allOnTop = new Set();
+
+  for (let eachShape of allShapes) {
+    eachShape.deleteOnTopTempFromOnTop();
+    eachShape.clearOnTopTemp();
+  }
+
   let overlaps = [];
   let overlapShapes = [];
   let shapeDraggedPolyBool = {
-    regions: shapeDragged.getPointsArray(true),
+    regions: theShape.getPointsArray(true),
     inverted: false,
   };
   let firstTimeSoAddShapeDraggedToOverlaps = true;
   for (let eachShape of allShapes) {
-    if (eachShape === gameShape || eachShape === shapeDragged) continue;
+    if (eachShape === gameShape || eachShape === theShape) continue;
 
     let shapeToTestPolyBool = {
       regions: eachShape.getPointsArray(true),
       inverted: false,
     };
     let isPerfectlyInside = true;
+    let addedAlready = false;
     let unionPolygon = PolyBool.union(
       shapeDraggedPolyBool,
       shapeToTestPolyBool
     );
-    if (unionPolygon.regions.length === 1) {
+
+    let goAhead = false;
+    if (
+      eachShape.getPointsArray(false).length !==
+      theShape.getPointsArray(false).length
+    ) {
+      goAhead = true;
+    } else {
+      let tempArray = theShape.getPointsArray(false);
+      let tempArray2 = eachShape.getPointsArray(false);
+      for (let i = 0; i < tempArray.length; i += 1) {
+        includes = tempArray.some((a) =>
+          tempArray2[i].every((v, i) => v === a[i])
+        );
+
+        if (!includes) {
+          goAhead = true;
+          break;
+        }
+      }
+    }
+
+    if (unionPolygon.regions.length === 1 && goAhead === true) {
       // means union is one shape so there can be overlap or one polygon perfectly inside other
       // hence why I have unionPolygon.regions[0] below, because one region only
       if (
@@ -278,51 +321,87 @@ function dealWithShapeIntersectionDragShape() {
         isPerfectlyInside = false;
       } else {
         for (let i = 0; i < unionPolygon.regions[0].length; i += 1) {
-          if (
-            unionPolygon.regions[0][i][0] !==
-              eachShape.getPointsArray(false)[i][0] ||
-            unionPolygon.regions[0][i][1] !==
-              eachShape.getPointsArray(false)[i][1]
-          ) {
+          includes = eachShape
+            .getPointsArray(false)
+            .some((a) =>
+              unionPolygon.regions[0][i].every((v, i) => v === a[i])
+            );
+
+          if (!includes) {
             isPerfectlyInside = false;
             break;
           }
         }
       }
+
+      if (isPerfectlyInside) {
+        eachShape.addOnTopTemp(theShape);
+        eachShape.addOnTop(theShape);
+        addedAlready = true;
+      }
+
       // if eachShape was not the perfectly encompassing shape, test if shapeDragged is
       if (isPerfectlyInside === false) {
         isPerfectlyInside = true;
         if (
           unionPolygon.regions[0].length !==
-          shapeDragged.getPointsArray(false).length
+          theShape.getPointsArray(false).length
         ) {
           isPerfectlyInside = false;
         } else {
           for (let i = 0; i < unionPolygon.regions[0].length; i += 1) {
-            if (
-              unionPolygon.regions[0][i][0] !==
-                shapeDragged.getPointsArray(false)[i][0] ||
-              unionPolygon.regions[0][i][1] !==
-                shapeDragged.getPointsArray(false)[i][1]
-            ) {
+            includes = theShape
+              .getPointsArray(false)
+              .some((a) =>
+                unionPolygon.regions[0][i].every((v, i) => v === a[i])
+              );
+
+            if (!includes) {
               isPerfectlyInside = false;
               break;
             }
           }
         }
       }
+      if (isPerfectlyInside && addedAlready === false) {
+        theShape.addOnTopTemp(eachShape);
+        theShape.addOnTop(eachShape);
+      }
 
       if (isPerfectlyInside) continue;
 
       if (firstTimeSoAddShapeDraggedToOverlaps === true) {
         firstTimeSoAddShapeDraggedToOverlaps = false;
-        overlaps.push(shapeDragged.getPointsArray(true));
-        superImposedShapeChildren.add(shapeDragged);
-        allShapes.delete(shapeDragged);
+        overlaps.push(theShape.getPointsArray(true));
+        superImposedShapeChildren.add(theShape);
+        allShapes.delete(theShape);
+        let tempSet = theShape.getOnTop();
+        for (let each of tempSet) {
+          allOnTop.add(each);
+        }
       }
       overlaps.push(eachShape.getPointsArray(true));
       superImposedShapeChildren.add(eachShape);
       allShapes.delete(eachShape);
+      let tempSet = eachShape.getOnTop();
+      for (let each of tempSet) {
+        allOnTop.add(each);
+      }
+    } else if (goAhead === false) {
+      overlaps.push(theShape.getPointsArray(true));
+      superImposedShapeChildren.add(theShape);
+      allShapes.delete(theShape);
+      let tempSet1 = theShape.getOnTop();
+      for (let each of tempSet1) {
+        allOnTop.add(each);
+      }
+      overlaps.push(eachShape.getPointsArray(true));
+      superImposedShapeChildren.add(eachShape);
+      allShapes.delete(eachShape);
+      let tempSet2 = eachShape.getOnTop();
+      for (let each of tempSet2) {
+        allOnTop.add(each);
+      }
     }
   }
 
@@ -336,8 +415,10 @@ function dealWithShapeIntersectionDragShape() {
   for (var i = 1; i < overlapShapes.length; i++) {
     var seg2 = PolyBool.segments(overlapShapes[i]);
     var comb = PolyBool.combine(segments, seg2);
+
     segments = PolyBool.selectUnion(comb);
   }
+
   let final = PolyBool.polygon(segments);
 
   for (let eachPointArray of final.regions) {
@@ -356,6 +437,9 @@ function dealWithShapeIntersectionDragShape() {
 
     superImposedShapes.add(obstacleOverlap);
     allShapes.add(obstacleOverlap);
+    for (let each of allOnTop) {
+      obstacleOverlap.addOnTop(each);
+    }
   }
 }
 
@@ -365,6 +449,7 @@ function dealWithGameShapeIntersection() {
   let shapesToCut = new Set();
   for (let eachShape of allShapes) {
     if (eachShape === gameShape) continue;
+
     if (checkIfShapeIntersectsWithGameShape(eachShape)) {
       let polyOutside = PolyBool.difference(
         { regions: eachShape.getPointsArray(true), inverted: false },
@@ -391,6 +476,7 @@ function dealWithGameShapeIntersection() {
         }
         obstacleCut.setVerticesLinkedList(points);
         shapesToCut.add([eachShape, obstacleCut]);
+        for (let each of eachShape.getOnTop()) obstacleCut.addOnTop(each);
       }
     }
   }

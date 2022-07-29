@@ -89,6 +89,7 @@ function exitShapeControlPanel() {
   superImposedShapeChildren.clear();
   cutShapes.clear();
   uncutShapes.clear();
+  for (let eachShape of allShapes) eachShape.clearOnTopTemp();
   shapeControlPanel.style.display = "none";
   document.getElementById("mainMenuNavBar").style.display = "block";
   window.scrollTo(0, 0);

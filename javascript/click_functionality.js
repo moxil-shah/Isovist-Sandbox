@@ -1,6 +1,6 @@
 function doubleClicked() {
   guardDragged = checkIfClickSecurityGuard();
-  shapeDragged = checkIfClickInsideShape();
+  shapeDragged = checkIfClickInsideShape(allShapes);
   if (visualizeGuard !== -1 || shapeToHandle !== -1) return;
   if (guardDragged !== -1) {
     visualizeGuard = new AsanoVisualization(guardDragged);
@@ -35,6 +35,7 @@ function mouseClicked() {
     superImposedShapeChildren.clear();
     cutShapes.clear();
     uncutShapes.clear();
+    for (let eachShape of allShapes) eachShape.clearOnTopTemp();
     return;
   } else if (
     shapeDragged === -1 &&
@@ -51,6 +52,8 @@ function mouseClicked() {
     superImposedShapeChildren.clear();
     cutShapes.clear();
     uncutShapes.clear();
+    for (let eachShape of allShapes) eachShape.clearOnTopTemp();
+
     return;
   } else if (
     guardDragged === -1 &&
@@ -58,13 +61,13 @@ function mouseClicked() {
     visualizeGuard === -1 &&
     shapeToHandle === -1
   ) {
-    shapeDragged = checkIfClickInsideShape();
+    shapeDragged = checkIfClickInsideShape(allShapes);
     if (shapeDragged !== -1) return;
   }
 }
 
-function checkIfClickInsideShape() {
-  for (let shape of allShapes) {
+function checkIfClickInsideShape(shapesSet) {
+  for (let shape of shapesSet) {
     if (shape === gameShape) continue;
     let lineSegmentCrossesCounter = 0; // for ray trace algorithm
     for (let edge of shape.getEdges()) {
@@ -79,8 +82,10 @@ function checkIfClickInsideShape() {
     }
     // ray tracing algorithm says if line segment crosses === odd num, then click is inside the shape
     if (lineSegmentCrossesCounter % 2 === 1) {
-      updateVertexArrayDistancetoMousePress(shape, new Point(mouseX, mouseY));
-      return shape;
+      if (checkIfClickInsideShape(shape.getOnTop()) === -1) {
+        updateVertexArrayDistancetoMousePress(shape, new Point(mouseX, mouseY));
+        return shape;
+      }
     }
   }
   return -1;
@@ -124,17 +129,14 @@ function dragPoint() {
   }
   if (pointDragged !== -1) {
     for (let each of cutShapes) allShapes.delete(each);
-
     for (let each of uncutShapes) allShapes.add(each);
-
     for (let each of superImposedShapes) allShapes.delete(each);
-
     for (let each of superImposedShapeChildren) allShapes.add(each);
 
     pointDragged.setX(mouseX);
     pointDragged.setY(mouseY);
 
-    dealWithShapeIntersection();
+    dealWithShapeIntersectionWithArugment(shapesPointDragged);
     dealWithGameShapeIntersection();
 
     for (let eachShape of allShapes) {
@@ -196,7 +198,7 @@ function dragShape() {
       currentVertex = currentVertex.getPointNext();
     } while (currentVertex !== shapeDragged.getVertexHead());
 
-    dealWithShapeIntersectionDragShape();
+    dealWithShapeIntersectionWithArugment(shapeDragged);
     dealWithGameShapeIntersection();
     for (let eachShape of allShapes) {
       let currentVertex = eachShape.getVertexHead();

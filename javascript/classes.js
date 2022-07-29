@@ -927,7 +927,8 @@ class Obstacle extends Shape {
   constructor(color) {
     super(color);
     this.verticesDistancetoMousePress = new Map();
-    this.onTop = [];
+    this.onTop = new Set();
+    this.onTopTemp = new Set();
   }
 
   setVerticesDistancetoMousePress(theVertex, coordinate) {
@@ -943,14 +944,38 @@ class Obstacle extends Shape {
   }
 
   addOnTop(shape) {
-    this.onTop.push(shape);
+    this.onTop.add(shape);
   }
   getOnTop() {
     return this.onTop;
   }
 
   clearOnTop() {
-    this.onTop = [];
+    this.onTop.clear();
+  }
+
+  deleteFromOnTop(shape) {
+    this.onTop.delete(shape);
+  }
+
+  addOnTopTemp(shape) {
+    this.onTopTemp.add(shape);
+  }
+
+  getOnTopTemp() {
+    return this.onTopTemp;
+  }
+
+  clearOnTopTemp() {
+    this.onTopTemp.clear();
+  }
+
+  deleteFromOnTopTemp(shape) {
+    this.onTopTemp.delete(shape);
+  }
+
+  deleteOnTopTempFromOnTop() {
+    for (let eachShape of this.onTopTemp) this.onTop.delete(eachShape);
   }
 }
 
@@ -1342,7 +1367,7 @@ class ShapeVisualization {
       currentVertex = currentVertex.getPointNext();
     }
 
-    dealWithShapeIntersection();
+    dealWithShapeIntersectionWithArugment(this.shape);
     dealWithGameShapeIntersection();
 
     for (let eachShape of allShapes) {
@@ -1380,7 +1405,7 @@ class ShapeVisualization {
       currentVertex = currentVertex.getPointNext();
     } while (currentVertex !== this.shape.getVertexHead());
 
-    dealWithShapeIntersection();
+    dealWithShapeIntersectionWithArugment(this.shape);
     dealWithGameShapeIntersection();
 
     for (let eachShape of allShapes) {
