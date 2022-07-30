@@ -70,10 +70,9 @@ function draw() {
   dragPoint();
   dragShape();
   if (shapeToHandle !== -1) shapeToHandle.masterMethod();
-  // if (shapeDragged !== -1) {
-  //   console.log(shapeDragged.onTop);
-  //   console.log(allShapes.has(shapeDragged));
-  // }
+  if (shapeDragged !== -1) {
+    console.log(shapeDragged.onTop);
+  }
   renderAllShapes();
   if (visualizeGuard === -1) renderAllSecurityGuards();
   if (visualizeGuard !== -1) {
@@ -262,7 +261,6 @@ function dealWithShapeIntersection() {
 function dealWithShapeIntersectionWithArugment(theShape) {
   superImposedShapes.clear();
   superImposedShapeChildren.clear();
-  let allOnTop = new Set();
 
   for (let eachShape of allShapes) {
     eachShape.deleteOnTopTempFromOnTop();
@@ -283,142 +281,52 @@ function dealWithShapeIntersectionWithArugment(theShape) {
       regions: eachShape.getPointsArray(true),
       inverted: false,
     };
-    let isPerfectlyInside = true;
-    let addedAlready = false;
-    let unionPolygon = PolyBool.union(
-      shapeDraggedPolyBool,
-      shapeToTestPolyBool
-    );
+    let isPerfectlyInside = false;
 
-    let goAhead = false;
     if (
-      eachShape.getPointsArray(false).length !==
-      theShape.getPointsArray(false).length
+      PolyBool.difference(shapeDraggedPolyBool, shapeToTestPolyBool).regions
+        .length === 0
     ) {
-      goAhead = true;
-    } else {
-      let tempArray = theShape.getPointsArray(false);
-      let tempArray2 = eachShape.getPointsArray(false);
-      for (let i = 0; i < tempArray.length; i += 1) {
-        includes = tempArray.some((a) =>
-          tempArray2[i].every((v, i) => v === a[i])
-        );
+      // shapeDragged is perfectly inside another shape
 
-        if (!includes) {
-          goAhead = true;
-          break;
-        }
-      }
+
+      eachShape.addOnTopTemp(theShape);
+      eachShape.addOnTop(theShape);
+      isPerfectlyInside = true;
+    } else if (
+      PolyBool.difference(shapeToTestPolyBool, shapeDraggedPolyBool).regions
+        .length === 0
+    ) {
+      // shapeDragged is perfectly inside another shape
+      theShape.addOnTopTemp(eachShape);
+      theShape.addOnTop(eachShape);
+      isPerfectlyInside = true;
     }
 
-    if (unionPolygon.regions.length === 1 && goAhead === true) {
-      // means union is one shape so there can be overlap or one polygon perfectly inside other
-      // hence why I have unionPolygon.regions[0] below, because one region only
-      if (
-        unionPolygon.regions[0].length !==
-        eachShape.getPointsArray(false).length
-      ) {
-        isPerfectlyInside = false;
-      } else {
-        for (let i = 0; i < unionPolygon.regions[0].length; i += 1) {
-          includes = eachShape
-            .getPointsArray(false)
-            .some((a) =>
-              unionPolygon.regions[0][i].every((v, i) => v === a[i])
-            );
+    if (isPerfectlyInside === true) continue;
 
-          if (!includes) {
-            isPerfectlyInside = false;
-            break;
-          }
-        }
-      }
-
-      if (isPerfectlyInside) {
-        eachShape.addOnTopTemp(theShape);
-        eachShape.addOnTop(theShape);
-        addedAlready = true;
-      }
-
-      // if eachShape was not the perfectly encompassing shape, test if shapeDragged is
-      if (isPerfectlyInside === false) {
-        isPerfectlyInside = true;
-        if (
-          unionPolygon.regions[0].length !==
-          theShape.getPointsArray(false).length
-        ) {
-          isPerfectlyInside = false;
-        } else {
-          for (let i = 0; i < unionPolygon.regions[0].length; i += 1) {
-            includes = theShape
-              .getPointsArray(false)
-              .some((a) =>
-                unionPolygon.regions[0][i].every((v, i) => v === a[i])
-              );
-
-            if (!includes) {
-              isPerfectlyInside = false;
-              break;
-            }
-          }
-        }
-      }
-      if (isPerfectlyInside && addedAlready === false) {
-        theShape.addOnTopTemp(eachShape);
-        theShape.addOnTop(eachShape);
-      }
-
-      if (isPerfectlyInside) continue;
-
-      if (firstTimeSoAddShapeDraggedToOverlaps === true) {
-        firstTimeSoAddShapeDraggedToOverlaps = false;
-        overlaps.push(theShape.getPointsArray(true));
-        superImposedShapeChildren.add(theShape);
-        allShapes.delete(theShape);
-        let tempSet = theShape.getOnTop();
-        for (let each of tempSet) {
-          allOnTop.add(each);
-        }
-      }
-      overlaps.push(eachShape.getPointsArray(true));
-      superImposedShapeChildren.add(eachShape);
-      allShapes.delete(eachShape);
-      let tempSet = eachShape.getOnTop();
-      for (let each of tempSet) {
-        allOnTop.add(each);
-      }
-    } else if (goAhead === false) {
+    if (firstTimeSoAddShapeDraggedToOverlaps === true) {
+      firstTimeSoAddShapeDraggedToOverlaps = false;
       overlaps.push(theShape.getPointsArray(true));
       superImposedShapeChildren.add(theShape);
       allShapes.delete(theShape);
-      let tempSet1 = theShape.getOnTop();
-      for (let each of tempSet1) {
-        allOnTop.add(each);
-      }
-      overlaps.push(eachShape.getPointsArray(true));
-      superImposedShapeChildren.add(eachShape);
-      allShapes.delete(eachShape);
-      let tempSet2 = eachShape.getOnTop();
-      for (let each of tempSet2) {
-        allOnTop.add(each);
-      }
     }
+    overlaps.push(eachShape.getPointsArray(true));
+    superImposedShapeChildren.add(eachShape);
+    allShapes.delete(eachShape);
   }
 
   for (let each of overlaps) {
     overlapShapes.push({ regions: each, inverted: false });
   }
-  if (overlapShapes.length === 0) {
-    return;
-  }
+
+  if (overlapShapes.length === 0) return;
   var segments = PolyBool.segments(overlapShapes[0]);
   for (var i = 1; i < overlapShapes.length; i++) {
     var seg2 = PolyBool.segments(overlapShapes[i]);
     var comb = PolyBool.combine(segments, seg2);
-
     segments = PolyBool.selectUnion(comb);
   }
-
   let final = PolyBool.polygon(segments);
 
   for (let eachPointArray of final.regions) {
@@ -437,9 +345,6 @@ function dealWithShapeIntersectionWithArugment(theShape) {
 
     superImposedShapes.add(obstacleOverlap);
     allShapes.add(obstacleOverlap);
-    for (let each of allOnTop) {
-      obstacleOverlap.addOnTop(each);
-    }
   }
 }
 
