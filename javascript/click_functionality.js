@@ -30,6 +30,7 @@ function mouseClicked() {
     if (guardDragged !== -1) return;
   }
   if (pointDragged !== -1) {
+    dragPoint(true);
     pointDragged = shapesPointDragged = -1;
     superImposedShapes.clear();
     superImposedShapeChildren.clear();
@@ -47,6 +48,7 @@ function mouseClicked() {
     if (pointDragged !== -1 && shapesPointDragged !== -1) return;
   }
   if (shapeDragged !== -1) {
+    dragShape(true);
     shapeDragged = -1;
     superImposedShapes.clear();
     superImposedShapeChildren.clear();
@@ -122,7 +124,7 @@ function checkIfClickAVertex() {
   return [-1, -1];
 }
 
-function dragPoint() {
+function dragPoint(end) {
   if (visualizeGuard !== -1 || shapeToHandle !== -1) {
     pointDragged = -1;
     return;
@@ -136,7 +138,7 @@ function dragPoint() {
     pointDragged.setX(mouseX);
     pointDragged.setY(mouseY);
 
-    dealWithShapeIntersectionWithArugment(shapesPointDragged);
+    dealWithShapeIntersectionWithArugment(shapesPointDragged, end);
     dealWithGameShapeIntersection();
 
     for (let eachShape of allShapes) {
@@ -176,7 +178,7 @@ function dragSecurityGuard() {
   }
 }
 
-function dragShape() {
+function dragShape(end) {
   if (visualizeGuard !== -1 || shapeToHandle !== -1) {
     shapeDragged = -1;
     return;
@@ -198,7 +200,7 @@ function dragShape() {
       currentVertex = currentVertex.getPointNext();
     } while (currentVertex !== shapeDragged.getVertexHead());
 
-    dealWithShapeIntersectionWithArugment(shapeDragged);
+    dealWithShapeIntersectionWithArugment(shapeDragged, end);
     dealWithGameShapeIntersection();
     for (let eachShape of allShapes) {
       let currentVertex = eachShape.getVertexHead();

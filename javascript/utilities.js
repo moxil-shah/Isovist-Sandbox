@@ -84,6 +84,7 @@ function exitGuardControlPanel() {
 }
 
 function exitShapeControlPanel() {
+  shapeToHandle.masterMethod(true);
   shapeToHandle = -1;
   superImposedShapes.clear();
   superImposedShapeChildren.clear();

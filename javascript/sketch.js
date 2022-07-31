@@ -67,12 +67,12 @@ function draw() {
   background(34, 40, 49);
 
   dragSecurityGuard();
-  dragPoint();
-  dragShape();
-  if (shapeToHandle !== -1) shapeToHandle.masterMethod();
-  if (shapeDragged !== -1) {
-    console.log(shapeDragged.onTop);
-  }
+  dragPoint(false);
+  dragShape(false);
+  if (shapeToHandle !== -1) shapeToHandle.masterMethod(false);
+  // for (let eachshape of allShapes) {
+  //   console.log(eachshape.onTop.size);
+  // }
   renderAllShapes();
   if (visualizeGuard === -1) renderAllSecurityGuards();
   if (visualizeGuard !== -1) {
@@ -131,7 +131,7 @@ function polygon(x, y, radius, npoints) {
     }
     newObstacle.setVerticesLinkedList(vertexes);
     allShapes.add(newObstacle);
-    dealWithShapeIntersectionWithArugment(newObstacle);
+    dealWithShapeIntersectionWithArugment(newObstacle, true);
     superImposedShapeChildren.clear();
     superImposedShapes.clear();
     for (let eachShape of allShapes) eachShape.clearOnTopTemp();
@@ -215,50 +215,50 @@ function renderAllShapesPoints() {
   }
 }
 
-function dealWithShapeIntersection() {
-  superImposedShapes.clear();
-  superImposedShapeChildren.clear();
-  let overlaps = [];
-  let overlapShapes = [];
-  for (let eachShape of allShapes) {
-    if (eachShape === gameShape) continue;
-    overlaps.push(eachShape.getPointsArray(true));
-    superImposedShapeChildren.add(eachShape);
-    allShapes.delete(eachShape);
-  }
+// function dealWithShapeIntersection() {
+//   superImposedShapes.clear();
+//   superImposedShapeChildren.clear();
+//   let overlaps = [];
+//   let overlapShapes = [];
+//   for (let eachShape of allShapes) {
+//     if (eachShape === gameShape) continue;
+//     overlaps.push(eachShape.getPointsArray(true));
+//     superImposedShapeChildren.add(eachShape);
+//     allShapes.delete(eachShape);
+//   }
 
-  for (let each of overlaps) {
-    overlapShapes.push({ regions: each, inverted: false });
-  }
+//   for (let each of overlaps) {
+//     overlapShapes.push({ regions: each, inverted: false });
+//   }
 
-  var segments = PolyBool.segments(overlapShapes[0]);
-  for (var i = 1; i < overlapShapes.length; i++) {
-    var seg2 = PolyBool.segments(overlapShapes[i]);
-    var comb = PolyBool.combine(segments, seg2);
-    segments = PolyBool.selectUnion(comb);
-  }
-  let final = PolyBool.polygon(segments);
+//   var segments = PolyBool.segments(overlapShapes[0]);
+//   for (var i = 1; i < overlapShapes.length; i++) {
+//     var seg2 = PolyBool.segments(overlapShapes[i]);
+//     var comb = PolyBool.combine(segments, seg2);
+//     segments = PolyBool.selectUnion(comb);
+//   }
+//   let final = PolyBool.polygon(segments);
 
-  for (let eachPointArray of final.regions) {
-    let obstacleOverlap = new Obstacle([209, 209, 209]);
-    let points = [];
-    for (let i = 0; i < eachPointArray.length; i += 1) {
-      points.push(
-        new ObstaclePoint(
-          eachPointArray[i][0],
-          eachPointArray[i][1],
-          obstacleOverlap
-        )
-      );
-    }
-    obstacleOverlap.setVerticesLinkedList(points);
+//   for (let eachPointArray of final.regions) {
+//     let obstacleOverlap = new Obstacle([209, 209, 209]);
+//     let points = [];
+//     for (let i = 0; i < eachPointArray.length; i += 1) {
+//       points.push(
+//         new ObstaclePoint(
+//           eachPointArray[i][0],
+//           eachPointArray[i][1],
+//           obstacleOverlap
+//         )
+//       );
+//     }
+//     obstacleOverlap.setVerticesLinkedList(points);
 
-    superImposedShapes.add(obstacleOverlap);
-    allShapes.add(obstacleOverlap);
-  }
-}
+//     superImposedShapes.add(obstacleOverlap);
+//     allShapes.add(obstacleOverlap);
+//   }
+// }
 
-function dealWithShapeIntersectionWithArugment(theShape) {
+function dealWithShapeIntersectionWithArugment(theShape, end) {
   superImposedShapes.clear();
   superImposedShapeChildren.clear();
 
@@ -273,7 +273,11 @@ function dealWithShapeIntersectionWithArugment(theShape) {
     regions: theShape.getPointsArray(true),
     inverted: false,
   };
-  let firstTimeSoAddShapeDraggedToOverlaps = true;
+
+  overlaps.push(theShape.getPointsArray(true));
+  superImposedShapeChildren.add(theShape);
+  allShapes.delete(theShape);
+
   for (let eachShape of allShapes) {
     if (eachShape === gameShape || eachShape === theShape) continue;
 
@@ -281,36 +285,22 @@ function dealWithShapeIntersectionWithArugment(theShape) {
       regions: eachShape.getPointsArray(true),
       inverted: false,
     };
-    let isPerfectlyInside = false;
 
     if (
       PolyBool.difference(shapeDraggedPolyBool, shapeToTestPolyBool).regions
-        .length === 0
-    ) {
-      // shapeDragged is perfectly inside another shape
-
-
-      eachShape.addOnTopTemp(theShape);
-      eachShape.addOnTop(theShape);
-      isPerfectlyInside = true;
-    } else if (
+        .length === 0 ||
       PolyBool.difference(shapeToTestPolyBool, shapeDraggedPolyBool).regions
         .length === 0
     ) {
-      // shapeDragged is perfectly inside another shape
-      theShape.addOnTopTemp(eachShape);
-      theShape.addOnTop(eachShape);
-      isPerfectlyInside = true;
+      continue;
     }
 
-    if (isPerfectlyInside === true) continue;
+    if (
+      PolyBool.intersect(shapeDraggedPolyBool, shapeToTestPolyBool).regions
+        .length === 0 // test edge case of two sqaures sharing an
+    )
+      continue;
 
-    if (firstTimeSoAddShapeDraggedToOverlaps === true) {
-      firstTimeSoAddShapeDraggedToOverlaps = false;
-      overlaps.push(theShape.getPointsArray(true));
-      superImposedShapeChildren.add(theShape);
-      allShapes.delete(theShape);
-    }
     overlaps.push(eachShape.getPointsArray(true));
     superImposedShapeChildren.add(eachShape);
     allShapes.delete(eachShape);
@@ -320,7 +310,6 @@ function dealWithShapeIntersectionWithArugment(theShape) {
     overlapShapes.push({ regions: each, inverted: false });
   }
 
-  if (overlapShapes.length === 0) return;
   var segments = PolyBool.segments(overlapShapes[0]);
   for (var i = 1; i < overlapShapes.length; i++) {
     var seg2 = PolyBool.segments(overlapShapes[i]);
@@ -330,7 +319,7 @@ function dealWithShapeIntersectionWithArugment(theShape) {
   let final = PolyBool.polygon(segments);
 
   for (let eachPointArray of final.regions) {
-    let obstacleOverlap = new Obstacle([209, 209, 209]);
+    obstacleOverlap = new Obstacle([209, 209, 209]);
     let points = [];
     for (let i = 0; i < eachPointArray.length; i += 1) {
       points.push(
@@ -345,6 +334,39 @@ function dealWithShapeIntersectionWithArugment(theShape) {
 
     superImposedShapes.add(obstacleOverlap);
     allShapes.add(obstacleOverlap);
+
+    theShape = obstacleOverlap;
+    shapeDraggedPolyBool = {
+      regions: theShape.getPointsArray(true),
+      inverted: false,
+    };
+    for (let eachShape of allShapes) {
+      if (eachShape === gameShape || eachShape === theShape) continue;
+
+      let shapeToTestPolyBool = {
+        regions: eachShape.getPointsArray(true),
+        inverted: false,
+      };
+
+      if (
+        PolyBool.difference(shapeDraggedPolyBool, shapeToTestPolyBool).regions
+          .length === 0
+      ) {
+        eachShape.addOnTopTemp(theShape);
+        eachShape.addOnTop(theShape);
+        if (end === true) {
+          for (let each of superImposedShapeChildren) {
+            eachShape.deleteFromOnTop(each);
+          }
+        }
+      } else if (
+        PolyBool.difference(shapeToTestPolyBool, shapeDraggedPolyBool).regions
+          .length === 0
+      ) {
+        theShape.addOnTopTemp(eachShape);
+        theShape.addOnTop(eachShape);
+      }
+    }
   }
 }
 

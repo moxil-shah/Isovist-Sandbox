@@ -1337,17 +1337,17 @@ class ShapeVisualization {
     this.pointClicked = new Point(mouseX, mouseY);
   }
 
-  masterMethod() {
+  masterMethod(end) {
     for (let each of cutShapes) allShapes.delete(each);
     for (let each of uncutShapes) allShapes.add(each);
     for (let each of superImposedShapes) allShapes.delete(each);
     for (let each of superImposedShapeChildren) allShapes.add(each);
 
-    if (this.rotateBtn.checked) this.rotateShape();
-    else if (this.sizeBtn.checked) this.growOrShrinkShape();
+    if (this.rotateBtn.checked) this.rotateShape(end);
+    else if (this.sizeBtn.checked) this.growOrShrinkShape(end);
   }
 
-  rotateShape() {
+  rotateShape(end) {
     this.scrollBarRotate.style.display = "block";
     this.scrollBarSize.style.display = "none";
 
@@ -1367,7 +1367,7 @@ class ShapeVisualization {
       currentVertex = currentVertex.getPointNext();
     }
 
-    dealWithShapeIntersectionWithArugment(this.shape);
+    dealWithShapeIntersectionWithArugment(this.shape, end);
     dealWithGameShapeIntersection();
 
     for (let eachShape of allShapes) {
@@ -1386,7 +1386,7 @@ class ShapeVisualization {
     }
   }
 
-  growOrShrinkShape() {
+  growOrShrinkShape(end) {
     this.scrollBarRotate.style.display = "none";
     this.scrollBarSize.style.display = "block";
 
@@ -1405,7 +1405,7 @@ class ShapeVisualization {
       currentVertex = currentVertex.getPointNext();
     } while (currentVertex !== this.shape.getVertexHead());
 
-    dealWithShapeIntersectionWithArugment(this.shape);
+    dealWithShapeIntersectionWithArugment(this.shape, end);
     dealWithGameShapeIntersection();
 
     for (let eachShape of allShapes) {
