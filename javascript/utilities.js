@@ -105,17 +105,33 @@ function removeGuard() {
 }
 
 function removeShape() {
+  shapeToHandle.masterMethod(true);
+  for (let each of allShapes) {
+    for (let eachShape of superImposedShapes) {
+      each.deleteFromOnTop(eachShape);
+    }
+  }
   for (let each of cutShapes) allShapes.delete(each);
   for (let each of uncutShapes) allShapes.add(each);
   for (let each of superImposedShapes) allShapes.delete(each);
   for (let each of superImposedShapeChildren) allShapes.add(each);
+
   allShapes.delete(shapeToHandle.getShape());
 
   for (let guard of allGuards) {
     guard.addAllVertices();
     guard.sortVertices();
   }
-  exitShapeControlPanel();
+
+  shapeToHandle = -1;
+  superImposedShapes.clear();
+  superImposedShapeChildren.clear();
+  cutShapes.clear();
+  uncutShapes.clear();
+  for (let eachShape of allShapes) eachShape.clearOnTopTemp();
+  shapeControlPanel.style.display = "none";
+  document.getElementById("mainMenuNavBar").style.display = "block";
+  window.scrollTo(0, 0);
 }
 
 function findIntersection(line1, line2) {

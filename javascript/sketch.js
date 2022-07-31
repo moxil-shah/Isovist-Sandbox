@@ -265,6 +265,7 @@ function dealWithShapeIntersectionWithArugment(theShape, end) {
   for (let eachShape of allShapes) {
     eachShape.deleteOnTopTempFromOnTop();
     eachShape.clearOnTopTemp();
+    eachShape.deleteFromOnTop(theShape);
   }
 
   let overlaps = [];
