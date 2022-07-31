@@ -1,7 +1,5 @@
 {
   "dependencies": {
-    "polybooljs": "^1.2.0",
-    "robust-point-in-polygon": "^1.0.3",
-    "shape-expand-reduce": "^1.0.0"
+    "polybooljs": "^1.2.0"
   }
 }

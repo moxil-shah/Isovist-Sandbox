@@ -268,6 +268,15 @@ function checkIfTwoLinesIntersectOnEndPointsRounded(line1, line2) {
   );
 }
 
+function checkIfPointIsOutsideGameShape(point) {
+  return (
+    point[0] < 50 ||
+    point[0] > width - 50 ||
+    point[1] < 50 ||
+    point[1] > height - 50
+  );
+}
+
 function shapeToHandleHelper() {
   updateVertexArrayDistancetoMousePress(
     shapeToHandle.getShape(),

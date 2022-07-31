@@ -27,7 +27,6 @@ let shapeToHandle = -1;
 let gameShape;
 let guardControlPanel;
 let shapeControlPanel;
-let gameShapeSmaller;
 
 function setup() {
   let canvas = createCanvas(windowWidth - getScrollBarWidth(), windowHeight);
@@ -81,16 +80,6 @@ function draw() {
   } else renderAllShapesPoints();
 }
 
-function makeGameShapeSmaller() {
-  let vertexes = [];
-  let unknown = expander(gameShape.getPointsArray(false), 0.5);
-  gameShapeSmaller = new Obstacle([255, 0, 0]);
-
-  for (let each of unknown)
-    vertexes.push(new ObstaclePoint(each[0], each[1], gameShapeSmaller));
-  gameShapeSmaller.setVerticesLinkedList(vertexes);
-}
-
 // gets parameters ready to make the new polygon
 function polygon(x, y, radius, npoints) {
   let angle = TWO_PI / npoints;
@@ -115,7 +104,6 @@ function polygon(x, y, radius, npoints) {
     newObstacle.setVerticesLinkedList(vertexes);
 
     allShapes.add(newObstacle);
-    makeGameShapeSmaller();
   } else {
     newObstacle = new Obstacle([209, 209, 209]);
 
@@ -381,7 +369,7 @@ function dealWithGameShapeIntersection() {
     if (checkIfShapeIntersectsWithGameShape(eachShape)) {
       let polyOutside = PolyBool.difference(
         { regions: eachShape.getPointsArray(true), inverted: false },
-        { regions: gameShapeSmaller.getPointsArray(true), inverted: false }
+        { regions: gameShape.getPointsArray(true), inverted: false }
       );
       let polyInside = PolyBool.difference(
         { regions: eachShape.getPointsArray(true), inverted: false },
@@ -432,13 +420,7 @@ function updateVertexArrayDistancetoMousePress(shape, p) {
 function checkIfShapeIntersectsWithGameShape(theShape) {
   let currentVertex = theShape.getVertexHead();
   do {
-    if (
-      classifyPoint(
-        gameShape.getPointsArray(),
-        currentVertex.getArrayForm()
-      ) === 1
-    )
-      return true;
+    if (checkIfPointIsOutsideGameShape(currentVertex.getArrayForm())) return true;
 
     currentVertex = currentVertex.getPointNext();
   } while (currentVertex !== theShape.getVertexHead());
