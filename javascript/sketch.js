@@ -73,8 +73,8 @@ function draw() {
   dragPoint(false);
   dragShape(false);
   if (shapeToHandle !== -1) shapeToHandle.masterMethod(false);
-  // if (shapeDragged !== -1) {
-  //   console.log(shapeDragged.onTop.size);
+  // for (let eachShape of allShapes) {
+  //   console.log(eachShape.onTop.size);
   // }
   renderAllShapes();
   if (visualizeGuard === -1) renderAllSecurityGuards();
@@ -207,6 +207,8 @@ function renderAllShapesPoints() {
   }
 }
 
+// the following function just makes a union of any shape intersection
+
 // function dealWithShapeIntersection() {
 //   superImposedShapes.clear();
 //   superImposedShapeChildren.clear();
@@ -291,9 +293,9 @@ function dealWithShapeIntersectionWithArugment(theShape, end) {
     if (
       PolyBool.intersect(shapeDraggedPolyBool, shapeToTestPolyBool).regions
         .length === 0 // test edge case of two sqaures sharing an
-    )
+    ) {
       continue;
-
+    }
     overlaps.push(eachShape.getPointsArray(true));
     superImposedShapeChildren.add(eachShape);
     allShapes.delete(eachShape);
@@ -345,8 +347,13 @@ function dealWithShapeIntersectionWithArugment(theShape, end) {
         PolyBool.difference(shapeDraggedPolyBool, shapeToTestPolyBool).regions
           .length === 0
       ) {
-        eachShape.addOnTopTemp(theShape);
-        eachShape.addOnTop(theShape);
+        if (checkIfShapeIntersectsWithGameShape(theShape) === false) {
+          eachShape.addOnTopTemp(theShape);
+          eachShape.addOnTop(theShape);
+        } else {
+          allShapes.delete(theShape);
+          superImposedShapes.delete(theShape);
+        }
         if (end === true) {
           for (let each of superImposedShapeChildren) {
             eachShape.deleteFromOnTop(each);
@@ -356,8 +363,13 @@ function dealWithShapeIntersectionWithArugment(theShape, end) {
         PolyBool.difference(shapeToTestPolyBool, shapeDraggedPolyBool).regions
           .length === 0
       ) {
-        theShape.addOnTopTemp(eachShape);
-        theShape.addOnTop(eachShape);
+        if (checkIfShapeIntersectsWithGameShape(eachShape) === false) {
+          theShape.addOnTopTemp(eachShape);
+          theShape.addOnTop(eachShape);
+        } else {
+          allShapes.delete(eachShape);
+          superImposedShapes.delete(eachShape);
+        }
       }
     }
   }
