@@ -27,7 +27,7 @@ let shapeToHandle = -1;
 let gameShape;
 let guardControlPanel;
 let shapeControlPanel;
-let mouseClickHelper = false; 
+let mouseClickHelper = false;
 
 function setup() {
   let canvas = createCanvas(windowWidth - getScrollBarWidth(), windowHeight);
@@ -73,8 +73,8 @@ function draw() {
   dragPoint(false);
   dragShape(false);
   if (shapeToHandle !== -1) shapeToHandle.masterMethod(false);
-  // for (let eachshape of allShapes) {
-  //   console.log(eachshape.onTop.size);
+  // if (shapeDragged !== -1) {
+  //   console.log(shapeDragged.onTop.size);
   // }
   renderAllShapes();
   if (visualizeGuard === -1) renderAllSecurityGuards();
