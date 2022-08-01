@@ -16,9 +16,10 @@ function doubleClicked() {
 }
 
 function mouseClicked() {
-  if (mouseY < 0) return;
+  if (mouseY < 0 && mouseClickHelper === false) return;
   if (guardDragged !== -1) {
     guardDragged = -1;
+    $("#navbarSupportedContent :input").attr("disabled", false);
     return;
   } else if (
     shapeDragged === -1 &&
@@ -27,7 +28,9 @@ function mouseClicked() {
     shapeToHandle === -1
   ) {
     guardDragged = checkIfClickSecurityGuard();
-    if (guardDragged !== -1) return;
+    if (guardDragged !== -1) {
+      return;
+    }
   }
   if (pointDragged !== -1) {
     dragPoint(true);
@@ -37,6 +40,7 @@ function mouseClicked() {
     cutShapes.clear();
     uncutShapes.clear();
     for (let eachShape of allShapes) eachShape.clearOnTopTemp();
+    $("#navbarSupportedContent :input").attr("disabled", false);
     return;
   } else if (
     shapeDragged === -1 &&
@@ -55,7 +59,7 @@ function mouseClicked() {
     cutShapes.clear();
     uncutShapes.clear();
     for (let eachShape of allShapes) eachShape.clearOnTopTemp();
-
+    $("#navbarSupportedContent :input").attr("disabled", false);
     return;
   } else if (
     guardDragged === -1 &&
@@ -130,6 +134,7 @@ function dragPoint(end) {
     return;
   }
   if (pointDragged !== -1) {
+    $("#navbarSupportedContent :input").attr("disabled", true);
     for (let each of cutShapes) allShapes.delete(each);
     for (let each of uncutShapes) allShapes.add(each);
     for (let each of superImposedShapes) allShapes.delete(each);
@@ -164,6 +169,7 @@ function dragSecurityGuard() {
     return;
   }
   if (guardDragged !== -1) {
+    $("#navbarSupportedContent :input").attr("disabled", true);
     guardDragged.setX(mouseX);
     guardDragged.setY(mouseY);
 
@@ -184,6 +190,7 @@ function dragShape(end) {
     return;
   }
   if (shapeDragged !== -1) {
+    $("#navbarSupportedContent :input").attr("disabled", true);
     for (let each of cutShapes) allShapes.delete(each);
     for (let each of uncutShapes) allShapes.add(each);
     for (let each of superImposedShapes) allShapes.delete(each);

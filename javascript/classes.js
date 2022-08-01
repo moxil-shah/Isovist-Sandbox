@@ -222,11 +222,13 @@ class SecurityGuard extends Point {
     // console.log(this.sortedVertices.length);
     for (let i = 0; i < this.sortedVertices.length; i += 1) {
       if (
+        this.sortedVertices[i].getParentShape() !== gameShape &&
         checkIfPointIsOutsideGameShape(
           this.sortedVertices[i].getArrayFormRounded()
         )
-      )
+      ) {
         continue;
+      }
 
       // console.log(i);
       // InOrder(this.root);
@@ -538,8 +540,6 @@ class SecurityGuard extends Point {
           -(edgeToInsert.getPoint2().getY() - edgeToInsert.getPoint1().getY()),
           0
         );
-        //console.log(v0.angleBetween(v1));
-        //console.log(v0.angleBetween(v1) === 0 || v0.angleBetween(v1) === PI);
         if (v0.angleBetween(v1) === 0 || v0.angleBetween(v1) === PI) {
           return "toward";
         }
@@ -570,8 +570,6 @@ class SecurityGuard extends Point {
           -(edgeToDelete.getPoint2().getY() - edgeToDelete.getPoint1().getY()),
           0
         );
-        //console.log(v0.angleBetween(v1));
-        //console.log(v0.angleBetween(v1) === 0 || v0.angleBetween(v1) === PI);
         if (v0.angleBetween(v1) === 0 || v0.angleBetween(v1) === PI) {
           return "toward";
         }
@@ -595,8 +593,6 @@ class SecurityGuard extends Point {
           -(edgeToFind.getPoint2().getY() - edgeToFind.getPoint1().getY()),
           0
         );
-        //console.log(v0.angleBetween(v1));
-        //console.log(v0.angleBetween(v1) === 0 || v0.angleBetween(v1) === PI);
         if (v0.angleBetween(v1) === 0 || v0.angleBetween(v1) === PI) {
           return "toward";
         }
@@ -742,9 +738,9 @@ class SecurityGuard extends Point {
 
   outsideGameShape() {
     return (
-      this.x >= width - 50 ||
+      this.x >= Math.round((width - 50) * ROUND_FACTOR) / ROUND_FACTOR ||
       this.x <= 50 ||
-      this.y >= height - 50 ||
+      this.y >= Math.round((height - 50) * ROUND_FACTOR) / ROUND_FACTOR ||
       this.y <= 50
     );
   }

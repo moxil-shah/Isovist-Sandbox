@@ -1,15 +1,12 @@
 function clearAll() {
-  allShapes.clear();
-  polygon(null, null, null, 4);
-  for (let guard of allGuards) securityGuardNames.push(guard.getName());
-  allGuards.clear();
+  clearShapes();
+  clearGuards();
 }
 
 function clearGuards() {
   for (let guard of allGuards) securityGuardNames.push(guard.getName());
   allGuards.clear();
   document.getElementById("addBtn").disabled = false;
-  document.getElementById("addBtn").innerText = "Add Guard";
 }
 
 function clearShapes() {
@@ -71,7 +68,6 @@ function SecurityGuardInput() {
   }
   if (securityGuardNames.length === 0) {
     document.getElementById("addBtn").disabled = true;
-    document.getElementById("addBtn").innerText = "Add Guard (Disabled)";
   }
 }
 
@@ -100,7 +96,6 @@ function removeGuard() {
   allGuards.delete(visualizeGuard.getGuard());
   securityGuardNames.push(visualizeGuard.getGuard().getName());
   document.getElementById("addBtn").disabled = false;
-  document.getElementById("addBtn").innerText = "Add Guard";
   exitGuardControlPanel();
 }
 
@@ -271,9 +266,9 @@ function checkIfTwoLinesIntersectOnEndPointsRounded(line1, line2) {
 function checkIfPointIsOutsideGameShape(point) {
   return (
     point[0] < 50 ||
-    point[0] > width - 50 ||
+    point[0] > Math.round((width - 50) * ROUND_FACTOR) / ROUND_FACTOR ||
     point[1] < 50 ||
-    point[1] > height - 50
+    point[1] > Math.round((height - 50) * ROUND_FACTOR) / ROUND_FACTOR
   );
 }
 
@@ -374,7 +369,7 @@ function makeRoom1() {
   );
   newObstacle.setVerticesLinkedList(vertexes);
   allShapes.add(newObstacle);
-  dealWithShapeIntersection();
+  dealWithShapeIntersectionWithArugment(newObstacle);
   superImposedShapeChildren.clear();
   superImposedShapes.clear();
 

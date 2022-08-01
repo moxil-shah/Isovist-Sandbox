@@ -27,6 +27,7 @@ let shapeToHandle = -1;
 let gameShape;
 let guardControlPanel;
 let shapeControlPanel;
+let mouseClickHelper = false; 
 
 function setup() {
   let canvas = createCanvas(windowWidth - getScrollBarWidth(), windowHeight);
@@ -40,7 +41,10 @@ function setup() {
 
 function windowResized() {
   clearAll();
+  if (shapeToHandle !== -1) exitShapeControlPanel();
+  if (visualizeGuard !== -1) exitGuardControlPanel();
   resizeCanvas(windowWidth - getScrollBarWidth(), windowHeight);
+
   let currentVertex = gameShape.getVertexHead().getPointNext();
   currentVertex.setX(width - 50);
   currentVertex = currentVertex.getPointNext();
@@ -420,7 +424,8 @@ function updateVertexArrayDistancetoMousePress(shape, p) {
 function checkIfShapeIntersectsWithGameShape(theShape) {
   let currentVertex = theShape.getVertexHead();
   do {
-    if (checkIfPointIsOutsideGameShape(currentVertex.getArrayForm())) return true;
+    if (checkIfPointIsOutsideGameShape(currentVertex.getArrayForm()))
+      return true;
 
     currentVertex = currentVertex.getPointNext();
   } while (currentVertex !== theShape.getVertexHead());
