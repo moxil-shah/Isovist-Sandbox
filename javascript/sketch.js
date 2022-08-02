@@ -27,7 +27,7 @@ let shapeToHandle = -1;
 let gameShape;
 let guardControlPanel;
 let shapeControlPanel;
-let mouseClickHelper = false;
+
 
 function setup() {
   let canvas = createCanvas(windowWidth - getScrollBarWidth(), windowHeight);

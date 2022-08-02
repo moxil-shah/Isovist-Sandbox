@@ -16,7 +16,7 @@ function doubleClicked() {
 }
 
 function mouseClicked() {
-  if (mouseY < 0 && mouseClickHelper === false) return;
+  if (mouseY < 0) return;
   if (guardDragged !== -1) {
     guardDragged = -1;
     $("#navbarSupportedContent :input").attr("disabled", false);

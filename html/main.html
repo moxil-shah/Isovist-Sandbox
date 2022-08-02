@@ -27,6 +27,9 @@
       src="/javascript/click_functionality.js"
     ></script>
     <script type="text/javascript" src="/javascript/classes.js"></script>
+    <script type="text/javascript" src="/javascript/tutorial.js"></script>
+
+    <script type="text/javascript"></script>
   </head>
 
   <body>
@@ -85,9 +88,11 @@
                 </button>
               </li>
 
-              <li  class="nav-item me-3">
+              <li class="nav-item me-3">
                 <div class="dropdown">
-                  <button class="btn btn-outline-success btn-sm">Templates</button>
+                  <button class="btn btn-outline-success btn-sm">
+                    Templates
+                  </button>
                   <div class="dropdown-content">
                     <a href="#" onclick="makeRoom1()">Museum</a>
                     <a href="#" onclick="makeRoom2()">Grocery Store</a>
@@ -277,5 +282,42 @@
     </div>
 
     <div id="canvasDiv"></div>
+
+    <!-- The Modal -->
+    <div class="modal" id="myModal">
+      <div class="modal-dialog modal-dialog-centered modal-xl">
+        <div class="modal-content">
+          <div id="modalContent"></div>
+
+          <!-- Modal footer -->
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-success"
+              id="prev"
+              onclick="prevCard()"
+            >
+              &lt
+            </button>
+            <button
+              type="button"
+              class="btn btn-success"
+              id="next"
+              onclick="nextCard()"
+            >
+              &gt
+            </button>
+
+            <button
+              type="button"
+              class="btn btn-danger text-left"
+              onclick="modalQuit()"
+            >
+              Exit&nbspTutorial
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
   </body>
 </html>
