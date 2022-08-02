@@ -1,4 +1,8 @@
 function doubleClicked() {
+  if (madeRoomDoubleClick === true) {
+    madeRoomDoubleClick = false;
+    return;
+  }
   guardDragged = checkIfClickSecurityGuard();
   shapeDragged = checkIfClickInsideShape(allShapes);
   if (visualizeGuard !== -1 || shapeToHandle !== -1) return;
@@ -16,6 +20,12 @@ function doubleClicked() {
 }
 
 function mouseClicked() {
+  if (madeRoom === true) {
+    madeRoom = false;
+    madeRoomDoubleClick = true;
+    return;
+  } else madeRoomDoubleClick = false;
+  
   if (mouseY < 0) return;
   if (guardDragged !== -1) {
     guardDragged = -1;

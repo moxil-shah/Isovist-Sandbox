@@ -51,7 +51,7 @@ function sidesInput() {
   let nPoints = document.getElementById("sideNumInput").value;
   if (nPoints > 30) nPoints = 30;
   if (nPoints < 3) nPoints = 3;
-  polygon(100, 100, 45, parseInt(nPoints));
+  polygon(mouseX, mouseY, 45, parseInt(nPoints));
 }
 
 // from the HTML form
@@ -69,6 +69,7 @@ function SecurityGuardInput() {
     guard.addAllVertices();
     guard.sortVertices();
     allGuards.add(guard);
+    guardDragged = guard;
   }
   if (securityGuardNames.length === 0) {
     document.getElementById("addBtn").disabled = true;
@@ -284,6 +285,11 @@ function shapeToHandleHelper() {
   shapeToHandle.getShape().setPointsBackup();
   document.getElementById("shapeRangeSize").value = 1;
   document.getElementById("shapeRangeRotate").value = 0;
+}
+
+// min inclusive, max inclusive
+function getRndInteger(min, max) {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
 function makeGrid() {
@@ -516,100 +522,16 @@ function makeRoom1() {
     guard.addAllVertices();
     guard.sortVertices();
   }
+
+  madeRoom = true;
 }
 
 function makeRoom2() {
+  clearAll();
+
   let gridPoints = makeGrid();
-
-  for (let row = 12; row <= 18; row += 2) {
-    let newObstacle = new Obstacle([209, 209, 209]);
-    let vertexes = [];
-    vertexes.push(
-      new ObstaclePoint(
-        gridPoints[row][1][0],
-        gridPoints[row][1][1],
-        newObstacle
-      ),
-      new ObstaclePoint(
-        gridPoints[row][5][0],
-        gridPoints[row][5][1],
-        newObstacle
-      ),
-      new ObstaclePoint(
-        gridPoints[row + 1][5][0],
-        gridPoints[row + 1][5][1],
-        newObstacle
-      ),
-      new ObstaclePoint(
-        gridPoints[row + 1][1][0],
-        gridPoints[row + 1][1][1],
-        newObstacle
-      )
-    );
-
-    newObstacle.setVerticesLinkedList(vertexes);
-    allShapes.add(newObstacle);
-  }
-  for (let row = 12; row <= 18; row += 2) {
-    let newObstacle = new Obstacle([209, 209, 209]);
-    let vertexes = [];
-    vertexes.push(
-      new ObstaclePoint(
-        gridPoints[row][6][0],
-        gridPoints[row][6][1],
-        newObstacle
-      ),
-      new ObstaclePoint(
-        gridPoints[row][14][0],
-        gridPoints[row][14][1],
-        newObstacle
-      ),
-      new ObstaclePoint(
-        gridPoints[row + 1][14][0],
-        gridPoints[row + 1][14][1],
-        newObstacle
-      ),
-      new ObstaclePoint(
-        gridPoints[row + 1][6][0],
-        gridPoints[row + 1][6][1],
-        newObstacle
-      )
-    );
-
-    newObstacle.setVerticesLinkedList(vertexes);
-    allShapes.add(newObstacle);
-  }
-  for (let row = 12; row <= 18; row += 2) {
-    let newObstacle = new Obstacle([209, 209, 209]);
-    let vertexes = [];
-    vertexes.push(
-      new ObstaclePoint(
-        gridPoints[row][15][0],
-        gridPoints[row][15][1],
-        newObstacle
-      ),
-      new ObstaclePoint(
-        gridPoints[row][19][0],
-        gridPoints[row][19][1],
-        newObstacle
-      ),
-      new ObstaclePoint(
-        gridPoints[row + 1][19][0],
-        gridPoints[row + 1][19][1],
-        newObstacle
-      ),
-      new ObstaclePoint(
-        gridPoints[row + 1][15][0],
-        gridPoints[row + 1][15][1],
-        newObstacle
-      )
-    );
-
-    newObstacle.setVerticesLinkedList(vertexes);
-    allShapes.add(newObstacle);
-  }
   let alternate = false;
-  for (let row = 4; row <= 10; row += 2) {
+  for (let row = 0; row < 20; row += 2) {
     if (alternate) col = 2;
     else col = 1;
 
@@ -645,21 +567,6 @@ function makeRoom2() {
     }
     alternate = !alternate;
   }
-  let newObstacle = new Obstacle([209, 209, 209]);
-  let vertexes = [];
-  vertexes.push(
-    new ObstaclePoint(gridPoints[1][1][0], gridPoints[1][1][1], newObstacle),
-    new ObstaclePoint(gridPoints[1][19][0], gridPoints[1][19][1], newObstacle),
-    new ObstaclePoint(gridPoints[2][19][0], gridPoints[2][19][1], newObstacle),
-    new ObstaclePoint(gridPoints[2][1][0], gridPoints[2][1][1], newObstacle)
-  );
-
-  newObstacle.setVerticesLinkedList(vertexes);
-  allShapes.add(newObstacle);
-
-  dealWithShapeIntersection();
-  superImposedShapeChildren.clear();
-  superImposedShapes.clear();
 
   for (let eachShape of allShapes) {
     let currentVertex = eachShape.getVertexHead();
@@ -675,4 +582,21 @@ function makeRoom2() {
     guard.addAllVertices();
     guard.sortVertices();
   }
+
+  madeRoom = true;
+}
+
+function makeRoom3() {
+  clearAll();
+  let numberOfShapes = getRndInteger(5, 25);
+  for (let i = 0; i < numberOfShapes; i += 1) {
+    polygonNoDrag(
+      getRndInteger(50, width - 50),
+      getRndInteger(50, height - 50),
+      getRndInteger(20, 100),
+      getRndInteger(3, 30)
+    );
+  }
+
+  madeRoom = true;
 }

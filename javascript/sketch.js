@@ -27,7 +27,8 @@ let shapeToHandle = -1;
 let gameShape;
 let guardControlPanel;
 let shapeControlPanel;
-
+let madeRoom = false;
+let madeRoomDoubleClick = false;
 
 function setup() {
   let canvas = createCanvas(windowWidth - getScrollBarWidth(), windowHeight);
@@ -68,7 +69,6 @@ function getScrollBarWidth() {
 
 function draw() {
   background(34, 40, 49);
-
   dragSecurityGuard();
   dragPoint(false);
   dragShape(false);
@@ -123,11 +123,56 @@ function polygon(x, y, radius, npoints) {
     }
     newObstacle.setVerticesLinkedList(vertexes);
     allShapes.add(newObstacle);
-    dealWithShapeIntersectionWithArugment(newObstacle, true);
-    superImposedShapeChildren.clear();
-    superImposedShapes.clear();
+
     for (let eachShape of allShapes) eachShape.clearOnTopTemp();
+    updateVertexArrayDistancetoMousePress(
+      newObstacle,
+      new Point(mouseX, mouseY)
+    );
+    shapeDragged = newObstacle;
   }
+
+  for (let eachShape of allShapes) {
+    let currentVertex = eachShape.getVertexHead();
+    do {
+      for (let guard of allGuards) {
+        currentVertex.setSecurityGuardAngle(guard);
+      }
+      currentVertex = currentVertex.getPointNext();
+    } while (currentVertex !== eachShape.getVertexHead());
+  }
+
+  for (let guard of allGuards) {
+    guard.addAllVertices();
+    guard.sortVertices();
+  }
+}
+
+function polygonNoDrag(x, y, radius, npoints) {
+  let angle = TWO_PI / npoints;
+  let vertexes = []; // temp vertexes array to be passed into Shape constructor
+  let copyVertexes = [];
+  let newObstacle = new Obstacle([209, 209, 209]);
+
+  let preventRoundingError = 0;
+  for (let i = 0; i < TWO_PI; i += angle) {
+    preventRoundingError += 1;
+    if (preventRoundingError > npoints) break;
+
+    let sx = x + cos(i) * radius;
+    let sy = y + sin(i) * radius;
+    vertexes.push(new ObstaclePoint(sx, sy, newObstacle));
+    copyVertexes.push([sx, sy]);
+  }
+  newObstacle.setVerticesLinkedList(vertexes);
+  allShapes.add(newObstacle);
+  dealWithShapeIntersectionWithArugment(newObstacle, true);
+  dealWithGameShapeIntersection();
+  superImposedShapes.clear();
+  superImposedShapeChildren.clear();
+  cutShapes.clear();
+  uncutShapes.clear();
+  for (let eachShape of allShapes) eachShape.clearOnTopTemp();
 
   for (let eachShape of allShapes) {
     let currentVertex = eachShape.getVertexHead();
