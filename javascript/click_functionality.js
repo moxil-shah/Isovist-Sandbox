@@ -25,11 +25,14 @@ function mouseClicked() {
     madeRoomDoubleClick = true;
     return;
   } else madeRoomDoubleClick = false;
-  
+
   if (mouseY < 0) return;
   if (guardDragged !== -1) {
     guardDragged = -1;
     $("#navbarSupportedContent :input").attr("disabled", false);
+    if (securityGuardNames.length === 0) {
+      document.getElementById("addBtn").disabled = true;
+    }
     return;
   } else if (
     shapeDragged === -1 &&
@@ -51,6 +54,9 @@ function mouseClicked() {
     uncutShapes.clear();
     for (let eachShape of allShapes) eachShape.clearOnTopTemp();
     $("#navbarSupportedContent :input").attr("disabled", false);
+    if (securityGuardNames.length === 0) {
+      document.getElementById("addBtn").disabled = true;
+    }
     return;
   } else if (
     shapeDragged === -1 &&
@@ -70,6 +76,9 @@ function mouseClicked() {
     uncutShapes.clear();
     for (let eachShape of allShapes) eachShape.clearOnTopTemp();
     $("#navbarSupportedContent :input").attr("disabled", false);
+    if (securityGuardNames.length === 0) {
+      document.getElementById("addBtn").disabled = true;
+    }
     return;
   } else if (
     guardDragged === -1 &&
@@ -145,6 +154,7 @@ function dragPoint(end) {
   }
   if (pointDragged !== -1) {
     $("#navbarSupportedContent :input").attr("disabled", true);
+
     for (let each of cutShapes) allShapes.delete(each);
     for (let each of uncutShapes) allShapes.add(each);
     for (let each of superImposedShapes) allShapes.delete(each);

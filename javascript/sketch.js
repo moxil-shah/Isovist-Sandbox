@@ -73,8 +73,9 @@ function draw() {
   dragPoint(false);
   dragShape(false);
   if (shapeToHandle !== -1) shapeToHandle.masterMethod(false);
+  // console.log(allShapes.size)
   // for (let eachShape of allShapes) {
-  //   console.log(eachShape.onTop.size);
+  //   console.log(eachShape.getOnTop().size);
   // }
   renderAllShapes();
   if (visualizeGuard === -1) renderAllSecurityGuards();
@@ -392,9 +393,15 @@ function dealWithShapeIntersectionWithArugment(theShape, end) {
         PolyBool.difference(shapeDraggedPolyBool, shapeToTestPolyBool).regions
           .length === 0
       ) {
-        if (checkIfShapeIntersectsWithGameShape(theShape) === false) {
+        if (
+          checkIfShapeIntersectsWithGameShape(theShape) === false &&
+          theShape.getSharesGameShapeBorder() === false
+        ) {
           eachShape.addOnTopTemp(theShape);
           eachShape.addOnTop(theShape);
+        } else if (theShape.getSharesGameShapeBorder() === true) {
+          superImposedShapeChildren.add(theShape);
+          allShapes.delete(theShape);
         } else {
           allShapes.delete(theShape);
           superImposedShapes.delete(theShape);
@@ -408,9 +415,15 @@ function dealWithShapeIntersectionWithArugment(theShape, end) {
         PolyBool.difference(shapeToTestPolyBool, shapeDraggedPolyBool).regions
           .length === 0
       ) {
-        if (checkIfShapeIntersectsWithGameShape(eachShape) === false) {
+        if (
+          checkIfShapeIntersectsWithGameShape(eachShape) === false &&
+          eachShape.getSharesGameShapeBorder() === false
+        ) {
           theShape.addOnTopTemp(eachShape);
           theShape.addOnTop(eachShape);
+        } else if (eachShape.getSharesGameShapeBorder() === true) {
+          superImposedShapeChildren.add(eachShape);
+          allShapes.delete(eachShape);
         } else {
           allShapes.delete(eachShape);
           superImposedShapes.delete(eachShape);
@@ -441,6 +454,7 @@ function dealWithGameShapeIntersection() {
 
       for (let j = 0; j < polyInside.regions.length; j += 1) {
         let obstacleCut = new Obstacle([209, 209, 209]);
+        obstacleCut.setSharesGameShapeBorder(true);
         let points = [];
         for (let i = 0; i < polyInside.regions[j].length; i += 1) {
           points.push(

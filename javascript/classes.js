@@ -1002,6 +1002,7 @@ class Obstacle extends Shape {
     this.verticesDistancetoMousePress = new Map();
     this.onTop = new Set();
     this.onTopTemp = new Set();
+    this.sharesGameShapeBorder = false;
   }
 
   setVerticesDistancetoMousePress(theVertex, coordinate) {
@@ -1014,6 +1015,14 @@ class Obstacle extends Shape {
 
   resetVerticesDistancetoMousePress() {
     this.verticesDistancetoMousePress = new Map();
+  }
+
+  setSharesGameShapeBorder(value) {
+    this.sharesGameShapeBorder = value;
+  }
+
+  getSharesGameShapeBorder() {
+    return this.sharesGameShapeBorder;
   }
 
   addOnTop(shape) {
