@@ -116,7 +116,6 @@ h6 {
   background-color: #3e8e41;
 }
 
-
 .range-right {
   position: absolute;
   left: 0;
@@ -125,5 +124,9 @@ h6 {
   padding-top: 13px;
   color: #eeeeee;
   display: none;
+}
 
+#sliderValue {
+  font-size: 1em;
+  padding-top: 15px;
 }

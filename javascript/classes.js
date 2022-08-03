@@ -1280,7 +1280,7 @@ class AsanoVisualization {
 
   scrollBarAnimation() {
     document.getElementById("sliderValue").innerHTML =
-      visualizeGuard.scrollBar.value;
+      visualizeGuard.scrollBar.value + "&#176";
 
     this.angle = (this.scrollBar.value * PI) / 180;
     this.current = this.isovist.getVertexHead();
@@ -1435,6 +1435,7 @@ class ShapeVisualization {
     this.scrollBarSize.value = 1;
     this.rotateBtn = document.getElementById("shapebtnradio1");
     this.sizeBtn = document.getElementById("shapebtnradio2");
+    this.sliderValue = document.getElementById("sliderValue");
     this.pointClicked = new Point(mouseX, mouseY);
   }
 
@@ -1490,13 +1491,16 @@ class ShapeVisualization {
   growOrShrinkShape(end) {
     this.scrollBarRotate.style.display = "none";
     this.scrollBarSize.style.display = "block";
+    this.sliderValue.style.display = "block";
+    this.sliderValue.innerHTML = this.scrollBarSize.value;
 
     let currentVertex = this.shape.getVertexHead();
     do {
       currentVertex.setX(
         this.pointClicked.getX() -
           this.shape.getVerticesDistancetoMousePress(currentVertex)[0] *
-            this.scrollBarSize.value
+            this.scrollBarSize.value +
+          "X"
       );
       currentVertex.setY(
         this.pointClicked.getY() -

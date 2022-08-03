@@ -1,5 +1,3 @@
-
-
 // code starts //
 let allShapes = new Set(); // global array of all shapes made
 let allGuards = new Set(); // global array of all security guards made
@@ -48,6 +46,9 @@ function windowResized() {
   if (visualizeGuard !== -1) exitGuardControlPanel();
 
   resizeCanvas(windowWidth - getScrollBarWidth(), windowHeight);
+
+  document.getElementById("customRange").style.width =
+    ((width - 100) * 0.8).toString() + "px";
 
   let currentVertex = gameShape.getVertexHead().getPointNext();
   currentVertex.setX(width - 50);
