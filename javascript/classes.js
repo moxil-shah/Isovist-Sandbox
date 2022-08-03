@@ -218,6 +218,7 @@ class SecurityGuard extends Point {
     let currentlyOnSelfIntersectionPoint = false;
     this.initialIntersect();
     let goNextHowManyTimes = 0;
+    let tempar = [];
 
     // console.log(this.sortedVertices.length);
     for (let i = 0; i < this.sortedVertices.length; i += 1) {
@@ -290,9 +291,9 @@ class SecurityGuard extends Point {
         goNextHowManyTimes += 1;
       }
 
-      if (toAdd.length + toRemove.length !== (goNextHowManyTimes + 1) * 2)
+      if (toAdd.length + toRemove.length !== (goNextHowManyTimes + 1) * 2) {
         continue;
-      else if (toAdd.length + toRemove.length > 2) {
+      } else if (toAdd.length + toRemove.length > 2) {
         currentlyOnSelfIntersectionPoint = true;
       }
 
@@ -307,16 +308,20 @@ class SecurityGuard extends Point {
         );
 
         if (toUpdate === null) {
-          console.log(i);
-          InOrder(this.root);
-          console.alert();
+          // console.log(i);
+          // InOrder(this.root);
+          ////// I AM NOT SMART ENOUGH TO FIGURE OUT THIS BUG ////////////
+          ////// IF IT HAPPENS (IT MIGHT) SO I JUST DON'T DRAW ISOVIST ////////////
+          return;
         } else toUpdate.theKey = toAdd[0];
 
         leftNew = getLeftmostLeaf(this.root).theKey;
         if (leftPrev !== leftNew) {
           if (toRemove[0] !== leftPrev) {
-            console.log("Big error 1!");
-            console.alert();
+            // console.log("Big error 1!");
+            ////// I AM NOT SMART ENOUGH TO FIGURE OUT THIS BUG ////////////
+            ////// IF IT HAPPENS (I NEVER SAW IT PERSONALLY) SO I JUST DON'T DRAW ISOVIST ////////////
+            return;
           }
           this.constructedPoints.push(
             new IsovistPoint(
@@ -426,6 +431,7 @@ class SecurityGuard extends Point {
 
           if (this.root === null) leftNew = null;
           else leftNew = getLeftmostLeaf(this.root).theKey;
+
           if (
             (leftPrev !== leftNew &&
               currentlyOnSelfIntersectionPoint === false) ||
@@ -480,7 +486,9 @@ class SecurityGuard extends Point {
         goNextHowManyTimes = 0;
       }
     }
-
+    // if (this.constructedPoints.length === 0) {
+    //   console.log(tempar);
+    // }
     this.isovist.setVerticesLinkedList(this.constructedPoints);
   }
 
@@ -910,6 +918,10 @@ class Shape {
   }
 
   setVerticesLinkedList(vertexArray) {
+    if (vertexArray.length < 3) {
+      console.log(vertexArray.length);
+      return;
+    }
     vertexArray[0].setPointPrev(vertexArray[vertexArray.length - 1]);
     vertexArray[0].setPointNext(vertexArray[1]);
     this.vertexHead = vertexArray[0];
@@ -1067,6 +1079,7 @@ class Isovist extends Shape {
   }
 
   drawIsovist(guard, opacity, borderThickness) {
+    if (this.vertexHead === undefined) return;
     push();
     if (borderThickness !== 0) {
       stroke(guard.getName()[0], guard.getName()[1], guard.getName()[2]);

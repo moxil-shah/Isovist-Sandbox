@@ -76,6 +76,26 @@ function SecurityGuardInput() {
   }
 }
 
+function SecurityGuardInputNoDrag(x, y) {
+  if (securityGuardNames.length !== 0) {
+    guard = new SecurityGuard(x, y, securityGuardNames.pop());
+    for (let eachShape of allShapes) {
+      let currentVertex = eachShape.getVertexHead();
+      do {
+        currentVertex.setSecurityGuardAngle(guard);
+
+        currentVertex = currentVertex.getPointNext();
+      } while (currentVertex !== eachShape.getVertexHead());
+    }
+    guard.addAllVertices();
+    guard.sortVertices();
+    allGuards.add(guard);
+  }
+  if (securityGuardNames.length === 0) {
+    document.getElementById("addBtn").disabled = true;
+  }
+}
+
 function exitGuardControlPanel() {
   visualizeGuard.scrollBar.style.display = "none";
   visualizeGuard = -1;
@@ -318,7 +338,7 @@ function makeGrid() {
   return gridPoints;
 }
 
-function makeRoom1() {
+function makeRoom1(withShapes) {
   clearAll();
 
   let gridPoints = makeGrid();
@@ -382,132 +402,133 @@ function makeRoom1() {
   newObstacleMain.setVerticesLinkedList(vertexes);
   allShapes.add(newObstacleMain);
 
-  let newObstacle = new Obstacle([209, 209, 209]);
-  vertexes = [];
+  if (withShapes === true) {
+    let newObstacle = new Obstacle([209, 209, 209]);
+    vertexes = [];
 
-  vertexes.push(
-    gridPoints[2][2],
-    gridPoints[2][3],
-    gridPoints[6][3],
-    gridPoints[6][2]
-  );
-  newObstacle.setVerticesLinkedList(vertexes);
-  allShapes.add(newObstacle);
-  newObstacleMain.addOnTop(newObstacle);
+    vertexes.push(
+      gridPoints[2][2],
+      gridPoints[2][3],
+      gridPoints[6][3],
+      gridPoints[6][2]
+    );
+    newObstacle.setVerticesLinkedList(vertexes);
+    allShapes.add(newObstacle);
+    newObstacleMain.addOnTop(newObstacle);
 
-  newObstacle = new Obstacle([209, 209, 209]);
-  vertexes = [];
+    newObstacle = new Obstacle([209, 209, 209]);
+    vertexes = [];
 
-  vertexes.push(
-    gridPoints[2][4],
-    gridPoints[2][5],
-    gridPoints[4][5],
-    gridPoints[4][4]
-  );
-  newObstacle.setVerticesLinkedList(vertexes);
-  allShapes.add(newObstacle);
-  newObstacleMain.addOnTop(newObstacle);
+    vertexes.push(
+      gridPoints[2][4],
+      gridPoints[2][5],
+      gridPoints[4][5],
+      gridPoints[4][4]
+    );
+    newObstacle.setVerticesLinkedList(vertexes);
+    allShapes.add(newObstacle);
+    newObstacleMain.addOnTop(newObstacle);
 
-  newObstacle = new Obstacle([209, 209, 209]);
-  vertexes = [];
+    newObstacle = new Obstacle([209, 209, 209]);
+    vertexes = [];
 
-  vertexes.push(
-    gridPoints[5][4],
-    gridPoints[5][5],
-    gridPoints[6][5],
-    gridPoints[6][4]
-  );
-  newObstacle.setVerticesLinkedList(vertexes);
-  allShapes.add(newObstacle);
-  newObstacleMain.addOnTop(newObstacle);
+    vertexes.push(
+      gridPoints[5][4],
+      gridPoints[5][5],
+      gridPoints[6][5],
+      gridPoints[6][4]
+    );
+    newObstacle.setVerticesLinkedList(vertexes);
+    allShapes.add(newObstacle);
+    newObstacleMain.addOnTop(newObstacle);
 
-  newObstacle = new Obstacle([209, 209, 209]);
-  vertexes = [];
+    newObstacle = new Obstacle([209, 209, 209]);
+    vertexes = [];
 
-  vertexes.push(
-    gridPoints[7][7],
-    gridPoints[12][7],
-    gridPoints[12][10],
-    gridPoints[7][10],
-    gridPoints[7][9],
-    gridPoints[11][9],
-    gridPoints[11][8],
-    gridPoints[7][8]
-  );
-  newObstacle.setVerticesLinkedList(vertexes);
-  allShapes.add(newObstacle);
-  newObstacleMain.addOnTop(newObstacle);
+    vertexes.push(
+      gridPoints[7][7],
+      gridPoints[12][7],
+      gridPoints[12][10],
+      gridPoints[7][10],
+      gridPoints[7][9],
+      gridPoints[11][9],
+      gridPoints[11][8],
+      gridPoints[7][8]
+    );
+    newObstacle.setVerticesLinkedList(vertexes);
+    allShapes.add(newObstacle);
+    newObstacleMain.addOnTop(newObstacle);
 
-  newObstacle = new Obstacle([209, 209, 209]);
-  vertexes = [];
+    newObstacle = new Obstacle([209, 209, 209]);
+    vertexes = [];
 
-  vertexes.push(
-    gridPoints[14][7],
-    gridPoints[14][8],
-    gridPoints[15][9],
-    gridPoints[16][9],
-    gridPoints[17][8],
-    gridPoints[17][7],
-    gridPoints[16][6],
-    gridPoints[15][6]
-  );
-  newObstacle.setVerticesLinkedList(vertexes);
-  allShapes.add(newObstacle);
-  newObstacleMain.addOnTop(newObstacle);
+    vertexes.push(
+      gridPoints[14][7],
+      gridPoints[14][8],
+      gridPoints[15][9],
+      gridPoints[16][9],
+      gridPoints[17][8],
+      gridPoints[17][7],
+      gridPoints[16][6],
+      gridPoints[15][6]
+    );
+    newObstacle.setVerticesLinkedList(vertexes);
+    allShapes.add(newObstacle);
+    newObstacleMain.addOnTop(newObstacle);
 
-  newObstacle = new Obstacle([209, 209, 209]);
-  vertexes = [];
+    newObstacle = new Obstacle([209, 209, 209]);
+    vertexes = [];
 
-  vertexes.push(gridPoints[2][17], gridPoints[8][18], gridPoints[8][16]);
-  newObstacle.setVerticesLinkedList(vertexes);
-  allShapes.add(newObstacle);
-  newObstacleMain.addOnTop(newObstacle);
+    vertexes.push(gridPoints[2][17], gridPoints[8][18], gridPoints[8][16]);
+    newObstacle.setVerticesLinkedList(vertexes);
+    allShapes.add(newObstacle);
+    newObstacleMain.addOnTop(newObstacle);
 
-  newObstacle = new Obstacle([209, 209, 209]);
-  vertexes = [];
+    newObstacle = new Obstacle([209, 209, 209]);
+    vertexes = [];
 
-  vertexes.push(
-    gridPoints[18][10],
-    gridPoints[17][11],
-    gridPoints[17][12],
-    gridPoints[18][13]
-  );
-  newObstacle.setVerticesLinkedList(vertexes);
-  allShapes.add(newObstacle);
-  newObstacleMain.addOnTop(newObstacle);
+    vertexes.push(
+      gridPoints[18][10],
+      gridPoints[17][11],
+      gridPoints[17][12],
+      gridPoints[18][13]
+    );
+    newObstacle.setVerticesLinkedList(vertexes);
+    allShapes.add(newObstacle);
+    newObstacleMain.addOnTop(newObstacle);
 
-  newObstacle = new Obstacle([209, 209, 209]);
-  vertexes = [];
+    newObstacle = new Obstacle([209, 209, 209]);
+    vertexes = [];
 
-  vertexes.push(
-    gridPoints[12][14],
-    gridPoints[12][18],
-    gridPoints[17][18],
-    gridPoints[17][16],
-    gridPoints[13][16],
-    gridPoints[13][14]
-  );
-  newObstacle.setVerticesLinkedList(vertexes);
-  allShapes.add(newObstacle);
-  newObstacleMain.addOnTop(newObstacle);
+    vertexes.push(
+      gridPoints[12][14],
+      gridPoints[12][18],
+      gridPoints[17][18],
+      gridPoints[17][16],
+      gridPoints[13][16],
+      gridPoints[13][14]
+    );
+    newObstacle.setVerticesLinkedList(vertexes);
+    allShapes.add(newObstacle);
+    newObstacleMain.addOnTop(newObstacle);
 
-  newObstacle = new Obstacle([209, 209, 209]);
-  vertexes = [];
+    newObstacle = new Obstacle([209, 209, 209]);
+    vertexes = [];
 
-  vertexes.push(
-    gridPoints[10][3],
-    gridPoints[10][4],
-    gridPoints[12][4],
-    gridPoints[12][5],
-    gridPoints[13][5],
-    gridPoints[13][2],
-    gridPoints[12][2],
-    gridPoints[12][3]
-  );
-  newObstacle.setVerticesLinkedList(vertexes);
-  allShapes.add(newObstacle);
-  newObstacleMain.addOnTop(newObstacle);
-
+    vertexes.push(
+      gridPoints[10][3],
+      gridPoints[10][4],
+      gridPoints[12][4],
+      gridPoints[12][5],
+      gridPoints[13][5],
+      gridPoints[13][2],
+      gridPoints[12][2],
+      gridPoints[12][3]
+    );
+    newObstacle.setVerticesLinkedList(vertexes);
+    allShapes.add(newObstacle);
+    newObstacleMain.addOnTop(newObstacle);
+  }
   for (let eachShape of allShapes) {
     let currentVertex = eachShape.getVertexHead();
     do {
@@ -596,6 +617,108 @@ function makeRoom3() {
       getRndInteger(20, 100),
       getRndInteger(3, 30)
     );
+  }
+  let numberOfGuards = securityGuardNames.length;
+
+  for (let i = 0; i < numberOfGuards; i += 1) {
+    SecurityGuardInputNoDrag(
+      getRndInteger(51, width - 49),
+      getRndInteger(51, height - 49)
+    );
+  }
+
+  madeRoom = true;
+}
+
+function makeRoom4() {
+  clearAll();
+  let maxRadius;
+  if (height > width) {
+    maxRadius = width / 2 - 50;
+  } else maxRadius = height / 2 - 50;
+
+  let numberOfShapes = 8;
+  let radius = maxRadius / numberOfShapes;
+  for (let i = 1; i <= numberOfShapes; i += 1) {
+    polygonNoDrag(width / 2, height / 2, radius * i, 3);
+  }
+  madeRoom = true;
+}
+
+function makeRoom5() {
+  clearAll();
+  let gridPoints = makeGrid();
+  let newObstacleMain = new Obstacle([209, 209, 209]);
+  let vertexes = [];
+
+  for (let row = 0; row < gridPoints.length; row += 1) {
+    for (let col = 0; col < gridPoints[row].length; col += 1) {
+      gridPoints[row][col] = new ObstaclePoint(
+        gridPoints[row][col][0],
+        gridPoints[row][col][1],
+        newObstacleMain
+      );
+    }
+  }
+
+  vertexes.push(
+    gridPoints[1][1],
+    gridPoints[19][1],
+    gridPoints[19][19],
+    gridPoints[1][19],
+    gridPoints[1][3],
+    gridPoints[17][3],
+    gridPoints[17][17],
+    gridPoints[3][17],
+    gridPoints[3][5],
+    gridPoints[15][5],
+    gridPoints[15][15],
+    gridPoints[5][15],
+    gridPoints[5][7],
+    gridPoints[13][7],
+    gridPoints[13][13],
+    gridPoints[7][13],
+    gridPoints[7][9],
+    gridPoints[11][9],
+    gridPoints[11][11],
+    gridPoints[11][10],
+    gridPoints[11][11],
+    gridPoints[10][11],
+    gridPoints[10][10],
+    gridPoints[8][10],
+    gridPoints[8][12],
+    gridPoints[12][12],
+    gridPoints[12][8],
+    gridPoints[6][8],
+    gridPoints[6][14],
+    gridPoints[14][14],
+    gridPoints[14][6],
+    gridPoints[4][6],
+    gridPoints[4][16],
+    gridPoints[16][16],
+    gridPoints[16][4],
+    gridPoints[2][4],
+    gridPoints[2][18],
+    gridPoints[18][18],
+    gridPoints[18][2],
+    gridPoints[1][2]
+  );
+  newObstacleMain.setVerticesLinkedList(vertexes);
+  allShapes.add(newObstacleMain);
+
+  for (let eachShape of allShapes) {
+    let currentVertex = eachShape.getVertexHead();
+    do {
+      for (let guard of allGuards) {
+        currentVertex.setSecurityGuardAngle(guard);
+      }
+      currentVertex = currentVertex.getPointNext();
+    } while (currentVertex !== eachShape.getVertexHead());
+  }
+
+  for (let guard of allGuards) {
+    guard.addAllVertices();
+    guard.sortVertices();
   }
 
   madeRoom = true;

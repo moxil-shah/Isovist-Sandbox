@@ -41,9 +41,14 @@ function setup() {
 }
 
 function windowResized() {
+  shapeDragged = -1;
+  shapesPointDragged = -1;
+  pointDragged = -1;
+  guardDragged = -1;
   clearAll();
   if (shapeToHandle !== -1) exitShapeControlPanel();
   if (visualizeGuard !== -1) exitGuardControlPanel();
+
   resizeCanvas(windowWidth - getScrollBarWidth(), windowHeight);
 
   let currentVertex = gameShape.getVertexHead().getPointNext();
@@ -53,6 +58,9 @@ function windowResized() {
   currentVertex.setY(height - 50);
   currentVertex = currentVertex.getPointNext();
   currentVertex.setY(height - 50);
+
+  $("#navbarSupportedContent :input").attr("disabled", false);
+  document.getElementById("dropDownTemplates").style.visibility = "visible";
 }
 
 function getScrollBarWidth() {

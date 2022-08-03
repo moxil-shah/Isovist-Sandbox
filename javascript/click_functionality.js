@@ -30,6 +30,8 @@ function mouseClicked() {
   if (guardDragged !== -1) {
     guardDragged = -1;
     $("#navbarSupportedContent :input").attr("disabled", false);
+    document.getElementById("dropDownTemplates").style.visibility = "visible";
+
     if (securityGuardNames.length === 0) {
       document.getElementById("addBtn").disabled = true;
     }
@@ -54,6 +56,8 @@ function mouseClicked() {
     uncutShapes.clear();
     for (let eachShape of allShapes) eachShape.clearOnTopTemp();
     $("#navbarSupportedContent :input").attr("disabled", false);
+    document.getElementById("dropDownTemplates").style.visibility = "visible";
+
     if (securityGuardNames.length === 0) {
       document.getElementById("addBtn").disabled = true;
     }
@@ -76,6 +80,8 @@ function mouseClicked() {
     uncutShapes.clear();
     for (let eachShape of allShapes) eachShape.clearOnTopTemp();
     $("#navbarSupportedContent :input").attr("disabled", false);
+    document.getElementById("dropDownTemplates").style.visibility = "visible";
+
     if (securityGuardNames.length === 0) {
       document.getElementById("addBtn").disabled = true;
     }
@@ -154,6 +160,7 @@ function dragPoint(end) {
   }
   if (pointDragged !== -1) {
     $("#navbarSupportedContent :input").attr("disabled", true);
+    document.getElementById("dropDownTemplates").style.visibility = "hidden";
 
     for (let each of cutShapes) allShapes.delete(each);
     for (let each of uncutShapes) allShapes.add(each);
@@ -190,6 +197,7 @@ function dragSecurityGuard() {
   }
   if (guardDragged !== -1) {
     $("#navbarSupportedContent :input").attr("disabled", true);
+    document.getElementById("dropDownTemplates").style.visibility = "hidden";
     guardDragged.setX(mouseX);
     guardDragged.setY(mouseY);
 
@@ -211,6 +219,7 @@ function dragShape(end) {
   }
   if (shapeDragged !== -1) {
     $("#navbarSupportedContent :input").attr("disabled", true);
+    document.getElementById("dropDownTemplates").style.visibility = "hidden";
     for (let each of cutShapes) allShapes.delete(each);
     for (let each of uncutShapes) allShapes.add(each);
     for (let each of superImposedShapes) allShapes.delete(each);

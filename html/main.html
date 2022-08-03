@@ -93,9 +93,12 @@
                   <button class="btn btn-outline-success btn-sm" id="templateBtn">
                     Templates
                   </button>
-                  <div class="dropdown-content">
-                    <a href="#" onclick="makeRoom1()">Museum</a>
-                    <a href="#" onclick="makeRoom2()" id="room2">Minefield-esque</a>
+                  <div class="dropdown-content" id="dropDownTemplates">
+                    <a href="#" onclick="makeRoom1(true)">Museum w/ Shapes</a>
+                    <a href="#" onclick="makeRoom1(false)">Museum w/o Shapes</a>
+                    <a href="#" onclick="makeRoom2()">Minefield-esque</a>
+                    <a href="#" onclick="makeRoom4()">Fractal-esque</a>
+                    <a href="#" onclick="makeRoom5()">Spiral-esque</a>
                     <a href="#" onclick="makeRoom3()">Random</a>
                   </div>
                 </div>
