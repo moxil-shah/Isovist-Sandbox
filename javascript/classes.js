@@ -1101,7 +1101,7 @@ class AsanoVisualization {
   constructor(guard) {
     this.guard = guard;
     this.scrollBar = document.getElementById("customRange");
-    this.sliderValue = document.getElementById("sliderValue");
+    this.sliderValue = document.getElementById("sliderValueGuardControlPanel");
     this.scrollBar.style.display = "block";
     this.sliderValue.style.display = "block";
     this.resetAll();
@@ -1279,8 +1279,7 @@ class AsanoVisualization {
   }
 
   scrollBarAnimation() {
-    document.getElementById("sliderValue").innerHTML =
-      visualizeGuard.scrollBar.value + "&#176";
+    this.sliderValue.innerHTML = visualizeGuard.scrollBar.value + "&#176";
 
     this.angle = (this.scrollBar.value * PI) / 180;
     this.current = this.isovist.getVertexHead();
@@ -1435,7 +1434,7 @@ class ShapeVisualization {
     this.scrollBarSize.value = 1;
     this.rotateBtn = document.getElementById("shapebtnradio1");
     this.sizeBtn = document.getElementById("shapebtnradio2");
-    this.sliderValue = document.getElementById("sliderValue");
+    this.sliderValue = document.getElementById("sliderValueShapeControlPanel");
     this.pointClicked = new Point(mouseX, mouseY);
   }
 
@@ -1452,6 +1451,8 @@ class ShapeVisualization {
   rotateShape(end) {
     this.scrollBarRotate.style.display = "block";
     this.scrollBarSize.style.display = "none";
+    this.sliderValue.style.display = "block";
+    this.sliderValue.innerHTML = this.scrollBarRotate.value + "&#176";
 
     let currentVertex = this.shape.getVertexHead();
     let angle = (this.scrollBarRotate.value * PI) / 180;
@@ -1492,15 +1493,14 @@ class ShapeVisualization {
     this.scrollBarRotate.style.display = "none";
     this.scrollBarSize.style.display = "block";
     this.sliderValue.style.display = "block";
-    this.sliderValue.innerHTML = this.scrollBarSize.value;
+    this.sliderValue.innerHTML = this.scrollBarSize.value + "x";
 
     let currentVertex = this.shape.getVertexHead();
     do {
       currentVertex.setX(
         this.pointClicked.getX() -
           this.shape.getVerticesDistancetoMousePress(currentVertex)[0] *
-            this.scrollBarSize.value +
-          "X"
+            this.scrollBarSize.value
       );
       currentVertex.setY(
         this.pointClicked.getY() -

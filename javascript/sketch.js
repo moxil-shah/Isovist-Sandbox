@@ -49,6 +49,10 @@ function windowResized() {
 
   document.getElementById("customRange").style.width =
     ((width - 100) * 0.8).toString() + "px";
+    document.getElementById("shapeRangeSize").style.width =
+    ((width - 100) * 0.8).toString() + "px";
+    document.getElementById("shapeRangeRotate").style.width =
+    ((width - 100) * 0.8).toString() + "px";
 
   let currentVertex = gameShape.getVertexHead().getPointNext();
   currentVertex.setX(width - 50);

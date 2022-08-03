@@ -126,7 +126,8 @@ h6 {
   display: none;
 }
 
-#sliderValue {
+#sliderValueGuardControlPanel,
+#sliderValueShapeControlPanel {
   font-size: 1em;
   padding-top: 15px;
 }
