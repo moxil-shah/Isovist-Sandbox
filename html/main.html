@@ -52,7 +52,7 @@
             <ul class="navbar-nav me-auto mb-2 mb-lg-0">
               <li class="nav-item me-3">
                 <button
-                  class="btn btn-outline-success btn-sm"
+                  class="btn btn-outline-dark btn-sm"
                   id="addBtn"
                   type="button"
                   onclick="SecurityGuardInput()"
@@ -62,7 +62,7 @@
               </li>
               <li class="nav-item me-3">
                 <button
-                  class="btn btn-outline-warning btn-sm"
+                  class="btn btn-outline-dark btn-sm"
                   type="button"
                   onclick="clearShapes()"
                 >
@@ -71,7 +71,7 @@
               </li>
               <li class="nav-item me-3">
                 <button
-                  class="btn btn-outline-warning btn-sm"
+                  class="btn btn-outline-dark btn-sm"
                   type="button"
                   onclick="clearGuards()"
                 >
@@ -80,7 +80,7 @@
               </li>
               <li class="nav-item me-3">
                 <button
-                  class="btn btn-outline-danger btn-sm"
+                  class="btn btn-outline-dark btn-sm"
                   type="button"
                   onclick="clearAll()"
                 >
@@ -90,7 +90,7 @@
 
               <li class="nav-item me-3">
                 <div class="dropdown">
-                  <button class="btn btn-outline-success btn-sm" id="templateBtn">
+                  <button class="btn btn-outline-dark btn-sm" id="templateBtn">
                     Templates
                   </button>
                   <div class="dropdown-content" id="dropDownTemplates">
@@ -113,7 +113,7 @@
                 aria-label="Search"
               />
               <button
-                class="btn btn-outline-success btn-sm"
+                class="btn btn-outline-dark btn-sm"
                 type="button"
                 onclick="sidesInput()"
               >
@@ -142,7 +142,7 @@
             id="btnradio1"
             autocomplete="off"
           />
-          <label class="btn btn-outline-primary" for="btnradio1">Slow</label>
+          <label class="btn btn-outline-dark" for="btnradio1">Slow</label>
 
           <input
             type="radio"
@@ -151,7 +151,7 @@
             id="btnradio2"
             autocomplete="off"
           />
-          <label class="btn btn-outline-primary" for="btnradio2">Average</label>
+          <label class="btn btn-outline-dark" for="btnradio2">Average</label>
 
           <input
             type="radio"
@@ -161,12 +161,12 @@
             id="btnradio3"
             autocomplete="off"
           />
-          <label class="btn btn-outline-primary" for="btnradio3">Fast</label>
+          <label class="btn btn-outline-dark" for="btnradio3">Fast</label>
         </div>
 
         <div class="me-auto p-2 bd-highlight">
           <button
-            class="btn btn-outline-success btn-sm"
+            class="btn btn-outline-dark btn-sm"
             type="button"
             onclick="visualizeAsanoPrelude()"
           >
@@ -175,7 +175,7 @@
         </div>
         <div class="p-2 bd-highlight">
           <button
-            class="btn btn-outline-warning btn-sm"
+            class="btn btn-outline-dark btn-sm"
             type="button"
             onclick="removeGuard()"
           >
@@ -184,7 +184,7 @@
         </div>
         <div class="ps-2 py-2 bd-highlight">
           <button
-            class="btn btn-outline-danger btn-sm"
+            class="btn btn-danger btn-sm"
             type="button"
             onclick="exitGuardControlPanel()"
           >
@@ -193,6 +193,7 @@
         </div>
       </div>
       <div>
+        <h5 id = "sliderValue" class="range-right text-end">360&#176</h5>
         <input
           type="range"
           class="form-range"
@@ -223,7 +224,7 @@
             autocomplete="off"
             onclick="shapeToHandleHelper()"
           />
-          <label class="btn btn-outline-primary" for="shapebtnradio1"
+          <label class="btn btn-outline-dark" for="shapebtnradio1"
             >Rotate</label
           >
 
@@ -236,15 +237,16 @@
             autocomplete="off"
             onclick="shapeToHandleHelper()"
           />
-          <label class="btn btn-outline-primary" for="shapebtnradio2"
+          <label class="btn btn-outline-dark" for="shapebtnradio2"
             >Change Size</label
           >
         </div>
 
+       
         <div class="me-auto p-2 bd-highlight"></div>
         <div class="p-2 bd-highlight">
           <button
-            class="btn btn-outline-warning btn-sm"
+            class="btn btn-outline-dark btn-sm"
             type="button"
             onclick="removeShape()"
           >
@@ -253,7 +255,7 @@
         </div>
         <div class="ps-2 py-2 bd-highlight">
           <button
-            class="btn btn-outline-danger btn-sm"
+            class="btn btn-danger btn-sm"
             type="button"
             onclick="exitShapeControlPanel()"
           >
@@ -313,7 +315,7 @@
 
             <button
               type="button"
-              class="btn btn-danger text-left"
+              class="btn btn-dark text-left"
               onclick="modalQuit()"
             >
               Exit&nbspTutorial

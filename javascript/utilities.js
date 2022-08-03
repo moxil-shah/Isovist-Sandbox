@@ -26,6 +26,7 @@ function visualizeAsanoPrelude() {
   );
   window.scrollTo(0, windowHeight);
   visualizeGuard.scrollBar.style.display = "none";
+  visualizeGuard.sliderValue.style.display = "none";
 }
 
 function drawLine(theLine, color, weight) {
@@ -98,6 +99,7 @@ function SecurityGuardInputNoDrag(x, y) {
 
 function exitGuardControlPanel() {
   visualizeGuard.scrollBar.style.display = "none";
+  visualizeGuard.sliderValue.style.display = "none";
   visualizeGuard = -1;
   guardControlPanel.style.display = "none";
   document.getElementById("mainMenuNavBar").style.display = "block";

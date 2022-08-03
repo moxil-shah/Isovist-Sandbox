@@ -1101,7 +1101,9 @@ class AsanoVisualization {
   constructor(guard) {
     this.guard = guard;
     this.scrollBar = document.getElementById("customRange");
+    this.sliderValue = document.getElementById("sliderValue");
     this.scrollBar.style.display = "block";
+    this.sliderValue.style.display = "block";
     this.resetAll();
   }
 
@@ -1272,10 +1274,14 @@ class AsanoVisualization {
       this.state = "done";
       this.scrollBar.value = 360;
       this.scrollBar.style.display = "block";
+      this.sliderValue.style.display = "block";
     }
   }
 
   scrollBarAnimation() {
+    document.getElementById("sliderValue").innerHTML =
+      visualizeGuard.scrollBar.value;
+
     this.angle = (this.scrollBar.value * PI) / 180;
     this.current = this.isovist.getVertexHead();
     this.isovistDrawingPoints = [this.guard.getPoint(), this.current];

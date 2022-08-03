@@ -1,6 +1,4 @@
-// asano's algorithm is complete except gimpy edge cases like if the top edge
-// of a rectangle is on the initial intersect line
-// self-intersect is done without testing test cases though becuase I am lazy
+
 
 // code starts //
 let allShapes = new Set(); // global array of all shapes made

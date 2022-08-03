@@ -53,7 +53,7 @@ h6 {
   right: 0;
   margin-left: auto;
   margin-right: auto;
-  padding-top: 8px;
+  padding-top: 25px;
   width: 80%;
   opacity: 0.3;
   display: none;
@@ -76,7 +76,7 @@ h6 {
 }
 
 .dropbtn {
-  background-color: #04AA6D;
+  background-color: #04aa6d;
   color: white;
   padding: 16px;
   font-size: 16px;
@@ -93,7 +93,7 @@ h6 {
   position: absolute;
   background-color: #f1f1f1;
   min-width: 160px;
-  box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+  box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
   z-index: 1;
 }
 
@@ -104,8 +104,26 @@ h6 {
   display: block;
 }
 
-.dropdown-content a:hover {background-color: #ddd;}
+.dropdown-content a:hover {
+  background-color: #ddd;
+}
 
-.dropdown:hover .dropdown-content {display: block;}
+.dropdown:hover .dropdown-content {
+  display: block;
+}
 
-.dropdown:hover .dropbtn {background-color: #3e8e41;}
+.dropdown:hover .dropbtn {
+  background-color: #3e8e41;
+}
+
+
+.range-right {
+  position: absolute;
+  left: 0;
+  right: 0;
+  margin-right: 50px;
+  padding-top: 13px;
+  color: #eeeeee;
+  display: none;
+
+}
