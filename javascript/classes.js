@@ -203,7 +203,7 @@ class SecurityGuard extends Point {
         initialIntersectEdges[i + 1] = temp;
       }
     }
-   
+
     // insert the inital intersect edges into the AVL tree based on order of intersection
     for (let i = 0; i < initialIntersectEdges.length; i += 1) {
       initialIntersectEdges[i].setPosition(i);
@@ -224,10 +224,10 @@ class SecurityGuard extends Point {
     let currentlyOnSelfIntersectionPoint = false;
     this.initialIntersect();
     let goNextHowManyTimes = 0;
+    let crossProductZero = new Set();
 
     // console.log(this.sortedVertices.length);
     for (let i = 0; i < this.sortedVertices.length; i += 1) {
-
       // skip points that are outside the gameShape
       if (
         this.sortedVertices[i].getParentShape() !== gameShape &&
@@ -241,7 +241,6 @@ class SecurityGuard extends Point {
       // console.log(i);
       // InOrder(this.root);
       // console.log("done");
-
 
       // every point has 2 edges it connects.
       // add the edge to the counter-clockwise side of the sweepline and
@@ -267,6 +266,15 @@ class SecurityGuard extends Point {
       if (crossProduct1 > 0) toAdd.push(this.sortedVertices[i].getLinePrev());
       else if (crossProduct1 < 0)
         toRemove.push(this.sortedVertices[i].getLinePrev());
+      else if (crossProduct1 === 0) {
+        if (crossProductZero.has(this.sortedVertices[i].getLinePrev())) {
+          crossProductZero.delete(this.sortedVertices[i].getLinePrev());
+          toRemove.push(this.sortedVertices[i].getLinePrev());
+        } else {
+          crossProductZero.add(this.sortedVertices[i].getLinePrev());
+          toAdd.push(this.sortedVertices[i].getLinePrev());
+        }
+      }
 
       let crossProduct2 = p5.Vector.cross(
         createVector(
@@ -288,8 +296,16 @@ class SecurityGuard extends Point {
       if (crossProduct2 > 0) toAdd.push(this.sortedVertices[i].getLineNext());
       else if (crossProduct2 < 0)
         toRemove.push(this.sortedVertices[i].getLineNext());
-      
-
+      else if (crossProduct2 === 0) {
+        if (crossProductZero.has(this.sortedVertices[i].getLineNext())) {
+          crossProductZero.delete(this.sortedVertices[i].getLineNext());
+          toRemove.push(this.sortedVertices[i].getLineNext());
+        } else {
+          crossProductZero.add(this.sortedVertices[i].getLineNext());
+          toAdd.push(this.sortedVertices[i].getLineNext());
+        }
+      }
+    //  console.log(toAdd.length + toRemove.length);
       if (
         i !== this.sortedVertices.length - 1 &&
         checkIfTwoPointsOverlap(
@@ -930,7 +946,7 @@ class Shape {
 
   setVerticesLinkedList(vertexArray) {
     if (vertexArray.length < 3) {
-      console.log("f")
+      console.log("f");
       return;
     }
     vertexArray[0].setPointPrev(vertexArray[vertexArray.length - 1]);
