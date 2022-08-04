@@ -1,3 +1,10 @@
+/* title: Isovist Sandbox
+ * author: Moxil Shah
+ * Date Created: May 1, 2022
+ */
+
+////// file contains all stuff for tutorial modal //////
+
 let page1 =
   '<div class="modal-header text-center"> ' +
   '<h4 class="modal-title w-100">Welcome to Isovist Sandbox.</h4> ' +
@@ -85,16 +92,25 @@ let page5 =
 
 let tutorialPages = [page1, page2, page3, page4, page5];
 
+/*
+ * Function description: Show tutorial modal on first time load.
+ */
 $(window).on("load", function () {
   $("#myModal").modal("show");
   document.getElementById("modalContent").innerHTML = page1;
   document.getElementById("prev").style.display = "none";
 });
 
+/*
+ * Function description: In the name.
+ */
 function modalQuit() {
   $("#myModal").modal("hide");
 }
 
+/*
+ * Function description: In the name.
+ */
 function nextCard() {
   let index = parseInt(
     document.getElementById("tutorialPageNumber").innerHTML[0]
@@ -107,6 +123,9 @@ function nextCard() {
   document.getElementById("modalContent").innerHTML = tutorialPages[index];
 }
 
+/*
+ * Function description: In the name.
+ */
 function prevCard() {
   let index = parseInt(
     document.getElementById("tutorialPageNumber").innerHTML[0]

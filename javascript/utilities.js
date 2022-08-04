@@ -1,14 +1,30 @@
+/* title: Isovist Sandbox
+ * author: Moxil Shah
+ * Date Created: May 1, 2022
+ */
+
+////// file contains all utility functions //////
+
+/*
+ * Function description: Clear all guards and shapes, including dragged shapes or guards.
+ */
 function clearAll() {
   clearShapes();
   clearGuards();
 }
 
+/*
+ * Function description: Clear all guards, including dragged guards.
+ */
 function clearGuards() {
   for (let guard of allGuards) securityGuardNames.push(guard.getName());
   allGuards.clear();
   document.getElementById("addBtn").disabled = false;
 }
 
+/*
+ * Function description: Clear all shapes, including dragged shapes.
+ */
 function clearShapes() {
   allShapes.clear();
   superImposedShapes.clear();
@@ -18,6 +34,9 @@ function clearShapes() {
   polygon(null, null, null, 4);
 }
 
+/*
+ * Function description: If user clicks visualize, gets everything ready.
+ */
 function visualizeAsanoPrelude() {
   visualizeGuard.resetAll();
   visualizeGuard.setState("drawing");
@@ -25,10 +44,13 @@ function visualizeAsanoPrelude() {
     $("input[type='radio'][class='btn-check']:checked").attr("id")
   );
   window.scrollTo(0, windowHeight);
-  visualizeGuard.scrollBar.style.display = "none";
-  visualizeGuard.sliderValue.style.display = "none";
+  visualizeGuard.getScrollBar().style.display = "none";
+  visualizeGuard.getSliderValue().style.display = "none";
 }
 
+/*
+ * Function description: In the name.
+ */
 function drawLine(theLine, color, weight) {
   push();
   if (typeof color === "string") stroke(color);
@@ -43,19 +65,29 @@ function drawLine(theLine, color, weight) {
   pop();
 }
 
+/*
+ * Function description: In the name.
+ */
 function visualizeAsanoSlider() {
   visualizeGuard.setState("slider");
 }
 
-// from the HTML form
+/*
+ * Function description: Gets the number of sides inputted and calls polygon function.
+ */
 function sidesInput() {
   let nPoints = document.getElementById("sideNumInput").value;
-  if (nPoints > 30) nPoints = 30;
-  if (nPoints < 3) nPoints = 3;
-  polygon(mouseX, mouseY, 45, parseInt(nPoints));
+  if (isNaN(nPoints) || nPoints > 30 || nPoints < 3) {
+    document.getElementById("sideNumInput").style.border = "medium solid red";
+  } else {
+    document.getElementById("sideNumInput").style.border = "";
+    polygon(mouseX, mouseY, 45, nPoints);
+  }
 }
 
-// from the HTML form
+/*
+ * Function description: Adds guard no drag.
+ */
 function SecurityGuardInput() {
   if (securityGuardNames.length !== 0) {
     guard = new SecurityGuard(180, 350, securityGuardNames.pop());
@@ -77,6 +109,9 @@ function SecurityGuardInput() {
   }
 }
 
+/*
+ * Function description: Adds guard and sets it to guardDragged.
+ */
 function SecurityGuardInputNoDrag(x, y) {
   if (securityGuardNames.length !== 0) {
     guard = new SecurityGuard(x, y, securityGuardNames.pop());
@@ -97,15 +132,21 @@ function SecurityGuardInputNoDrag(x, y) {
   }
 }
 
+/*
+ * Function description: In the name.
+ */
 function exitGuardControlPanel() {
-  visualizeGuard.scrollBar.style.display = "none";
-  visualizeGuard.sliderValue.style.display = "none";
+  visualizeGuard.getScrollBar().style.display = "none";
+  visualizeGuard.getSliderValue().style.display = "none";
   visualizeGuard = -1;
   guardControlPanel.style.display = "none";
   document.getElementById("mainMenuNavBar").style.display = "block";
   window.scrollTo(0, 0);
 }
 
+/*
+ * Function description: In the name.
+ */
 function exitShapeControlPanel() {
   shapeToHandle.masterMethod(true);
   shapeToHandle = -1;
@@ -118,7 +159,9 @@ function exitShapeControlPanel() {
   document.getElementById("mainMenuNavBar").style.display = "block";
   window.scrollTo(0, 0);
 }
-
+/*
+ * Function description: In the name.
+ */
 function removeGuard() {
   allGuards.delete(visualizeGuard.getGuard());
   securityGuardNames.push(visualizeGuard.getGuard().getName());
@@ -126,6 +169,9 @@ function removeGuard() {
   exitGuardControlPanel();
 }
 
+/*
+ * Function description: In the name.
+ */
 function removeShape() {
   shapeToHandle.masterMethod(true);
   for (let each of allShapes) {
@@ -156,6 +202,10 @@ function removeShape() {
   window.scrollTo(0, 0);
 }
 
+/*
+ * Function description: In the name.
+ * Reference: https://www.geeksforgeeks.org/check-if-two-given-line-segments-intersect/
+ */
 function findIntersection(line1, line2) {
   let px =
     ((line1.getPoint1().getX() * line1.getPoint2().getY() -
@@ -182,10 +232,17 @@ function findIntersection(line1, line2) {
   return new Point(px, py);
 }
 
+/*
+ * Function description: In the name.
+ */
 function between(theThing, min, max) {
   return theThing >= min && theThing <= max;
 }
 
+/*
+ * Function description: Line intersection helper.
+ * Reference: https://www.geeksforgeeks.org/check-if-two-given-line-segments-intersect/
+ */
 function onSegment(p, q, r) {
   if (
     q.x <= Math.max(p.x, r.x) &&
@@ -198,6 +255,10 @@ function onSegment(p, q, r) {
   return false;
 }
 
+/*
+ * Function description: Line intersection helper.
+ * Reference: https://www.geeksforgeeks.org/check-if-two-given-line-segments-intersect/
+ */
 function orientOrder(p, q, r) {
   let val = (q.y - p.y) * (r.x - q.x) - (q.x - p.x) * (r.y - q.y);
 
@@ -206,6 +267,10 @@ function orientOrder(p, q, r) {
   return val > 0 ? 1 : 2;
 }
 
+/*
+ * Function description: Used for visual animations.
+ * Reference: https://www.desmos.com/calculator/cktp7nhqxh?lang=fr
+ */
 function zigZag(x, frequency) {
   return (
     (frequency * x - Math.floor(frequency * x)) *
@@ -215,10 +280,16 @@ function zigZag(x, frequency) {
   );
 }
 
+/*
+ * Function description: In the name.
+ */
 function distanceBetweenTwoPoints(p1, p2) {
   return Math.sqrt((p1.getX() - p2.getX()) ** 2 + (p1.getY() - p2.getY()) ** 2);
 }
 
+/*
+ * Function description: In the name.
+ */
 function distanceBetweenTwoPointsRounded(p1, p2, roundFactor) {
   return (
     Math.round(
@@ -228,6 +299,10 @@ function distanceBetweenTwoPointsRounded(p1, p2, roundFactor) {
   );
 }
 
+/*
+ * Function description: Line intersection helper.
+ * Reference: https://www.geeksforgeeks.org/check-if-two-given-line-segments-intersect/
+ */
 function checkIfIntersect(line1, line2) {
   let p1 = line1.getPoint1();
   let q1 = line1.getPoint2();
@@ -252,10 +327,16 @@ function checkIfIntersect(line1, line2) {
   return false;
 }
 
+/*
+ * Function description: In the name.
+ */
 function checkIfTwoPointsOverlap(p1, p2) {
   return p1.getX() === p2.getX() && p1.getY() === p2.getY();
 }
 
+/*
+ * Function description: In the name.
+ */
 function checkIfTwoPointsOverlapRounded(p1, p2, roundFactor) {
   return (
     Math.round(p1.getX() * roundFactor) / roundFactor ===
@@ -265,6 +346,9 @@ function checkIfTwoPointsOverlapRounded(p1, p2, roundFactor) {
   );
 }
 
+/*
+ * Function description: In the name.
+ */
 function checkIfVertexIsEndPointOfALine(aVertex, aLine) {
   return (
     checkIfTwoPointsOverlap(aVertex, aLine.getPoint1()) ||
@@ -272,6 +356,9 @@ function checkIfVertexIsEndPointOfALine(aVertex, aLine) {
   );
 }
 
+/*
+ * Function description: In the name.
+ */
 function checkIfTwoLinesIntersectOnEndPoints(line1, line2) {
   return (
     checkIfTwoPointsOverlap(line1.getPoint1(), line2.getPoint1()) ||
@@ -281,6 +368,9 @@ function checkIfTwoLinesIntersectOnEndPoints(line1, line2) {
   );
 }
 
+/*
+ * Function description: In the name.
+ */
 function checkIfTwoLinesIntersectOnEndPointsRounded(line1, line2) {
   return (
     checkIfTwoPointsOverlapRounded(line1.getPoint1(), line2.getPoint1()) ||
@@ -290,6 +380,9 @@ function checkIfTwoLinesIntersectOnEndPointsRounded(line1, line2) {
   );
 }
 
+/*
+ * Function description: In the name.
+ */
 function checkIfPointIsOutsideGameShape(point) {
   return (
     point[0] < 50 ||
@@ -299,6 +392,9 @@ function checkIfPointIsOutsideGameShape(point) {
   );
 }
 
+/*
+ * Function description: Helps when switching between rotate and size.
+ */
 function shapeToHandleHelper() {
   updateVertexArrayDistancetoMousePress(
     shapeToHandle.getShape(),
@@ -309,11 +405,17 @@ function shapeToHandleHelper() {
   document.getElementById("shapeRangeRotate").value = 0;
 }
 
-// min inclusive, max inclusive
+/*
+ * Function description: In the name. Min and max inclusive.
+ * Reference: https://stackoverflow.com/questions/62981108/how-does-math-floormath-random-max-min-1-min-work-in-javascript
+ */
 function getRndInteger(min, max) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
+/*
+ * Function description: I make a 21 by 21 grid of points to help make the templates.
+ */
 function makeGrid() {
   let gridPoints = [];
   let counter_x = 0;
@@ -324,11 +426,6 @@ function makeGrid() {
     let counter_y = 0;
     while (counter_y <= 20) {
       column.push([x, y]);
-      push();
-      strokeWeight(10);
-      stroke("white");
-      point(x, y);
-      pop();
       x += (width - 100) / 20;
       counter_y += 1;
     }
@@ -336,16 +433,18 @@ function makeGrid() {
     counter_x += 1;
     gridPoints.push(column);
   }
-
   return gridPoints;
 }
 
+/*
+ * Function description: In the name.
+ */
 function makeRoom1(withShapes) {
   clearAll();
 
   let gridPoints = makeGrid();
   let newObstacleMain = new Obstacle([209, 209, 209]);
-  let vertexes = [];
+  let vertices = [];
 
   for (let row = 0; row < gridPoints.length; row += 1) {
     for (let col = 0; col < gridPoints[row].length; col += 1) {
@@ -357,7 +456,7 @@ function makeRoom1(withShapes) {
     }
   }
 
-  vertexes.push(
+  vertices.push(
     gridPoints[1][1],
     gridPoints[1][6],
     gridPoints[5][6],
@@ -401,53 +500,53 @@ function makeRoom1(withShapes) {
     gridPoints[7][6],
     gridPoints[7][1]
   );
-  newObstacleMain.setVerticesLinkedList(vertexes);
+  newObstacleMain.setVerticesLinkedList(vertices);
   allShapes.add(newObstacleMain);
 
   if (withShapes === true) {
     let newObstacle = new Obstacle([209, 209, 209]);
-    vertexes = [];
+    vertices = [];
 
-    vertexes.push(
+    vertices.push(
       gridPoints[2][2],
       gridPoints[2][3],
       gridPoints[6][3],
       gridPoints[6][2]
     );
-    newObstacle.setVerticesLinkedList(vertexes);
+    newObstacle.setVerticesLinkedList(vertices);
     allShapes.add(newObstacle);
     newObstacleMain.addOnTop(newObstacle);
 
     newObstacle = new Obstacle([209, 209, 209]);
-    vertexes = [];
+    vertices = [];
 
-    vertexes.push(
+    vertices.push(
       gridPoints[2][4],
       gridPoints[2][5],
       gridPoints[4][5],
       gridPoints[4][4]
     );
-    newObstacle.setVerticesLinkedList(vertexes);
+    newObstacle.setVerticesLinkedList(vertices);
     allShapes.add(newObstacle);
     newObstacleMain.addOnTop(newObstacle);
 
     newObstacle = new Obstacle([209, 209, 209]);
-    vertexes = [];
+    vertices = [];
 
-    vertexes.push(
+    vertices.push(
       gridPoints[5][4],
       gridPoints[5][5],
       gridPoints[6][5],
       gridPoints[6][4]
     );
-    newObstacle.setVerticesLinkedList(vertexes);
+    newObstacle.setVerticesLinkedList(vertices);
     allShapes.add(newObstacle);
     newObstacleMain.addOnTop(newObstacle);
 
     newObstacle = new Obstacle([209, 209, 209]);
-    vertexes = [];
+    vertices = [];
 
-    vertexes.push(
+    vertices.push(
       gridPoints[7][7],
       gridPoints[12][7],
       gridPoints[12][10],
@@ -457,14 +556,14 @@ function makeRoom1(withShapes) {
       gridPoints[11][8],
       gridPoints[7][8]
     );
-    newObstacle.setVerticesLinkedList(vertexes);
+    newObstacle.setVerticesLinkedList(vertices);
     allShapes.add(newObstacle);
     newObstacleMain.addOnTop(newObstacle);
 
     newObstacle = new Obstacle([209, 209, 209]);
-    vertexes = [];
+    vertices = [];
 
-    vertexes.push(
+    vertices.push(
       gridPoints[14][7],
       gridPoints[14][8],
       gridPoints[15][9],
@@ -474,35 +573,35 @@ function makeRoom1(withShapes) {
       gridPoints[16][6],
       gridPoints[15][6]
     );
-    newObstacle.setVerticesLinkedList(vertexes);
+    newObstacle.setVerticesLinkedList(vertices);
     allShapes.add(newObstacle);
     newObstacleMain.addOnTop(newObstacle);
 
     newObstacle = new Obstacle([209, 209, 209]);
-    vertexes = [];
+    vertices = [];
 
-    vertexes.push(gridPoints[2][17], gridPoints[8][18], gridPoints[8][16]);
-    newObstacle.setVerticesLinkedList(vertexes);
+    vertices.push(gridPoints[2][17], gridPoints[8][18], gridPoints[8][16]);
+    newObstacle.setVerticesLinkedList(vertices);
     allShapes.add(newObstacle);
     newObstacleMain.addOnTop(newObstacle);
 
     newObstacle = new Obstacle([209, 209, 209]);
-    vertexes = [];
+    vertices = [];
 
-    vertexes.push(
+    vertices.push(
       gridPoints[18][10],
       gridPoints[17][11],
       gridPoints[17][12],
       gridPoints[18][13]
     );
-    newObstacle.setVerticesLinkedList(vertexes);
+    newObstacle.setVerticesLinkedList(vertices);
     allShapes.add(newObstacle);
     newObstacleMain.addOnTop(newObstacle);
 
     newObstacle = new Obstacle([209, 209, 209]);
-    vertexes = [];
+    vertices = [];
 
-    vertexes.push(
+    vertices.push(
       gridPoints[12][14],
       gridPoints[12][18],
       gridPoints[17][18],
@@ -510,14 +609,14 @@ function makeRoom1(withShapes) {
       gridPoints[13][16],
       gridPoints[13][14]
     );
-    newObstacle.setVerticesLinkedList(vertexes);
+    newObstacle.setVerticesLinkedList(vertices);
     allShapes.add(newObstacle);
     newObstacleMain.addOnTop(newObstacle);
 
     newObstacle = new Obstacle([209, 209, 209]);
-    vertexes = [];
+    vertices = [];
 
-    vertexes.push(
+    vertices.push(
       gridPoints[10][3],
       gridPoints[10][4],
       gridPoints[12][4],
@@ -527,7 +626,7 @@ function makeRoom1(withShapes) {
       gridPoints[12][2],
       gridPoints[12][3]
     );
-    newObstacle.setVerticesLinkedList(vertexes);
+    newObstacle.setVerticesLinkedList(vertices);
     allShapes.add(newObstacle);
     newObstacleMain.addOnTop(newObstacle);
   }
@@ -549,6 +648,9 @@ function makeRoom1(withShapes) {
   madeRoom = true;
 }
 
+/*
+ * Function description: In the name.
+ */
 function makeRoom2() {
   clearAll();
 
@@ -560,8 +662,8 @@ function makeRoom2() {
 
     while (col <= 18) {
       let newObstacle = new Obstacle([209, 209, 209]);
-      let vertexes = [];
-      vertexes.push(
+      let vertices = [];
+      vertices.push(
         new ObstaclePoint(
           gridPoints[row][col][0],
           gridPoints[row][col][1],
@@ -584,7 +686,7 @@ function makeRoom2() {
         )
       );
 
-      newObstacle.setVerticesLinkedList(vertexes);
+      newObstacle.setVerticesLinkedList(vertices);
       allShapes.add(newObstacle);
       col += 2;
     }
@@ -609,6 +711,9 @@ function makeRoom2() {
   madeRoom = true;
 }
 
+/*
+ * Function description: In the name.
+ */
 function makeRoom3() {
   clearAll();
   let numberOfShapes = getRndInteger(5, 25);
@@ -632,6 +737,9 @@ function makeRoom3() {
   madeRoom = true;
 }
 
+/*
+ * Function description: In the name.
+ */
 function makeRoom4() {
   clearAll();
   let maxRadius;
@@ -647,11 +755,14 @@ function makeRoom4() {
   madeRoom = true;
 }
 
+/*
+ * Function description: In the name.
+ */
 function makeRoom5() {
   clearAll();
   let gridPoints = makeGrid();
   let newObstacleMain = new Obstacle([209, 209, 209]);
-  let vertexes = [];
+  let vertices = [];
 
   for (let row = 0; row < gridPoints.length; row += 1) {
     for (let col = 0; col < gridPoints[row].length; col += 1) {
@@ -663,7 +774,7 @@ function makeRoom5() {
     }
   }
 
-  vertexes.push(
+  vertices.push(
     gridPoints[1][1],
     gridPoints[19][1],
     gridPoints[19][19],
@@ -705,7 +816,7 @@ function makeRoom5() {
     gridPoints[18][2],
     gridPoints[1][2]
   );
-  newObstacleMain.setVerticesLinkedList(vertexes);
+  newObstacleMain.setVerticesLinkedList(vertices);
   allShapes.add(newObstacleMain);
 
   for (let eachShape of allShapes) {

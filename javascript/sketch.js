@@ -1,10 +1,17 @@
-// code starts //
+/* title: Isovist Sandbox
+ * author: Moxil Shah
+ * Date Created: May 1, 2022
+ */
+
+////// file contains all drawing related functions //////
+
+// global variables //
 let allShapes = new Set(); // global array of all shapes made
 let allGuards = new Set(); // global array of all security guards made
-let superImposedShapes = new Set();
-let superImposedShapeChildren = new Set();
-let uncutShapes = new Set();
-let cutShapes = new Set();
+let superImposedShapes = new Set(); // global array of superimposed shapes
+let superImposedShapeChildren = new Set(); // global array of shapes that made up superimposed shapes
+let uncutShapes = new Set(); // uncut shapes from gameShape
+let cutShapes = new Set(); // cut shapes from gameShape
 const securityGuardNames = [
   [255, 165, 0],
   [28, 197, 220],
@@ -12,8 +19,8 @@ const securityGuardNames = [
   [0, 255, 0],
   [255, 0, 0],
   [255, 255, 0],
-];
-const ROUND_FACTOR = 10000;
+]; // guard names are their colors
+const ROUND_FACTOR = 10000; // used for all rounding calculations in this project
 let shapeDragged = -1;
 let shapesPointDragged = -1;
 let pointDragged = -1;
@@ -26,16 +33,23 @@ let shapeControlPanel;
 let madeRoom = false;
 let madeRoomDoubleClick = false;
 
+
+/*
+ * Function description: P5 function that sets up the canvas.
+ */
 function setup() {
   let canvas = createCanvas(windowWidth - getScrollBarWidth(), windowHeight);
   canvas.parent("canvasDiv");
   canvas.style("margin-bottom", "-5px");
   frameRate(60);
-  polygon(null, null, null, 4);
+  polygon(null, null, null, 4); // gameShape
   guardControlPanel = document.getElementById("guardControlPanel");
   shapeControlPanel = document.getElementById("shapeControlPanel");
 }
 
+/*
+ * Function description: If view port is resized, reset everything (pretend starting from scratch after tutorial)
+ */
 function windowResized() {
   shapeDragged = -1;
   shapesPointDragged = -1;
@@ -48,11 +62,11 @@ function windowResized() {
   resizeCanvas(windowWidth - getScrollBarWidth(), windowHeight);
 
   document.getElementById("customRange").style.width =
-    ((width - 100) * 0.8).toString() + "px";
-    document.getElementById("shapeRangeSize").style.width =
-    ((width - 100) * 0.8).toString() + "px";
-    document.getElementById("shapeRangeRotate").style.width =
-    ((width - 100) * 0.8).toString() + "px";
+    ((width - 100) * 0.5).toString() + "px";
+  document.getElementById("shapeRangeSize").style.width =
+    ((width - 100) * 0.5).toString() + "px";
+  document.getElementById("shapeRangeRotate").style.width =
+    ((width - 100) * 0.5).toString() + "px";
 
   let currentVertex = gameShape.getVertexHead().getPointNext();
   currentVertex.setX(width - 50);
@@ -66,6 +80,10 @@ function windowResized() {
   document.getElementById("dropDownTemplates").style.visibility = "visible";
 }
 
+/*
+ * Function description: In the name.
+ * References: https://stackoverflow.com/questions/13382516/getting-scroll-bar-width-using-javascript
+ */
 function getScrollBarWidth() {
   var $outer = $("<div>")
       .css({ visibility: "hidden", width: 100, overflow: "scroll" })
@@ -78,33 +96,33 @@ function getScrollBarWidth() {
   return 100 - widthWithScroll;
 }
 
+/*
+ * Function description: MAIN LOOP THAT REPEATS INDEFINITELY TO DRAW AND CALCULATE STUFF.
+ */
 function draw() {
   background(34, 40, 49);
   dragSecurityGuard();
   dragPoint(false);
   dragShape(false);
   if (shapeToHandle !== -1) shapeToHandle.masterMethod(false);
-  // console.log(allShapes.size)
-  // for (let eachShape of allShapes) {
-  //   console.log(eachShape.getOnTop().size);
-  // }
   renderAllShapes();
-  if (visualizeGuard === -1) renderAllSecurityGuards();
+  if (visualizeGuard === -1) renderAllSecurityGuardsAndIsovists();
   if (visualizeGuard !== -1) {
     visualizeGuard.animateMasterMethod();
     visualizeGuard.getSecurityGuard().drawSecurityGuard();
   } else renderAllShapesPoints();
 }
 
-// gets parameters ready to make the new polygon
+/*
+ * Function description: When user clicks add shape, this makes the shape and sets it to shapeDragged
+ */
 function polygon(x, y, radius, npoints) {
   let angle = TWO_PI / npoints;
-  let vertexes = []; // temp vertexes array to be passed into Shape constructor
-  let copyVertexes = [];
+  let vertices = []; // to be passed into Shape constructor
   let newObstacle = null;
-  // gets the vertexes ready and puts them into temp array
 
   if (allShapes.size === 0) {
+    // means draw the gameShape
     newObstacle = new Obstacle([0, 0, 0]);
 
     gameShape = newObstacle;
@@ -115,9 +133,9 @@ function polygon(x, y, radius, npoints) {
       new ObstaclePoint(0 + 50, height - 50, newObstacle),
     ];
     for (let i = 0; i < stage.length; i += 1) {
-      vertexes.push(stage[i]);
+      vertices.push(stage[i]);
     }
-    newObstacle.setVerticesLinkedList(vertexes);
+    newObstacle.setVerticesLinkedList(vertices);
 
     allShapes.add(newObstacle);
   } else {
@@ -130,13 +148,11 @@ function polygon(x, y, radius, npoints) {
 
       let sx = x + cos(i) * radius;
       let sy = y + sin(i) * radius;
-      vertexes.push(new ObstaclePoint(sx, sy, newObstacle));
-      copyVertexes.push([sx, sy]);
+      vertices.push(new ObstaclePoint(sx, sy, newObstacle));
     }
-    newObstacle.setVerticesLinkedList(vertexes);
+    newObstacle.setVerticesLinkedList(vertices);
     allShapes.add(newObstacle);
 
-    for (let eachShape of allShapes) eachShape.clearOnTopTemp();
     updateVertexArrayDistancetoMousePress(
       newObstacle,
       new Point(mouseX, mouseY)
@@ -144,6 +160,7 @@ function polygon(x, y, radius, npoints) {
     shapeDragged = newObstacle;
   }
 
+  // set angle for each vertex for each guard
   for (let eachShape of allShapes) {
     let currentVertex = eachShape.getVertexHead();
     do {
@@ -154,16 +171,19 @@ function polygon(x, y, radius, npoints) {
     } while (currentVertex !== eachShape.getVertexHead());
   }
 
+  // set angles for guards and then sort vertices by angle
   for (let guard of allGuards) {
     guard.addAllVertices();
     guard.sortVertices();
   }
 }
 
+/*
+ * Function description: Same as polgon function above but no dragging.
+ */
 function polygonNoDrag(x, y, radius, npoints) {
   let angle = TWO_PI / npoints;
-  let vertexes = []; // temp vertexes array to be passed into Shape constructor
-  let copyVertexes = [];
+  let vertices = []; // // to be passed into Shape constructor
   let newObstacle = new Obstacle([209, 209, 209]);
 
   let preventRoundingError = 0;
@@ -173,10 +193,9 @@ function polygonNoDrag(x, y, radius, npoints) {
 
     let sx = x + cos(i) * radius;
     let sy = y + sin(i) * radius;
-    vertexes.push(new ObstaclePoint(sx, sy, newObstacle));
-    copyVertexes.push([sx, sy]);
+    vertices.push(new ObstaclePoint(sx, sy, newObstacle));
   }
-  newObstacle.setVerticesLinkedList(vertexes);
+  newObstacle.setVerticesLinkedList(vertices);
   allShapes.add(newObstacle);
   dealWithShapeIntersectionWithArugment(newObstacle, true);
   dealWithGameShapeIntersection();
@@ -186,6 +205,7 @@ function polygonNoDrag(x, y, radius, npoints) {
   uncutShapes.clear();
   for (let eachShape of allShapes) eachShape.clearOnTopTemp();
 
+  // set angle for each vertex for each guard
   for (let eachShape of allShapes) {
     let currentVertex = eachShape.getVertexHead();
     do {
@@ -196,23 +216,33 @@ function polygonNoDrag(x, y, radius, npoints) {
     } while (currentVertex !== eachShape.getVertexHead());
   }
 
+  // set angles for guards and then sort vertices by angle
   for (let guard of allGuards) {
     guard.addAllVertices();
     guard.sortVertices();
   }
 }
 
-function renderAllSecurityGuards() {
+/*
+ * Function description: Draw all guards and their isovists.
+ */
+function renderAllSecurityGuardsAndIsovists() {
+  // draw isovists
   for (let guard of allGuards) {
-    if (guardDragged !== -1) guard = guardDragged;
+    if (guardDragged !== -1) guard = guardDragged; // if guard is picked up, only draw the isovist for that guard
     if (guard.outsideGameShape() === true) continue;
     guard.visibleVertices();
     guard.getIsovist().drawIsovist(guard, 100, 0);
     if (guardDragged !== -1) break;
   }
+  // draw guards
   for (let guard of allGuards) guard.drawSecurityGuard();
 }
 
+/*
+ * Function description: Recursive function that draws the shapes on top last and the
+ * shapes on the botton first.
+ */
 function drawAllOnTop(shapesToDraw) {
   for (let eachShape of shapesToDraw) {
     eachShape.drawShape(255, false);
@@ -220,6 +250,9 @@ function drawAllOnTop(shapesToDraw) {
   }
 }
 
+/*
+ * Function description: Draws all shapes.
+ */
 function renderAllShapes() {
   for (let eachShape of allShapes) {
     eachShape.drawShape(255, false);
@@ -228,6 +261,9 @@ function renderAllShapes() {
   }
 }
 
+/*
+ * Function description: Draws all the shapes' points.
+ */
 function renderAllShapesPoints() {
   for (let shape of allShapes) {
     let currentVertex = shape.getVertexHead();
@@ -264,8 +300,10 @@ function renderAllShapesPoints() {
   }
 }
 
-// the following function just makes a union of any shape intersection
-
+/*
+ * Function description: Makes intersecting shapes unionize.
+ * Dependency used: https://github.com/velipso/polybooljs
+ */
 // function dealWithShapeIntersection() {
 //   superImposedShapes.clear();
 //   superImposedShapeChildren.clear();
@@ -309,6 +347,10 @@ function renderAllShapesPoints() {
 //   }
 // }
 
+/*
+ * Function description: Calculates shapes intersecting with each other.
+ * Dependency used: https://github.com/velipso/polybooljs
+ */
 function dealWithShapeIntersectionWithArugment(theShape, end) {
   superImposedShapes.clear();
   superImposedShapeChildren.clear();
@@ -444,6 +486,10 @@ function dealWithShapeIntersectionWithArugment(theShape, end) {
   }
 }
 
+/*
+ * Function description: Calculates shapes intersecting with gameShape.
+ * Dependency used: https://github.com/velipso/polybooljs
+ */
 function dealWithGameShapeIntersection() {
   cutShapes.clear();
   uncutShapes.clear();
@@ -491,6 +537,10 @@ function dealWithGameShapeIntersection() {
   }
 }
 
+/*
+ * Function description: Keeps the x and y distance from mouse press point p
+ * to drag the shape around.
+ */
 function updateVertexArrayDistancetoMousePress(shape, p) {
   shape.resetVerticesDistancetoMousePress();
 
@@ -503,6 +553,9 @@ function updateVertexArrayDistancetoMousePress(shape, p) {
   } while (currentVertex !== shape.getVertexHead());
 }
 
+/*
+ * Function description: In the name.
+ */
 function checkIfShapeIntersectsWithGameShape(theShape) {
   let currentVertex = theShape.getVertexHead();
   do {

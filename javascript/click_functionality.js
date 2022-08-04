@@ -1,3 +1,13 @@
+/* title: Isovist Sandbox
+ * author: Moxil Shah
+ * Date Created: May 1, 2022
+ */
+
+////// file contains all clicking/dragging related functions //////
+
+/*
+ * Function description: Bring up shapeControlPanel or guardControlPanel.
+ */
 function doubleClicked() {
   if (madeRoomDoubleClick === true) {
     madeRoomDoubleClick = false;
@@ -19,7 +29,11 @@ function doubleClicked() {
   }
 }
 
+/*
+ * Function description: Handles clicking shapes, guards, and points.
+ */
 function mouseClicked() {
+  // to prevent accidentally clicking a shape below a template option
   if (madeRoom === true) {
     madeRoom = false;
     madeRoomDoubleClick = true;
@@ -97,6 +111,9 @@ function mouseClicked() {
   }
 }
 
+/*
+ * Function description: In the name.
+ */
 function checkIfClickInsideShape(shapesSet) {
   for (let shape of shapesSet) {
     if (shape === gameShape) continue;
@@ -122,8 +139,12 @@ function checkIfClickInsideShape(shapesSet) {
   return -1;
 }
 
+/*
+ * Function description: In the name.
+ */
 function checkIfClickSecurityGuard() {
   for (let guard of allGuards) {
+    // +- 10 enables inexact clicking
     if (
       between(mouseX, guard.getX() - 10, guard.getX() + 10) &&
       between(mouseY, guard.getY() - 10, guard.getY() + 10)
@@ -134,12 +155,16 @@ function checkIfClickSecurityGuard() {
   return -1;
 }
 
+/*
+ * Function description: In the name.
+ */
 function checkIfClickAVertex() {
   for (let eachShape of allShapes) {
     if (eachShape === gameShape) continue;
 
     let currentVertex = eachShape.getVertexHead();
     do {
+      // +- 10 enables inexact clicking
       if (
         between(mouseX, currentVertex.getX() - 10, currentVertex.getX() + 10) &&
         between(mouseY, currentVertex.getY() - 10, currentVertex.getY() + 10) &&
@@ -153,6 +178,9 @@ function checkIfClickAVertex() {
   return [-1, -1];
 }
 
+/*
+ * Function description: In the name.
+ */
 function dragPoint(end) {
   if (visualizeGuard !== -1 || shapeToHandle !== -1) {
     pointDragged = -1;
@@ -190,6 +218,9 @@ function dragPoint(end) {
   }
 }
 
+/*
+ * Function description: In the name.
+ */
 function dragSecurityGuard() {
   if (visualizeGuard !== -1 || shapeToHandle !== -1) {
     guardDragged = -1;
@@ -212,6 +243,9 @@ function dragSecurityGuard() {
   }
 }
 
+/*
+ * Function description: In the name.
+ */
 function dragShape(end) {
   if (visualizeGuard !== -1 || shapeToHandle !== -1) {
     shapeDragged = -1;

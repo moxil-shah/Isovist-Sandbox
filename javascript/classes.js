@@ -1,3 +1,11 @@
+/* title: Isovist Sandbox
+ * author: Moxil Shah
+ * Date Created: May 1, 2022
+ */
+
+////// file contains all the user-defined classes I use //////
+
+// Represent a point
 class Point {
   constructor(x, y) {
     this.x = x;
@@ -36,6 +44,7 @@ class Point {
   }
 }
 
+// Represent a point that belongs to a shape
 class ShapePoint extends Point {
   constructor(x, y, parentShape) {
     super(x, y);
@@ -87,6 +96,7 @@ class ShapePoint extends Point {
   }
 }
 
+// Represent a point that is a security guard
 class SecurityGuard extends Point {
   constructor(x, y, name) {
     super(x, y);
@@ -95,7 +105,6 @@ class SecurityGuard extends Point {
     this.sortedVertices = [];
     this.constructedPoints = [];
     this.root;
-    this.sweepLine;
     this.lineToRightWall = new Line(this.getPoint(), new Point(width, this.y));
     this.isovist = new Isovist();
   }
@@ -174,6 +183,7 @@ class SecurityGuard extends Point {
       );
     });
 
+    // edges that belong the gameShape are inserted last.
     for (let i = 0; i < initialIntersectEdges.length - 1; i += 1) {
       if (
         Math.round(
@@ -193,7 +203,8 @@ class SecurityGuard extends Point {
         initialIntersectEdges[i + 1] = temp;
       }
     }
-
+   
+    // insert the inital intersect edges into the AVL tree based on order of intersection
     for (let i = 0; i < initialIntersectEdges.length; i += 1) {
       initialIntersectEdges[i].setPosition(i);
       this.root = insertNodeInitialIntersect(
@@ -201,14 +212,9 @@ class SecurityGuard extends Point {
         initialIntersectEdges[i]
       );
     }
-    return initialIntersectEdges;
   }
 
   visibleVertices() {
-    this.sweepLine = new Line(
-      new Point(this.x, this.y),
-      new Point(width, this.y)
-    );
     let leftPrev;
     let leftNew;
     this.constructedPoints = [];
@@ -218,10 +224,11 @@ class SecurityGuard extends Point {
     let currentlyOnSelfIntersectionPoint = false;
     this.initialIntersect();
     let goNextHowManyTimes = 0;
-    let tempar = [];
 
     // console.log(this.sortedVertices.length);
     for (let i = 0; i < this.sortedVertices.length; i += 1) {
+
+      // skip points that are outside the gameShape
       if (
         this.sortedVertices[i].getParentShape() !== gameShape &&
         checkIfPointIsOutsideGameShape(
@@ -234,11 +241,12 @@ class SecurityGuard extends Point {
       // console.log(i);
       // InOrder(this.root);
       // console.log("done");
-      this.sweepLine = new Line(
-        new Point(this.x, this.y),
-        new Point(this.sortedVertices[i].getX(), this.sortedVertices[i].getY())
-      );
 
+
+      // every point has 2 edges it connects.
+      // add the edge to the counter-clockwise side of the sweepline and
+      // remove that edge that lies to the clockwise side of the sweepline.
+      // I do this using cross products
       let crossProduct1 = p5.Vector.cross(
         createVector(
           this.sortedVertices[i].getX() - this.getX(),
@@ -280,6 +288,7 @@ class SecurityGuard extends Point {
       if (crossProduct2 > 0) toAdd.push(this.sortedVertices[i].getLineNext());
       else if (crossProduct2 < 0)
         toRemove.push(this.sortedVertices[i].getLineNext());
+      
 
       if (
         i !== this.sortedVertices.length - 1 &&
@@ -754,6 +763,7 @@ class SecurityGuard extends Point {
   }
 }
 
+// Represent a point that belongs to a shape that is an obstacle
 class ObstaclePoint extends ShapePoint {
   constructor(x, y, parentShape) {
     super(x, y, parentShape);
@@ -841,6 +851,7 @@ class ObstaclePoint extends ShapePoint {
   }
 }
 
+// Represent a point that belongs to a shape that is an isovist
 class IsovistPoint extends ShapePoint {
   constructor(x, y, parentShape, angle, specialCase) {
     super(x, y, parentShape);
@@ -919,7 +930,7 @@ class Shape {
 
   setVerticesLinkedList(vertexArray) {
     if (vertexArray.length < 3) {
-      console.log(vertexArray.length);
+      console.log("f")
       return;
     }
     vertexArray[0].setPointPrev(vertexArray[vertexArray.length - 1]);
@@ -1040,6 +1051,7 @@ class Obstacle extends Shape {
   addOnTop(shape) {
     this.onTop.add(shape);
   }
+
   getOnTop() {
     return this.onTop;
   }
@@ -1421,6 +1433,14 @@ class AsanoVisualization {
 
   getGuard() {
     return this.guard;
+  }
+
+  getScrollBar() {
+    return this.scrollBar;
+  }
+
+  getSliderValue() {
+    return this.sliderValue;
   }
 }
 
