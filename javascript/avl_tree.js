@@ -1,3 +1,13 @@
+/* title: Isovist Sandbox
+ * author: Moxil Shah
+ * Date Created: May 1, 2022
+ */
+
+////// file contains all code related to the AVL tree //////
+///// code originally from GeeksforGeeks. I modified it to suit my needs //////
+//// Source of orignal code: https://www.geeksforgeeks.org/avl-tree-set-2-deletion/ //////
+
+
 class Node {
   constructor(edge) {
     this.left = null;

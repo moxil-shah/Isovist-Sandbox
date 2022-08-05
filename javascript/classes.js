@@ -212,6 +212,7 @@ class SecurityGuard extends Point {
         initialIntersectEdges[i]
       );
     }
+    return initialIntersectEdges;
   }
 
   visibleVertices() {
@@ -305,7 +306,7 @@ class SecurityGuard extends Point {
           toAdd.push(this.sortedVertices[i].getLineNext());
         }
       }
-    //  console.log(toAdd.length + toRemove.length);
+    //  this deals with overlapping points
       if (
         i !== this.sortedVertices.length - 1 &&
         checkIfTwoPointsOverlap(
@@ -322,6 +323,8 @@ class SecurityGuard extends Point {
         currentlyOnSelfIntersectionPoint = true;
       }
 
+      // add one edge and remove another. so search for edge to delete and replace 
+      // it with the edge to add
       if (toAdd.length === 1 && toRemove.length === 1) {
         leftPrev = getLeftmostLeaf(this.root).theKey;
         // console.log("updating", toRemove[0]);
@@ -359,26 +362,29 @@ class SecurityGuard extends Point {
           );
         }
       } else {
+
+        // delete more than 1 edge. could be 2 to 4 to delete
+        // delete by order of angle to the sweep line
         if (toRemove.length >= 1) {
           if (this.root === null) leftPrev = null;
           else leftPrev = getLeftmostLeaf(this.root).theKey;
-          let temp = this.sortedVertices[
+          let toRemoveOrdered = this.sortedVertices[
             i
           ].getEdgePairOrderedByAngleToSecurityGuardPointerless(
             this,
             toRemove,
             "toRemove"
           );
-          for (let j = 0; j < temp.length; j += 1) {
-            toRemove[j] = temp[j];
+          for (let j = 0; j < toRemoveOrdered.length; j += 1) {
+            toRemove[j] = toRemoveOrdered[j];
             // console.log("removing", toRemove[j]);
 
             this.root = deleteNode(
               this.root,
-              temp[j],
+              toRemoveOrdered[j],
               this.sortedVertices[i],
               this,
-              temp
+              toRemoveOrdered
             );
           }
           if (this.root === null) leftNew = null;
@@ -429,10 +435,12 @@ class SecurityGuard extends Point {
             );
           }
         }
+        // add more than 1 edge. could be 2 to 4 to delete
+        // add by order of angle to the sweep line
         if (toAdd.length >= 1) {
           if (this.root === null) leftPrev = null;
           else leftPrev = getLeftmostLeaf(this.root).theKey;
-          let temp = this.sortedVertices[
+          let toAddOrdered = this.sortedVertices[
             i
           ].getEdgePairOrderedByAngleToSecurityGuardPointerless(
             this,
@@ -440,17 +448,17 @@ class SecurityGuard extends Point {
             "toAdd"
           );
 
-          for (let j = 0; j < temp.length; j += 1) {
-            toAdd[j] = temp[j];
+          for (let j = 0; j < toAddOrdered.length; j += 1) {
+            toAdd[j] = toAddOrdered[j];
 
             // console.log("adding", toAdd[j]);
 
             this.root = insertNode(
               this.root,
-              temp[j],
+              toAddOrdered[j],
               this.sortedVertices[i],
               this,
-              temp
+              toAddOrdered
             );
           }
 
@@ -511,9 +519,8 @@ class SecurityGuard extends Point {
         goNextHowManyTimes = 0;
       }
     }
-    // if (this.constructedPoints.length === 0) {
-    //   console.log(tempar);
-    // }
+
+    // set the isovist shape so easy to draw later
     this.isovist.setVerticesLinkedList(this.constructedPoints);
   }
 
@@ -881,6 +888,7 @@ class IsovistPoint extends ShapePoint {
   }
 }
 
+// Represent a line
 class Line {
   constructor(p1, p2) {
     this.point1 = p1;
@@ -935,12 +943,12 @@ class Line {
   }
 }
 
+// Represent a Shape
 class Shape {
   constructor(color) {
     this.vertexHead;
     this.edges = new Set();
     this.color = color;
-    this.convexHull;
     this.pointsBackup;
   }
 
@@ -1007,10 +1015,6 @@ class Shape {
     else return pointsArray;
   }
 
-  getConvexHull() {
-    return this.convexHull;
-  }
-
   drawShape(opacity, colorOveride) {
     push();
     if (colorOveride === false)
@@ -1035,6 +1039,7 @@ class Shape {
   }
 }
 
+// Represent a Obstacle
 class Obstacle extends Shape {
   constructor(color) {
     super(color);
@@ -1101,6 +1106,7 @@ class Obstacle extends Shape {
   }
 }
 
+// Represent a Isovist. Each guard has one Isovist object.
 class Isovist extends Shape {
   constructor() {
     super();
@@ -1125,6 +1131,7 @@ class Isovist extends Shape {
   }
 }
 
+// controls guardControlPanel
 class AsanoVisualization {
   constructor(guard) {
     this.guard = guard;
@@ -1460,6 +1467,7 @@ class AsanoVisualization {
   }
 }
 
+// controls shapeControlPanel
 class ShapeVisualization {
   constructor(shape) {
     this.shape = shape;
