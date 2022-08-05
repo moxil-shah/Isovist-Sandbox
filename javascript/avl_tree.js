@@ -309,7 +309,7 @@ function searchAVLForNode(root, key, v_i, guard) {
   // or key is present at root
   if (root === null || root.theKey === key) {
     if (root === null) {
-      console.log("Big error 2!");
+      // console.log("Big error 2!");
     }
     return root;
   }

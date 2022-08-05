@@ -954,7 +954,7 @@ class Shape {
 
   setVerticesLinkedList(vertexArray) {
     if (vertexArray.length < 3) {
-      console.log("f");
+      // console.log("Big error 3");
       return;
     }
     vertexArray[0].setPointPrev(vertexArray[vertexArray.length - 1]);
