@@ -16,11 +16,7 @@ function doubleClicked() {
   guardDragged = checkIfClickSecurityGuard();
   shapeDragged = checkIfClickInsideShape(allShapes);
   if (visualizeGuard !== -1 || shapeToHandle !== -1) return;
-  if (guardDragged !== -1) {
-    if (guardDragged.outsideGameShape() === true) {
-      guardDragged = -1;
-      return;
-    }
+  if (guardDragged !== -1 && guardDragged.outsideGameShape() === false) {
     visualizeGuard = new AsanoVisualization(guardDragged);
     guardControlPanel.style.display = "block";
     document.getElementById("mainMenuNavBar").style.display = "none";
