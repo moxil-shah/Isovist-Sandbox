@@ -11,7 +11,7 @@ together with a specification of the location of that point." Frankly, I don't h
 
 ## Demo
 
-![My Image](images/Demos1.png)
+![My Image](/images/Demos1.png)
 
 ## Preview
 
