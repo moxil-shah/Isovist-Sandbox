@@ -35,10 +35,10 @@ But the goal for all of this was to once again, strengthen my relationship with 
 ### Starting
 ![Starting](https://raw.githubusercontent.com/moxil-shah/Isovist-Sandbox/master/images/Demo1.png)
 
-### Single guard
+### Single Guard
 ![Starting](https://raw.githubusercontent.com/moxil-shah/Isovist-Sandbox/master/images/Demo2.png)
 
-### Single guard with 2 squares
+### Single Guard with 2 Squares
 ![Starting](https://raw.githubusercontent.com/moxil-shah/Isovist-Sandbox/master/images/Demo3.png)
 
 ### Museum with Shapes
@@ -49,6 +49,7 @@ But the goal for all of this was to once again, strengthen my relationship with 
 
 ### Visualization in Action
 ![Starting](https://raw.githubusercontent.com/moxil-shah/Isovist-Sandbox/master/images/Demo6.png)
+
 ## Credits
 
 Big big inspiration from Clément Mihailescu's [Pathfinder Visualizer](https://clementmihailescu.github.io/Pathfinding-Visualizer/).
