@@ -83,7 +83,7 @@ let page5 =
   '<div class="modal-body"> ' +
   "The rest is pretty intuitive. Oh, and if you want to check out my source code, " +
   "here's the " +
-  '<a href="https://github.com/moxil-shah/Art-Gallery-Problem" target="_blank">github repo</a>. ' +
+  '<a href="https://github.com/moxil-shah/Isovist-Sandox" target="_blank">github repo</a>. ' +
   "Enjoy. " +
   "<br /> " +
   "<br /> " +
