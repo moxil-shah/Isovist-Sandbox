@@ -1,4 +1,3 @@
-
 # Isovist Sandox
 [Isovist Sandbox](https://moxil-shah.github.io/Isovist-Sandbox/) is a website that allows
 users to experiment with different kinds
@@ -14,4 +13,3 @@ together with a specification of the location of that point." Frankly, I don't h
 ![Starting](https://raw.githubusercontent.com/moxil-shah/Isovist-Sandbox/master/images/Demo1.png)
 
 ## Preview
-
