@@ -9,10 +9,13 @@
  * Function description: Bring up shapeControlPanel or guardControlPanel.
  */
 function doubleClicked() {
+  
   if (madeRoomDoubleClick === true) {
     madeRoomDoubleClick = false;
     return;
   }
+
+  if (mouseY < 0) return;
   guardDragged = checkIfClickSecurityGuard();
   shapeDragged = checkIfClickInsideShape(allShapes);
   if (visualizeGuard !== -1 || shapeToHandle !== -1) return;
