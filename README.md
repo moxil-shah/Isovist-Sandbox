@@ -12,4 +12,14 @@ together with a specification of the location of that point." Frankly, I don't h
 
 ![Starting](https://raw.githubusercontent.com/moxil-shah/Isovist-Sandbox/master/images/Demo1.png)
 
+![Starting](https://raw.githubusercontent.com/moxil-shah/Isovist-Sandbox/master/images/Demo2.png)
+
+![Starting](https://raw.githubusercontent.com/moxil-shah/Isovist-Sandbox/master/images/Demo3.png)
+
+![Starting](https://raw.githubusercontent.com/moxil-shah/Isovist-Sandbox/master/images/Demo4.png)
+
+![Starting](https://raw.githubusercontent.com/moxil-shah/Isovist-Sandbox/master/images/Demo5.png)
+
+![Starting](https://raw.githubusercontent.com/moxil-shah/Isovist-Sandbox/master/images/Demo6.png)
+
 ## Preview
