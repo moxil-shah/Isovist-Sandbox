@@ -15,7 +15,11 @@ function doubleClicked() {
   }
 
   guardDragged = checkIfClickSecurityGuard();
-  if (guardDragged.guard.outsideGameShape() === true) return;
+  if (guardDragged.outsideGameShape() === true) {
+   
+    guardDragged = -1;
+    return;
+  }
   shapeDragged = checkIfClickInsideShape(allShapes);
   if (visualizeGuard !== -1 || shapeToHandle !== -1) return;
   if (guardDragged !== -1) {
