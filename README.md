@@ -54,6 +54,6 @@ But the goal for all of this was to once again, strengthen my relationship with 
 
 [Helped me understand the naïve alogorithm to make an isovist.](https://www.redblobgames.com/articles/visibility/)
 
-[Helped me understand the high-level technicalities of Asano's algorithm.](https://www.cambridge.org/core/books/visibility-algorithms-in-the-plane/BCD82CF5FE665832FAC4AAAB68305AF1). Specifically, section 2.3 of the book.
+[Helped me understand the high-level technicalities of Asano's algorithm.](https://www.cambridge.org/core/books/visibility-algorithms-in-the-plane/BCD82CF5FE665832FAC4AAAB68305AF1) Specifically, section 2.3 of the book.
 
 And finally, big big inspiration from Clément Mihailescu's [Pathfinder Visualizer](https://clementmihailescu.github.io/Pathfinding-Visualizer/).
