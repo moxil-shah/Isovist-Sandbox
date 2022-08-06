@@ -18,7 +18,7 @@ let page2 =
   '<div id="tutorialPageNumber">2/5</div> ' +
   "</div> " +
   '<div class="modal-body"> ' +
-  " Imagine that you are a manager of a big museum like the Lourve. Since your " +
+  " Imagine that you are a manager of a big museum like the Louvre. Since your " +
   "museum is home to countless pieces of priceless art, you employ security " +
   "guards. Let's say each security guard has a 360-degree field of view. From a " +
   "bird's eye view, what does the visibility region for each security guard look " +
