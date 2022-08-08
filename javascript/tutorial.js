@@ -101,10 +101,7 @@ $(window).on("load", function () {
   document.getElementById("prev").style.display = "none";
 });
 
-$("#shapeInputForm").submit(function() {
-  search($("#sideNumInput").get(0));
-  return false;
-});
+$('#sideNumInput').bind('keypress', false);
 
 /*
  * Function description: In the name.
