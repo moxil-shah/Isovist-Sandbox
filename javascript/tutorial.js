@@ -101,11 +101,14 @@ $(window).on("load", function () {
   document.getElementById("prev").style.display = "none";
 });
 
-$('.noSelect').keypress(function(e){
-  if ( e.which == 13 ) return false;
-  //or...
-  if ( e.which == 13 ) e.preventDefault();
+// prevent enter key from refreshing page on side input
+$(document).keypress(
+  function(event){
+    if (event.which === 13) {
+      event.preventDefault();
+    }
 });
+
 
 /*
  * Function description: In the name.
