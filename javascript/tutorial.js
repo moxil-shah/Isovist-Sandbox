@@ -101,7 +101,11 @@ $(window).on("load", function () {
   document.getElementById("prev").style.display = "none";
 });
 
-$('#sideNumInput').bind('keypress', false);
+$('.noSelect').keypress(function(e){
+  if ( e.which == 13 ) return false;
+  //or...
+  if ( e.which == 13 ) e.preventDefault();
+});
 
 /*
  * Function description: In the name.
