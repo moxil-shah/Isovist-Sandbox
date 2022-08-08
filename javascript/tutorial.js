@@ -104,7 +104,7 @@ $(window).on("load", function () {
 // prevent enter key from refreshing page on side input
 $(document).keypress(
   function(event){
-    if (event.which === 13) {
+    if (event.which == '13') {
       event.preventDefault();
     }
 });
