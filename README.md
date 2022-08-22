@@ -1,5 +1,5 @@
 
-# Isovist Sandox
+# Isovist Sandbox
 [Isovist Sandbox](https://moxil-shah.github.io/Isovist-Sandbox/) is a desktop oriented and responsive website that allows
 users to experiment with different kinds
 of isovists for different kinds of polygons.
